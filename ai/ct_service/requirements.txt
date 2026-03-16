@@ -1,0 +1,8 @@
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.9
+Pillow==10.2.0
+torch
+torchvision
+--extra-index-url https://download.pytorch.org/whl/cpu
+huggingface_hub==0.20.3
