@@ -24,6 +24,7 @@ import hospitalRoutes from './routes/hospitals';
 
 // ── App ──────────────────────────────────────────────────────────────────────
 const app = express();
+app.set('trust proxy', 1);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const isDev = process.env.NODE_ENV !== 'production';
 
