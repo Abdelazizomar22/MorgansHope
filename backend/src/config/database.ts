@@ -6,7 +6,9 @@ dotenv.config();
 
 const useSqlite =
   process.env.NODE_ENV !== 'production' &&
-  (process.env.USE_SQLITE === '1' || process.env.USE_SQLITE === 'true' || process.env.USE_SQLITE === undefined);
+  (process.env.USE_SQLITE === '1' ||
+    process.env.USE_SQLITE === 'true' ||
+    process.env.USE_SQLITE === undefined);
 
 let sequelize: Sequelize;
 
@@ -30,9 +32,13 @@ if (useSqlite) {
     process.env.DB_PASSWORD || '',
     {
       host: process.env.DB_HOST || 'localhost',
-      port: Number(process.env.DB_PORT) || 3306,
-      dialect: 'mysql',
-      logging: process.env.NODE_ENV === 'development' ? console.log : false,
+      port: Number(process.env.DB_PORT) || 5432,
+      dialect: 'postgres',
+      dialectOptions:
+        process.env.NODE_ENV === 'production'
+          ? { ssl: { require: true, rejectUnauthorized: false } }
+          : {},
+      logging: false,
       pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
       define: { underscored: true, timestamps: true },
     }
