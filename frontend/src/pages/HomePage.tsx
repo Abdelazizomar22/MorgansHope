@@ -374,7 +374,7 @@ export default function HomePage({ lang }: HomePageProps) {
             </div>
             <MotionStaggerList staggerDelay={0.1} style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
               {FEATURES.map(({ Icon, title, desc }, i) => (
-                <div key={i} style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)', transition: 'box-shadow 0.2s, transform 0.2s' }}
+                <div key={i} style={{ height: '100%', background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)', transition: 'box-shadow 0.2s, transform 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 22px var(--shadow-hover)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-main)'; e.currentTarget.style.transform = 'none'; }}
                 >
