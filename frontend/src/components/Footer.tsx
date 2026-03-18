@@ -32,7 +32,12 @@ export default function Footer({ lang }: FooterProps) {
                     {/* Newsletter & Brand Column */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <img src="/logo.png" alt="Logo" style={{ height: 52, width: 52, objectFit: 'contain', mixBlendMode: 'screen' as const }} />
+                            <img
+                                src="/logo.png"
+                                alt="Logo"
+                                className="theme-logo"
+                                style={{ height: 48, width: 48, objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.9))' }}
+                            />
                             <span style={{ fontSize: 24, fontWeight: 900, color: 'white' }}>
                                 {t("Morgan's Hope", "مورجان هوب")}
                             </span>
