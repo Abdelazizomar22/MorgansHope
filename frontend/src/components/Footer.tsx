@@ -60,7 +60,7 @@ export default function Footer({ lang }: FooterProps) {
                             <img
                                 src="/logo.png"
                                 alt="Morgan's Hope"
-                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', flexShrink: 0 }}
+                                style={{ height: 70, width: 70, objectFit: 'contain', filter: 'brightness(0) invert(1)', flexShrink: 0 }}
                             />
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 <span style={{ fontSize: 26, fontWeight: 900, color: 'white', letterSpacing: -0.5, lineHeight: 1 }}>
@@ -83,8 +83,8 @@ export default function Footer({ lang }: FooterProps) {
                             </div>
                         </div>
 
-                        {/* Social Icons aligned with text (60 logo + 16 gap = 76 padding) */}
-                        <div style={{ display: 'flex', gap: 18, paddingLeft: ar ? 0 : 76, paddingRight: ar ? 76 : 0 }}>
+                        {/* Social Icons aligned with text (70 logo + 16 gap = 86 padding) */}
+                        <div style={{ display: 'flex', gap: 18, paddingLeft: ar ? 0 : 86, paddingRight: ar ? 86 : 0 }}>
                             {SOCIAL.map(({ Icon, href, label }) => (
                                 <a
                                     key={label}
