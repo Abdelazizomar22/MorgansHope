@@ -44,9 +44,9 @@ export default function Footer({ lang }: FooterProps) {
                 {/* ── TOP GRID ───────────────────────────────────────────── */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(280px, 1fr) 2fr',
+                    gridTemplateColumns: 'minmax(280px, 1.5fr) 1fr 1fr',
                     gap: 60,
-                    marginBottom: 52,
+                    marginBottom: 60,
                     alignItems: 'start',
                 }}>
 
@@ -65,13 +65,8 @@ export default function Footer({ lang }: FooterProps) {
                             </span>
                         </div>
 
-                        {/* Tagline — بدل الـ Newsletter */}
-                        <div style={{
-                            borderLeft: ar ? 'none' : '3px solid rgba(255,255,255,0.25)',
-                            borderRight: ar ? '3px solid rgba(255,255,255,0.25)' : 'none',
-                            paddingLeft: ar ? 0 : 16,
-                            paddingRight: ar ? 16 : 0,
-                        }}>
+                        {/* Tagline */}
+                        <div>
                             <p style={{
                                 fontSize: 17,
                                 fontStyle: 'italic',
@@ -116,78 +111,67 @@ export default function Footer({ lang }: FooterProps) {
                         </div>
                     </div>
 
-                    {/* RIGHT — Pages + Contact */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 40 }}>
-
-                        {/* Pages */}
-                        <div>
-                            <h4 style={{
-                                fontSize: 16, fontWeight: 800, color: 'white',
-                                marginBottom: 20,
-                                borderBottom: '1px solid rgba(255,255,255,0.15)',
-                                paddingBottom: 10,
-                            }}>
-                                {t('Pages', 'الصفحات')}
-                            </h4>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px' }}>
-                                {PAGES(t).map((link, i) => (
-                                    <Link key={i} to={link.path} style={{
-                                        textDecoration: 'none',
-                                        color: 'white',
-                                        fontSize: 13.5,
-                                        fontWeight: 500,
-                                        opacity: 0.8,
-                                        transition: 'opacity 0.15s',
-                                    }}
-                                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                                        onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}
-                                    >
-                                        {link.name}
-                                    </Link>
-                                ))}
-                            </div>
+                    {/* MIDDLE — Pages */}
+                    <div>
+                        <h4 style={{
+                            fontSize: 16, fontWeight: 800, color: 'white',
+                            marginBottom: 20
+                        }}>
+                            {t('Pages', 'الصفحات')}
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px' }}>
+                            {PAGES(t).map((link, i) => (
+                                <Link key={i} to={link.path} style={{
+                                    textDecoration: 'none',
+                                    color: 'white',
+                                    fontSize: 13.5,
+                                    fontWeight: 500,
+                                    opacity: 0.8,
+                                    transition: 'opacity 0.15s',
+                                }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
                         </div>
+                    </div>
 
-                        {/* Contact */}
-                        <div>
-                            <h4 style={{
-                                fontSize: 16, fontWeight: 800, color: 'white',
-                                marginBottom: 20,
-                                borderBottom: '1px solid rgba(255,255,255,0.15)',
-                                paddingBottom: 10,
-                            }}>
-                                {t('Contact', 'تواصل معنا')}
-                            </h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                {[
-                                    { label: t('Address', 'العنوان'), value: t('Cairo, Giza, Egypt', 'القاهرة، الجيزة، مصر') },
-                                    { label: t('Phone', 'الهاتف'), value: '+20 123 456 7890' },
-                                    { label: t('Email', 'البريد'), value: 'info@morganshope.com' },
-                                ].map(({ label, value }) => (
-                                    <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                        <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' as const }}>
-                                            {label}
-                                        </span>
-                                        <span style={{ fontSize: 14, fontWeight: 600, color: 'white' }}>
-                                            {value}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* RIGHT — Contact */}
+                    <div>
+                        <h4 style={{
+                            fontSize: 16, fontWeight: 800, color: 'white',
+                            marginBottom: 20
+                        }}>
+                            {t('Contact', 'تواصل معنا')}
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            {[
+                                { label: t('Phone', 'الهاتف'), value: '+20 123 456 7890' },
+                                { label: t('Email', 'البريد'), value: 'info@morganshope.com' },
+                                { label: t('Address', 'العنوان'), value: t('Cairo, Giza, Egypt', 'القاهرة، الجيزة، مصر') },
+                            ].map(({ label, value }) => (
+                                <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' as const }}>
+                                        {label}
+                                    </span>
+                                    <span style={{ fontSize: 14, fontWeight: 600, color: 'white' }}>
+                                        {value}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* ── DIVIDER ────────────────────────────────────────────── */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', marginBottom: 24 }} />
-
                 {/* ── DISCLAIMER ─────────────────────────────────────────── */}
                 <p style={{
-                    fontSize: 12, color: 'rgba(255,255,255,0.55)',
+                    fontSize: 11.5, color: 'rgba(255,255,255,0.7)',
                     lineHeight: 1.7, textAlign: 'center',
-                    maxWidth: 820, margin: '0 auto 24px',
+                    maxWidth: 880, margin: '0 auto 40px',
                 }}>
-                    <strong style={{ color: 'rgba(255,255,255,0.75)' }}>
+                    <strong style={{ fontWeight: 700 }}>
                         {t('Medical Disclaimer: ', 'إخلاء المسؤولية الطبي: ')}
                     </strong>
                     {t(
@@ -196,16 +180,10 @@ export default function Footer({ lang }: FooterProps) {
                     )}
                 </p>
 
-                {/* ── DIVIDER ────────────────────────────────────────────── */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', marginBottom: 20 }} />
-
                 {/* ── COPYRIGHT ──────────────────────────────────────────── */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', fontWeight: 500 }}>
-                        © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
-                    </span>
-                    <span style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,0.45)', fontWeight: 400 }}>
-                        {t('Designed with care for every breath', 'صُمِّم باهتمام لكل نَفَس')}
+                <div style={{ textAlign: 'center' }}>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
+                        © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')} | {t('Designed with care for every breath', 'صُمِّم باهتمام لكل نَفَس')}
                     </span>
                 </div>
 
