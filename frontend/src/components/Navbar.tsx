@@ -53,11 +53,9 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
     }}>
 
       {/* Logo */}
-      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <img src="/logo.png" alt="Morgan's Hope Logo" className="theme-logo"
-            style={{ height: 75, width: 75, objectFit: 'contain', position: 'relative', top: 10, marginRight: 12 }} />
-        </div>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 0 }}>
+        <img src="/logo.png" alt="Morgan's Hope Logo" className="theme-logo"
+          style={{ height: 60, width: 60, objectFit: 'contain', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
           <span style={{ fontSize: 18, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'var(--primary)', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
