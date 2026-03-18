@@ -24,6 +24,8 @@ import ProfilePage from './pages/ProfilePage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import ChatBot from './pages/ChatBot';
+import { FAQsPage } from './pages/FAQsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 
 function Layout({ lang, onLangToggle, children }: {
   lang: 'en' | 'ar'; onLangToggle: () => void; children: React.ReactNode;
@@ -50,6 +52,8 @@ function AnimatedRoutes({ lang, toggleLang }: { lang: 'en' | 'ar', toggleLang: (
         {/* ── Public pages (with Navbar, no auth needed) ── */}
         <Route path="/about" element={<Layout lang={lang} onLangToggle={toggleLang}><AboutPage lang={lang} /></Layout>} />
         <Route path="/contact" element={<Layout lang={lang} onLangToggle={toggleLang}><ContactPage lang={lang} /></Layout>} />
+        <Route path="/faqs" element={<Layout lang={lang} onLangToggle={toggleLang}><FAQsPage lang={lang} /></Layout>} />
+        <Route path="/privacy" element={<Layout lang={lang} onLangToggle={toggleLang}><PrivacyPage lang={lang} /></Layout>} />
 
         {/* ── Protected pages ── */}
         <Route path="/" element={
