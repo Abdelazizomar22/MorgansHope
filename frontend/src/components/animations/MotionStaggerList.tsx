@@ -47,7 +47,7 @@ export const MotionStaggerList: React.FC<MotionStaggerListProps> = ({
             {React.Children.map(children as any, (child) => {
                 if (!React.isValidElement(child)) return child;
                 return (
-                    <motion.li variants={item} style={{ listStyle: 'none' }}>
+                    <motion.li variants={item} style={{ listStyle: 'none', height: '100%' }}>
                         {child}
                     </motion.li>
                 );

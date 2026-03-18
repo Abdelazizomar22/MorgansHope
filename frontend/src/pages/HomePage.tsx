@@ -176,6 +176,7 @@ export default function HomePage({ lang }: HomePageProps) {
     { Icon: IconFileReport, title: t('PDF Reports', 'تقارير PDF'), desc: t('Detailed printable medical report', 'تقرير طبي مفصّل قابل للطباعة') },
     { Icon: IconHospitalPin, title: t('Hospital Finder', 'مُوجِّه المستشفيات'), desc: t('Nearest oncology centers in Egypt', 'أقرب مراكز الأورام في مصر') },
     { Icon: IconGlobe, title: t('AI Medical Chatbot', 'مساعد طبي ذكي'), desc: t('Instant answers to your medical queries', 'إجابات فورية لاستفساراتك الطبية') },
+    { Icon: IconShield, title: t('Privacy First', 'خصوصيتك أولاً'), desc: t('Your scans are encrypted and never shared with third parties', 'صورك مشفّرة ولا تُشارك مع أي طرف خارجي') },
   ];
 
   // Shared section heading style
@@ -243,10 +244,10 @@ export default function HomePage({ lang }: HomePageProps) {
         <section ref={statsRef} style={{ background: 'var(--card-bg)', boxShadow: '0 2px 12px var(--shadow-main)', padding: '28px 40px', borderBottom: '1px solid var(--card-border)' }}>
           <div style={{ maxWidth: 920, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)' }}>
             {[
-              { val: `${(c1 / 100).toFixed(2)}%`, label: t('CT Scan Accuracy', 'دقة CT Scan') },
-              { val: `${c2} ${t('Types', 'أنواع')}`, label: t('Cancer Classes', 'أنواع السرطان') },
-              { val: `+${c3}%`, label: t('Reliability', 'معدل الاستقرار') },
-              { val: '<4s', label: t('Avg Analysis Time', 'متوسط وقت التحليل') },
+              { val: '99.86%', label: t('CT Scan Accuracy', 'دقة CT Scan') },
+              { val: '6', label: t('Cancer Types', 'أنواع السرطان') },
+              { val: '15K+', label: t('Training Images', 'صورة تدريب') },
+              { val: '1,200+', label: t('Scans Analyzed', 'فحص تم تحليله') },
             ].map((s, i) => (
               <div key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: i < 3 ? '1px solid var(--card-border)' : 'none' }}>
                 <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', lineHeight: 1.1, letterSpacing: -0.5 }}>{s.val}</div>
@@ -353,7 +354,7 @@ export default function HomePage({ lang }: HomePageProps) {
                 { n: 2, Icon: IconBrainCircuit, title: t('AI Analysis', 'التحليل بالذكاء الاصطناعي'), desc: t('Advanced deep learning model analyzes your scans quickly', 'نموذج ذكاء اصطناعي متقدم يحلل الصور بسرعة') },
                 { n: 3, Icon: IconFileText, title: t('Get Report', 'استلام التقرير'), desc: t('PDF report with urgency level & hospital guidance', 'تقرير PDF مع مستوى الخطورة وإرشادات المستشفيات') },
               ].map(s => (
-                <div key={s.n} style={{ textAlign: 'center', background: 'var(--card-bg)', borderRadius: 16, padding: '36px 24px', border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
+                <div key={s.n} style={{ height: '100%', textAlign: 'center', background: 'var(--card-bg)', borderRadius: 16, padding: '36px 24px', border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, padding: '14px', background: 'var(--bg-main)', color: 'var(--primary-dark)', borderRadius: '50%', width: 64, margin: '0 auto 16px' }}><s.Icon /></div>
                   <h3 style={{ fontWeight: 800, color: 'var(--text-main)', margin: '0 0 10px', fontSize: 16 }}>{s.title}</h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
@@ -372,7 +373,7 @@ export default function HomePage({ lang }: HomePageProps) {
             </div>
             <MotionStaggerList staggerDelay={0.1} style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
               {FEATURES.map(({ Icon, title, desc }, i) => (
-                <div key={i} style={{ background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)', transition: 'box-shadow 0.2s, transform 0.2s' }}
+                <div key={i} style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)', transition: 'box-shadow 0.2s, transform 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 22px var(--shadow-hover)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-main)'; e.currentTarget.style.transform = 'none'; }}
                 >
