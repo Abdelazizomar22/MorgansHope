@@ -59,7 +59,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
             src="/logo.png"
             alt="Morgan's Hope Logo"
             className="theme-logo"
-            style={{ height: 64, width: 64, objectFit: 'contain' }}
+            style={{ height: 72, width: 72, objectFit: 'contain' }}
           />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
