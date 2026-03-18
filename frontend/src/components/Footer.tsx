@@ -33,7 +33,7 @@ export default function Footer({ lang }: FooterProps) {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <img src="/logo.png" alt="Logo"
-                                style={{ height: 70, width: 70, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+                                style={{ height: 75, width: 75, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
                             <span style={{ fontSize: 24, fontWeight: 900, color: 'white' }}>
                                 {t("Morgan's Hope", "مورجان هوب")}
                             </span>
