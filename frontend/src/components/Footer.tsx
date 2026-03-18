@@ -55,36 +55,38 @@ export default function Footer({ lang }: FooterProps) {
                     {/* LEFT — Brand + Tagline + Social */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                        {/* Top: Logo + Texts */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        {/* Logo + Name */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <img
                                 src="/logo.png"
                                 alt="Morgan's Hope"
-                                style={{ height: 70, width: 70, objectFit: 'contain', filter: 'brightness(0) invert(1)', flexShrink: 0 }}
+                                style={{ height: 44, width: 44, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
                             />
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                <span style={{ fontSize: 26, fontWeight: 900, color: 'white', letterSpacing: -0.5, lineHeight: 1 }}>
-                                    {t("Morgan's Hope", "مورجان هوب")}
-                                </span>
-                                <p style={{
-                                    fontSize: 16,
-                                    fontStyle: 'italic',
-                                    fontWeight: 400,
-                                    color: 'rgba(255,255,255,0.85)',
-                                    margin: 0,
-                                    lineHeight: 1,
-                                    letterSpacing: 0.2,
-                                }}>
-                                    {t(
-                                        '"A Second Chance for Every Breath"',
-                                        '"فرصة ثانية لكل نَفَس"'
-                                    )}
-                                </p>
-                            </div>
+                            <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.3, lineHeight: 1 }}>
+                                {t("Morgan's Hope", "مورجان هوب")}
+                            </span>
                         </div>
 
-                        {/* Social Icons aligned with text (70 logo + 16 gap = 86 padding) */}
-                        <div style={{ display: 'flex', gap: 18, paddingLeft: ar ? 0 : 86, paddingRight: ar ? 86 : 0 }}>
+                        {/* Tagline */}
+                        <div>
+                            <p style={{
+                                fontSize: 16,
+                                fontStyle: 'italic',
+                                fontWeight: 400,
+                                color: 'rgba(255,255,255,0.85)',
+                                margin: 0,
+                                lineHeight: 1.5,
+                                letterSpacing: 0.2,
+                            }}>
+                                {t(
+                                    '"A Second Chance for Every Breath"',
+                                    '"فرصة ثانية لكل نَفَس"'
+                                )}
+                            </p>
+                        </div>
+
+                        {/* Social Icons */}
+                        <div style={{ display: 'flex', gap: 16 }}>
                             {SOCIAL.map(({ Icon, href, label }) => (
                                 <a
                                     key={label}
