@@ -60,7 +60,7 @@ export default function Footer({ lang }: FooterProps) {
                             <img
                                 src="/logo.png"
                                 alt="Morgan's Hope"
-                                style={{ height: 44, width: 44, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                                style={{ height: 28, width: 28, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
                             />
                             <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.3, lineHeight: 1 }}>
                                 {t("Morgan's Hope", "مورجان هوب")}
@@ -170,6 +170,9 @@ export default function Footer({ lang }: FooterProps) {
                         </div>
                     </div>
                 </div>
+
+                {/* ── DIVIDER ────────────────────────────────────────────── */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', marginBottom: 24 }} />
 
                 {/* ── DISCLAIMER ─────────────────────────────────────────── */}
                 <p style={{
