@@ -56,6 +56,11 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
   const [daysFilter, setDaysFilter] = useState<number>(0); // 0 = All Time
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
 
+  // Report form modal
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTargetSession, setReportTargetSession] = useState<AnalysisResult[] | null>(null);
+  const [reportForm, setReportForm] = useState({ patientName: '', phone: '', email: '', scanType: '' });
+
   useEffect(() => {
     (async () => {
       try {
@@ -119,6 +124,109 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
     } catch (e) {
       alert(t('Failed to delete.', 'فشل المسح.'));
     }
+  };
+
+  const openReportModal = (targets?: AnalysisResult[]) => {
+    setReportTargetSession(targets || null);
+    setReportForm({
+      patientName: user ? `${user.firstName} ${user.lastName}`.trim() : '',
+      phone: user?.phone || '',
+      email: user?.email || '',
+      scanType: '',
+    });
+    setShowReportModal(true);
+  };
+
+  const buildImageURL = (r: AnalysisResult) =>
+    r.imagePath
+      ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/uploads/${r.imagePath.split(/[\\/]/).pop()}`
+      : '';
+
+  const buildSingleScanHTML = (r: AnalysisResult) => {
+    const urg = URGENCY_CONFIG[r.urgencyLevel as UrgencyLevel] || URGENCY_CONFIG.none;
+    const probs = Object.entries(r.allProbabilities || {});
+    const imgURL = buildImageURL(r);
+    return `
+      <div style="border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:20px;page-break-inside:avoid">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <div style="width:50px;height:50px;border-radius:10px;background:${urg.bg};border:1.5px solid ${urg.border};display:flex;align-items:center;justify-content:center;font-size:22px">${r.isMalignant ? '⚠️' : '✅'}</div>
+          <div>
+            <div style="font-size:18px;font-weight:800;color:${urg.color}">${r.classification}</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px">${r.imageType.toUpperCase()} · ${Math.round(r.confidence * 100)}% confidence</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:16px">
+          <div style="background:#f8fafc;border-radius:10px;padding:12px;text-align:center;border:1px solid #e2e8f0">
+            ${imgURL ? `<img src="${imgURL}" style="max-width:100%;max-height:200px;border-radius:7px" />` : '<div style="color:#94a3b8;font-size:12px;padding:30px">Image not available</div>'}
+            <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:6px">${r.imageType.toUpperCase()} · ${r.originalFilename || ''}</div>
+          </div>
+          <div style="padding:8px 0">
+            ${probs.map(([cls, prob]) => {
+      const p = Math.round((prob as number) * 100);
+      const c = ['Normal', 'No Finding'].includes(cls) ? '#16a34a' : p > 50 ? urg.color : '#94a3b8';
+      return `<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px"><span>${cls}</span><span style="color:${c}">${p}%</span></div>
+                      <div style="height:5px;background:#e2e8f0;border-radius:99px;margin-bottom:9px;overflow:hidden"><div style="height:100%;width:${p}%;background:${c};border-radius:99px"></div></div>`;
+    }).join('')}
+          </div>
+        </div>
+        ${r.nextStep ? `<div style="margin-top:14px;background:#f0fdf4;border-left:3px solid #16a34a;padding:10px 14px;border-radius:6px;font-size:12px;color:#166534">${r.nextStep}</div>` : ''}
+      </div>`;
+  };
+
+  const buildReportHTML = (targets: AnalysisResult[], form: typeof reportForm, isMulti: boolean) => {
+    const patientMedHist = user?.medicalHistory ? `<tr><td style="padding:8px 14px;font-size:11px;color:#94a3b8;font-weight:600;width:140px">Medical History</td><td style="padding:8px 14px;font-size:13px;font-weight:600">${user.medicalHistory}</td></tr>` : '';
+    const smokingBadge = { never: { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' }, former: { bg: '#fff8f0', border: '#fed7aa', text: '#c2410c' }, current: { bg: '#fff1f2', border: '#fecdd3', text: '#be123c' } }[user?.smokingHistory || 'never'] || { bg: '#f8fafc', border: '#e2e8f0', text: '#64748b' };
+    const smokingLabel = user?.smokingHistory === 'never' ? 'Never Smoked' : user?.smokingHistory === 'former' ? 'Former Smoker' : user?.smokingHistory === 'current' ? 'Current Smoker' : 'Not Disclosed';
+    return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
+      <title>Morgan's Hope Report</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Sora',sans-serif;color:#0f172a;background:#fff;padding:40px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        .header{background:#1a3a38;color:white;padding:24px 32px;border-radius:12px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+        .footer{border-top:1px solid #f1f5f9;padding-top:14px;display:flex;justify-content:space-between;align-items:center;margin-top:30px;font-size:10px;color:#94a3b8}
+        table{width:100%;border-collapse:collapse;border:0.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:24px}
+        tr:nth-child(even){background:#fafafa}tr:not(:last-child){border-bottom:0.5px solid #f1f5f9}
+        .disclaimer{background:#fff1f2;border:0.5px solid #fecdd3;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:11px;color:#9f1239}
+        @media print{body{padding:20px}}
+      </style></head><body>
+      <div class="header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:44px;height:44px;border:1.5px solid rgba(255,255,255,0.3);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white">MH</div>
+          <div><div style="font-size:20px;font-weight:700">Morgan's <em>Hope</em></div><div style="font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-top:3px">AI Lung Detection System</div></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">${isMulti ? 'Session Report' : 'Report ID'}</div>
+          <div style="font-size:18px;font-weight:700;font-family:'Courier New',monospace">${isMulti ? `${targets.length} SCANS` : `MH-${String(targets[0].id).padStart(6, '0')}`}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:3px">${new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: '2-digit' })}</div>
+        </div>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:2px;text-transform:uppercase;padding-bottom:10px;margin-bottom:14px;border-bottom:1px solid #f1f5f9">Patient Information</div>
+      <table>
+        <tr><td style="padding:8px 14px;font-size:11px;color:#94a3b8;font-weight:600;width:140px">Patient Name</td><td style="padding:8px 14px;font-size:13px;font-weight:700">${form.patientName || 'N/A'}</td></tr>
+        <tr><td style="padding:8px 14px;font-size:11px;color:#94a3b8;font-weight:600">Contact Phone</td><td style="padding:8px 14px;font-size:13px;font-weight:700">${form.phone || 'N/A'}</td></tr>
+        <tr><td style="padding:8px 14px;font-size:11px;color:#94a3b8;font-weight:600">Contact Email</td><td style="padding:8px 14px;font-size:13px;font-weight:700">${form.email || 'N/A'}</td></tr>
+        <tr><td style="padding:8px 14px;font-size:11px;color:#94a3b8;font-weight:600">Scan Type</td><td style="padding:8px 14px;font-size:13px;font-weight:700">${form.scanType || targets[0].imageType.toUpperCase()}</td></tr>
+        <tr><td style="padding:8px 14px;font-size:11px;color:#94a3b8;font-weight:600">Age / Gender</td><td style="padding:8px 14px;font-size:13px;font-weight:700">${user?.age ? `${user.age} yo` : 'N/A'} · ${user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'N/A'}</td></tr>
+        <tr><td style="padding:8px 14px;font-size:11px;color:#94a3b8;font-weight:600">Smoking Status</td><td style="padding:8px 14px"><span style="background:${smokingBadge.bg};border:0.5px solid ${smokingBadge.border};color:${smokingBadge.text};padding:2px 10px;border-radius:4px;font-size:11px;font-weight:700">${smokingLabel}</span></td></tr>
+        ${patientMedHist}
+      </table>
+      <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:2px;text-transform:uppercase;padding-bottom:10px;margin-bottom:14px;border-bottom:1px solid #f1f5f9">Diagnostic Findings</div>
+      ${targets.map(r => buildSingleScanHTML(r)).join('')}
+      <div class="disclaimer"><strong>Medical Disclaimer:</strong> This report is generated by an AI system for preliminary screening only. It must be reviewed by a board-certified radiologist or oncologist before any clinical decisions are made. Morgan's Hope does not provide binding medical diagnoses.</div>
+      <div class="footer"><div><strong>Morgan's <em>Hope</em></strong><br/>morgans-hope.netlify.app · AI Lung Detection System</div><div style="text-align:center">MH-SYSTEM-v4 · AI-GENERATED</div><div style="background:#2E5C5A;color:white;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:6px 14px;border-radius:4px;text-transform:uppercase">Verified Report</div></div>
+    </body></html>`;
+  };
+
+  const printReport = () => {
+    const targets = reportTargetSession || (result ? [result] : []);
+    if (targets.length === 0) return;
+    const html = buildReportHTML(targets, reportForm, targets.length > 1);
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => w.print(), 700);
+    setShowReportModal(false);
   };
 
   const downloadPDF = () => {
@@ -308,7 +416,19 @@ ${result.nextStep ? `
             <div style={{ padding: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
               <IconBarChart />
             </div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>{t('Analysis Results', 'نتائج التحليل')}</h1>
+            <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>{t('Analysis Results', 'نتائج التحليل')}</h1>
+
+            {tab === 'result' && result && (
+              <button
+                onClick={() => openReportModal([result])}
+                style={{ marginLeft: 'auto', padding: '10px 20px', borderRadius: 10, border: 'none', background: 'white', color: 'var(--primary-dark)', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', transition: 'all 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                {t('Download PDF', 'تحميل التقرير')}
+              </button>
+            )}
           </div>
           <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
             {t('View your AI-powered diagnostic report and analysis history.', 'اطّلع على تقريرك التشخيصي بالذكاء الاصطناعي وسجل تحليلاتك.')}
@@ -507,7 +627,17 @@ ${result.nextStep ? `
                               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{formatDate(group.createdAt)}</div>
                             </div>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openReportModal(group.items); }}
+                              title={t('Download Session PDF', 'تحميل تقرير الجلسة')}
+                              style={{ padding: '5px 10px', borderRadius: 7, border: '1.5px solid var(--primary)', background: 'transparent', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', fontWeight: 700, fontSize: 11, transition: 'all 0.2s' }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--primary)'; }}
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                              {t('PDF', 'PDF')}
+                            </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDelete(group.id, true); }}
                               style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: 'rgba(239,68,68,0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -592,6 +722,46 @@ ${result.nextStep ? `
         )}
       </div>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap'); * { box-sizing: border-box; }`}</style>
-    </div>
+
+      {/* ── Report Form Modal ── */}
+      {
+        showReportModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setShowReportModal(false)}>
+            <div style={{ background: 'var(--card-bg)', borderRadius: 18, padding: '32px', width: '100%', maxWidth: 480, boxShadow: '0 24px 60px rgba(0,0,0,0.3)', border: '1px solid var(--card-border)' }} onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <div>
+                  <h2 style={{ fontWeight: 800, color: 'var(--text-main)', margin: 0, fontSize: 18 }}>{t('Report Details', 'بيانات التقرير')}</h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 12.5, margin: '4px 0 0' }}>{t('Please fill in patient info before generating the PDF.', 'يرجى ملء بيانات المريض قبل توليد التقرير.')}</p>
+                </div>
+                <button onClick={() => setShowReportModal(false)} style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: 'var(--bg-main)', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700 }}>×</button>
+              </div>
+              {([
+                { key: 'patientName', label: t('Patient Full Name', 'اسم المريض الكامل'), placeholder: t('e.g. Mohamed Ali', 'مثال: محمد علي') },
+                { key: 'phone', label: t('Phone Number', 'رقم الهاتف'), placeholder: '+20 1xx xxx xxxx' },
+                { key: 'email', label: t('Email', 'البريد الإلكتروني'), placeholder: 'example@mail.com' },
+                { key: 'scanType', label: t('Scan Type', 'نوع الفحص'), placeholder: t('e.g. Chest X-Ray / CT', 'مثال: X-Ray / CT') },
+              ] as { key: keyof typeof reportForm; label: string; placeholder: string }[]).map(({ key, label, placeholder }) => (
+                <div key={key} style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontWeight: 700, fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 6 }}>{label}</label>
+                  <input
+                    value={reportForm[key]}
+                    onChange={e => setReportForm(f => ({ ...f, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1.5px solid var(--card-border)', background: 'var(--bg-main)', color: 'var(--text-main)', fontSize: 13.5, fontFamily: 'inherit', outline: 'none' }}
+                  />
+                </div>
+              ))}
+              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                <button onClick={() => setShowReportModal(false)} style={{ flex: 1, padding: '11px', borderRadius: 9, border: '1.5px solid var(--card-border)', background: 'transparent', color: 'var(--text-muted)', fontWeight: 700, cursor: 'pointer', fontSize: 13.5 }}>{t('Cancel', 'إلغاء')}</button>
+                <button onClick={printReport} style={{ flex: 2, padding: '11px', borderRadius: 9, border: 'none', background: 'var(--primary)', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: 13.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                  {t('Download PDF', 'تحميل التقرير')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 }

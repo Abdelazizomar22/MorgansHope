@@ -31,9 +31,9 @@ export default function Footer({ lang }: FooterProps) {
                 }}>
                     {/* Newsletter & Brand Column */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                             <img src="/logo.png" alt="Logo"
-                                style={{ height: 75, width: 75, objectFit: 'contain', filter: 'brightness(0) invert(1)', position: 'relative', top: 10, marginRight: 12 }} />
+                                style={{ height: 65, width: 65, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-5px)', marginRight: -12 }} />
                             <span style={{ fontSize: 24, fontWeight: 900, color: 'white' }}>
                                 {t("Morgan's Hope", "مورجان هوب")}
                             </span>
