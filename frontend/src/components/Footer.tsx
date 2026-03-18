@@ -55,29 +55,24 @@ export default function Footer({ lang }: FooterProps) {
                     {/* LEFT — Brand + Tagline + Social */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                        {/* Logo + Name */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {/* Top: Logo + Texts */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                             <img
                                 src="/logo.png"
                                 alt="Morgan's Hope"
-                                style={{ height: 28, width: 28, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', flexShrink: 0 }}
                             />
-                            <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.3, lineHeight: 1 }}>
-                                {t("Morgan's Hope", "مورجان هوب")}
-                            </span>
-                        </div>
-
-                        {/* Tagline & Social Icons aligned with Text */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingLeft: ar ? 0 : 38, paddingRight: ar ? 38 : 0 }}>
-                            {/* Tagline */}
-                            <div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                <span style={{ fontSize: 26, fontWeight: 900, color: 'white', letterSpacing: -0.5, lineHeight: 1 }}>
+                                    {t("Morgan's Hope", "مورجان هوب")}
+                                </span>
                                 <p style={{
-                                    fontSize: 17,
+                                    fontSize: 16,
                                     fontStyle: 'italic',
                                     fontWeight: 400,
                                     color: 'rgba(255,255,255,0.85)',
                                     margin: 0,
-                                    lineHeight: 1.5,
+                                    lineHeight: 1,
                                     letterSpacing: 0.2,
                                 }}>
                                     {t(
@@ -86,33 +81,33 @@ export default function Footer({ lang }: FooterProps) {
                                     )}
                                 </p>
                             </div>
+                        </div>
 
-                            {/* Social Icons */}
-                            <div style={{ display: 'flex', gap: 16 }}>
-                                {SOCIAL.map(({ Icon, href, label }) => (
-                                    <a
-                                        key={label}
-                                        href={href}
-                                        aria-label={label}
-                                        style={{
-                                            color: 'white',
-                                            opacity: 0.75,
-                                            transition: 'opacity 0.2s, transform 0.2s',
-                                            display: 'flex',
-                                        }}
-                                        onMouseEnter={e => {
-                                            e.currentTarget.style.opacity = '1';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={e => {
-                                            e.currentTarget.style.opacity = '0.75';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <Icon />
-                                    </a>
-                                ))}
-                            </div>
+                        {/* Social Icons aligned with text (60 logo + 16 gap = 76 padding) */}
+                        <div style={{ display: 'flex', gap: 18, paddingLeft: ar ? 0 : 76, paddingRight: ar ? 76 : 0 }}>
+                            {SOCIAL.map(({ Icon, href, label }) => (
+                                <a
+                                    key={label}
+                                    href={href}
+                                    aria-label={label}
+                                    style={{
+                                        color: 'white',
+                                        opacity: 0.8,
+                                        transition: 'opacity 0.2s, transform 0.2s',
+                                        display: 'flex',
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.opacity = '1';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.opacity = '0.8';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
+                                >
+                                    <Icon />
+                                </a>
+                            ))}
                         </div>
                     </div>
 
