@@ -31,16 +31,34 @@ export default function Footer({ lang }: FooterProps) {
                 }}>
                     {/* Newsletter & Brand Column */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <img
                                 src="/logo.png"
-                                alt="Logo"
-                                className="theme-logo"
-                                style={{ height: 48, width: 48, objectFit: 'contain', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.9))' }}
+                                alt="Morgan's Hope"
+                                style={{
+                                    height: 52,
+                                    width: 52,
+                                    objectFit: 'contain',
+                                    filter: 'brightness(0) invert(1)',
+                                    opacity: 0.95,
+                                    flexShrink: 0
+                                }}
                             />
-                            <span style={{ fontSize: 24, fontWeight: 900, color: 'white' }}>
-                                {t("Morgan's Hope", "مورجان هوب")}
-                            </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <span style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.3, lineHeight: 1.1 }}>
+                                    Morgan's <span style={{ fontWeight: 400, fontStyle: 'italic' }}>Hope</span>
+                                </span>
+                                <span style={{
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    color: 'rgba(255,255,255,0.55)',
+                                    letterSpacing: 1.8,
+                                    textTransform: 'uppercase' as const,
+                                    lineHeight: 1
+                                }}>
+                                    AI Lung Detection
+                                </span>
+                            </div>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>

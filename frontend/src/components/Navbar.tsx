@@ -53,18 +53,28 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
     }}>
 
       {/* Logo */}
-      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <img
-            src="/logo.png"
-            alt="Morgan's Hope Logo"
-            className="theme-logo"
-            style={{ height: 72, width: 72, objectFit: 'contain' }}
-          />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
-          <span style={{ fontSize: 18, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'var(--primary)', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <img
+          src="/logo.png"
+          alt="Morgan's Hope"
+          className="theme-logo"
+          style={{ height: 50, width: 50, objectFit: 'contain', flexShrink: 0 }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <span style={{ fontSize: 18, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.5, lineHeight: 1.1 }}>
+            Morgan's{' '}
+            <span style={{ fontWeight: 400, fontStyle: 'italic' }}>Hope</span>
+          </span>
+          <span style={{
+            fontSize: 9,
+            fontWeight: 700,
+            color: 'var(--text-muted)',
+            letterSpacing: 1.8,
+            textTransform: 'uppercase' as const,
+            lineHeight: 1
+          }}>
+            AI Lung Detection
+          </span>
         </div>
       </Link>
 
