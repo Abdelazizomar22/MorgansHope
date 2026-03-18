@@ -133,28 +133,25 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 });
 
 async function start() {
-  if (isDev) {
-    try {
-      await sequelize.sync();
-      console.log('✅ Database tables synced.');
-      const userCount = await User.count();
-      // Ensure admin is seeded
-      if (userCount === 0) {
-        const hashed = await bcrypt.hash('Admin@123456', 12);
-        await User.create({
-          firstName: 'Admin',
-          lastName: 'MedTech',
-          email: 'admin@medtech.com',
-          password: hashed,
-          role: 'admin',
-        });
-        console.log('✅ Dev admin created: admin@medtech.com / Admin@123456');
-      }
-    } catch (err) {
-      console.error('❌ Database sync/seed failed:', err);
-      console.error('   Make sure MySQL is running and medtech_db exists (or create it).');
+  try {
+    await sequelize.sync();
+    console.log('✅ Database tables synced.');
+    const userCount = await User.count();
+    if (userCount === 0) {
+      const hashed = await bcrypt.hash('Admin@123456', 12);
+      await User.create({
+        firstName: 'Admin',
+        lastName: 'MedTech',
+        email: 'admin@medtech.com',
+        password: hashed,
+        role: 'admin',
+      });
+      console.log('✅ Admin created: admin@medtech.com / Admin@123456');
     }
+  } catch (err) {
+    console.error('❌ Database sync failed:', err);
   }
+
   app.listen(PORT, () => {
     console.log(`\n🚀 Morgan's Hope Backend running on http://localhost:${PORT}`);
     console.log(`   Environment : ${process.env.NODE_ENV || 'development'}`);
