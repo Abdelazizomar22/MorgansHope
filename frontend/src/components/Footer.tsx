@@ -67,49 +67,52 @@ export default function Footer({ lang }: FooterProps) {
                             </span>
                         </div>
 
-                        {/* Tagline */}
-                        <div>
-                            <p style={{
-                                fontSize: 17,
-                                fontStyle: 'italic',
-                                fontWeight: 400,
-                                color: 'rgba(255,255,255,0.85)',
-                                margin: 0,
-                                lineHeight: 1.5,
-                                letterSpacing: 0.2,
-                            }}>
-                                {t(
-                                    '"A Second Chance for Every Breath"',
-                                    '"فرصة ثانية لكل نَفَس"'
-                                )}
-                            </p>
-                        </div>
+                        {/* Tagline & Social Icons aligned with Text */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingLeft: ar ? 0 : 38, paddingRight: ar ? 38 : 0 }}>
+                            {/* Tagline */}
+                            <div>
+                                <p style={{
+                                    fontSize: 17,
+                                    fontStyle: 'italic',
+                                    fontWeight: 400,
+                                    color: 'rgba(255,255,255,0.85)',
+                                    margin: 0,
+                                    lineHeight: 1.5,
+                                    letterSpacing: 0.2,
+                                }}>
+                                    {t(
+                                        '"A Second Chance for Every Breath"',
+                                        '"فرصة ثانية لكل نَفَس"'
+                                    )}
+                                </p>
+                            </div>
 
-                        {/* Social Icons */}
-                        <div style={{ display: 'flex', gap: 16 }}>
-                            {SOCIAL.map(({ Icon, href, label }) => (
-                                <a
-                                    key={label}
-                                    href={href}
-                                    aria-label={label}
-                                    style={{
-                                        color: 'white',
-                                        opacity: 0.75,
-                                        transition: 'opacity 0.2s, transform 0.2s',
-                                        display: 'flex',
-                                    }}
-                                    onMouseEnter={e => {
-                                        e.currentTarget.style.opacity = '1';
-                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                    }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.opacity = '0.75';
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                    }}
-                                >
-                                    <Icon />
-                                </a>
-                            ))}
+                            {/* Social Icons */}
+                            <div style={{ display: 'flex', gap: 16 }}>
+                                {SOCIAL.map(({ Icon, href, label }) => (
+                                    <a
+                                        key={label}
+                                        href={href}
+                                        aria-label={label}
+                                        style={{
+                                            color: 'white',
+                                            opacity: 0.75,
+                                            transition: 'opacity 0.2s, transform 0.2s',
+                                            display: 'flex',
+                                        }}
+                                        onMouseEnter={e => {
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={e => {
+                                            e.currentTarget.style.opacity = '0.75';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }}
+                                    >
+                                        <Icon />
+                                    </a>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
