@@ -60,7 +60,7 @@ export default function Footer({ lang }: FooterProps) {
                             <img
                                 src="/logo.png"
                                 alt="Morgan's Hope Logo"
-                                style={{ height: 44, width: 44, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
                             />
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
@@ -193,7 +193,7 @@ export default function Footer({ lang }: FooterProps) {
                 {/* ── COPYRIGHT ──────────────────────────────────────────── */}
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, textAlign: 'center' }}>
                     <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
-                        © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')} | {t('Designed with care for every breath', 'صُمِّم باهتمام لكل نَفَس')}
+                        © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
                     </span>
                 </div>
 
