@@ -55,16 +55,17 @@ export default function Footer({ lang }: FooterProps) {
                     {/* LEFT — Brand + Tagline + Social */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                        {/* Logo + Name */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        {/* Logo + Name — mirrors Navbar exactly */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                             <img
                                 src="/logo.png"
                                 alt="Morgan's Hope Logo"
-                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                                className="theme-logo"
+                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }}
                             />
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
-                                <span style={{ fontSize: 22, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
+                                <span style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
+                                <span style={{ fontSize: 20, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
                             </div>
                         </div>
 
