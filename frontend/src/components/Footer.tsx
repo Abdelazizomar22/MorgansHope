@@ -55,16 +55,12 @@ export default function Footer({ lang }: FooterProps) {
                     {/* LEFT — Brand + Tagline + Social */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                        {/* Logo + Name (Matched exactly with Navbar logo) */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                        {/* Logo + Name */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <img
                                 src="/logo.png"
                                 alt="Morgan's Hope Logo"
-                                className="theme-logo"
-                                style={{
-                                    height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)',
-                                    transform: 'scale(1.4) translateY(-4px)', marginRight: -10, flexShrink: 0
-                                }}
+                                style={{ height: 44, width: 44, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
                             />
                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
@@ -73,7 +69,7 @@ export default function Footer({ lang }: FooterProps) {
                         </div>
 
                         {/* Tagline aligned to match 'Morgan's Hope' text */}
-                        <div style={{ paddingLeft: ar ? 0 : 50, paddingRight: ar ? 50 : 0 }}>
+                        <div>
                             <p style={{
                                 fontSize: 16,
                                 fontStyle: 'italic',
@@ -91,7 +87,7 @@ export default function Footer({ lang }: FooterProps) {
                         </div>
 
                         {/* Social Icons aligned to match 'Morgan's Hope' text */}
-                        <div style={{ display: 'flex', gap: 16, paddingLeft: ar ? 0 : 50, paddingRight: ar ? 50 : 0 }}>
+                        <div style={{ display: 'flex', gap: 16 }}>
                             {SOCIAL.map(({ Icon, href, label }) => (
                                 <a
                                     key={label}
@@ -195,7 +191,7 @@ export default function Footer({ lang }: FooterProps) {
                 </p>
 
                 {/* ── COPYRIGHT ──────────────────────────────────────────── */}
-                <div style={{ textAlign: 'center' }}>
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, textAlign: 'center' }}>
                     <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
                         © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')} | {t('Designed with care for every breath', 'صُمِّم باهتمام لكل نَفَس')}
                     </span>
