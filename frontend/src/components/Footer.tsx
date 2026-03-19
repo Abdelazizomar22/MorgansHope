@@ -55,20 +55,25 @@ export default function Footer({ lang }: FooterProps) {
                     {/* LEFT — Brand + Tagline + Social */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                        {/* Logo + Name */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        {/* Logo + Name (Matched exactly with Navbar logo) */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                             <img
                                 src="/logo.png"
-                                alt="Morgan's Hope"
-                                style={{ height: 44, width: 44, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                                alt="Morgan's Hope Logo"
+                                className="theme-logo"
+                                style={{
+                                    height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)',
+                                    transform: 'scale(1.4) translateY(-4px)', marginRight: -10, flexShrink: 0
+                                }}
                             />
-                            <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.3, lineHeight: 1 }}>
-                                {t("Morgan's Hope", "مورجان هوب")}
-                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <span style={{ fontSize: 24, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
+                                <span style={{ fontSize: 22, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
+                            </div>
                         </div>
 
-                        {/* Tagline */}
-                        <div>
+                        {/* Tagline aligned to match 'Morgan's Hope' text */}
+                        <div style={{ paddingLeft: ar ? 0 : 50, paddingRight: ar ? 50 : 0 }}>
                             <p style={{
                                 fontSize: 16,
                                 fontStyle: 'italic',
@@ -85,8 +90,8 @@ export default function Footer({ lang }: FooterProps) {
                             </p>
                         </div>
 
-                        {/* Social Icons */}
-                        <div style={{ display: 'flex', gap: 16 }}>
+                        {/* Social Icons aligned to match 'Morgan's Hope' text */}
+                        <div style={{ display: 'flex', gap: 16, paddingLeft: ar ? 0 : 50, paddingRight: ar ? 50 : 0 }}>
                             {SOCIAL.map(({ Icon, href, label }) => (
                                 <a
                                     key={label}
