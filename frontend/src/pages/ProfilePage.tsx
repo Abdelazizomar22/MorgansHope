@@ -55,6 +55,13 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     analysisApi.getHistory(1, 50).then(r => setHistory(r.data.data || [])).catch(() => { }).finally(() => setLoading(false));
   }, []);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleSaveProfile = async () => {
     setSaveErr(''); setSaveMsg('');
     try {
@@ -109,7 +116,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
   };
 
   return (
-    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo',sans-serif" : "'Sora',sans-serif", padding: '32px 24px' }}>
+    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo',sans-serif" : "'Sora',sans-serif", padding: isMobile ? '20px 16px' : '32px 24px' }}>
       <div style={{ maxWidth: 1040, margin: '0 auto' }}>
 
         {/* ─── Profile hero card ─── */}
@@ -124,7 +131,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
 
           <div style={{ flex: 1 }}>
             {editing ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, maxWidth: 480 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, maxWidth: 480 }}>
                 {[
                   { key: 'firstName', label: t('First Name', 'الاسم الأول'), type: 'text' },
                   { key: 'lastName', label: t('Last Name', 'اسم العائلة'), type: 'text' },
@@ -227,7 +234,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
         </div>
 
         {/* ─── Main layout ─── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: 20 }}>
 
           {/* Left: History table */}
           <div style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '28px 24px', border: '1px solid var(--card-border)', boxShadow: '0 2px 12px var(--shadow-main)' }}>
