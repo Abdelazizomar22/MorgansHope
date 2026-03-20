@@ -30,10 +30,29 @@ export function ContactPage({ lang }: ContactPageProps) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    if (!form.name || !form.email || !form.message) return;
+  const handleSend = async () => {
+    if (!form.name || !form.email || !form.phone) return;
     setLoading(true);
-    setTimeout(() => { setSent(true); setLoading(false); }, 1500);
+    try {
+      await emailjs.send(
+        'service_morganshope',
+        'template_contact',
+        {
+          from_name: form.name,
+          from_email: form.email,
+          phone: form.phone,
+          message: form.message || 'No message provided',
+          to_email: 'abdelaziz.omar405@gmail.com',
+        },
+        'YOUR_PUBLIC_KEY'
+      );
+      setSent(true);
+    } catch (error) {
+      console.error('Email error:', error);
+      alert(t('Failed to send. Please try again.', 'فشل الإرسال. حاول مجدداً.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const contactCards = [
@@ -41,19 +60,19 @@ export function ContactPage({ lang }: ContactPageProps) {
       icon: <IconPhone />,
       label: t("Talk to our support experts", "تحدث مع خبرائنا للدعم"),
       value: "+1 (123) 456-7890",
-      bg: "#e1f5fe"
+      bg: "var(--card-bg)"
     },
     {
       icon: <IconMail />,
       label: t("Send your queries", "أرسل استفساراتك"),
       value: "hello@morganshope.com",
-      bg: "#ebf4ff"
+      bg: "var(--card-bg)"
     },
     {
       icon: <IconMapPin />,
       label: t("Where to find us", "أين تجدنا"),
       value: t("Cairo, Giza, Egypt", "القاهرة، الجيزة، مصر"),
-      bg: "#e0f2f1"
+      bg: "var(--card-bg)"
     }
   ];
 
@@ -79,6 +98,7 @@ export function ContactPage({ lang }: ContactPageProps) {
               <MotionFade key={i} direction="up" delay={i * 0.1}>
                 <div style={{
                   background: card.bg,
+                  border: '1px solid var(--card-border)',
                   borderRadius: 24,
                   padding: '30px',
                   display: 'flex',
@@ -89,7 +109,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                   justifyContent: 'center'
                 }}>
                   <div style={{
-                    background: 'var(--primary-dark)',
+                    background: 'var(--primary)',
                     color: 'white',
                     width: 48,
                     height: 48,
@@ -101,10 +121,10 @@ export function ContactPage({ lang }: ContactPageProps) {
                   }}>
                     {card.icon}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--primary-dark)', opacity: 0.7, marginBottom: 8, fontWeight: 600 }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
                     {card.label}
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary-dark)' }}>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)' }}>
                     {card.value}
                   </div>
                 </div>
@@ -117,7 +137,7 @@ export function ContactPage({ lang }: ContactPageProps) {
             {/* Form Section */}
             <MotionFade direction="up">
               <div style={{
-                background: '#ebf4ff',
+                background: 'var(--card-bg)',
                 borderRadius: 32,
                 padding: '50px',
                 boxShadow: '0 4px 24px var(--shadow-main)',
@@ -126,10 +146,10 @@ export function ContactPage({ lang }: ContactPageProps) {
               }}>
                 {sent ? (
                   <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                    <h2 style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 16 }}>
+                    <h2 style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-main)', marginBottom: 16 }}>
                       {t("Message Sent!", "تم الإرسال!")}
                     </h2>
-                    <p style={{ color: 'var(--primary-dark)', opacity: 0.8, marginBottom: 30, fontSize: 18 }}>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: 30, fontSize: 18 }}>
                       {t("Thank you for reaching out. We'll get back to you as soon as possible.", "شكراً لتواصلك معنا. سنقوم بالرد عليك في أقرب وقت ممكن.")}
                     </p>
                     <button
@@ -150,12 +170,12 @@ export function ContactPage({ lang }: ContactPageProps) {
                   </div>
                 ) : (
                   <>
-                    <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 30, textAlign: ar ? 'right' : 'left' }}>
+                    <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-main)', marginBottom: 30, textAlign: ar ? 'right' : 'left' }}>
                       {t("Send us a message", "أرسل لنا رسالة")}
                     </h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 30 }}>
                       <div style={{ gridColumn: 'span 1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-main)', marginBottom: 8 }}>
                           {t("Name*", "الاسم*")}
                         </label>
                         <input
@@ -167,8 +187,9 @@ export function ContactPage({ lang }: ContactPageProps) {
                             width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
+                            border: '1px solid var(--card-border)',
+                            background: 'var(--bg-main)',
+                            color: 'var(--text-main)',
                             fontSize: 15,
                             outline: 'none'
                           }}
@@ -176,7 +197,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                       </div>
 
                       <div style={{ gridColumn: 'span 1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-main)', marginBottom: 8 }}>
                           {t("Phone no*", "رقم الهاتف*")}
                         </label>
                         <input
@@ -188,8 +209,9 @@ export function ContactPage({ lang }: ContactPageProps) {
                             width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
+                            border: '1px solid var(--card-border)',
+                            background: 'var(--bg-main)',
+                            color: 'var(--text-main)',
                             fontSize: 15,
                             outline: 'none'
                           }}
@@ -197,7 +219,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                       </div>
 
                       <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-main)', marginBottom: 8 }}>
                           {t("Email*", "البريد الإلكتروني*")}
                         </label>
                         <input
@@ -209,8 +231,9 @@ export function ContactPage({ lang }: ContactPageProps) {
                             width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
+                            border: '1px solid var(--card-border)',
+                            background: 'var(--bg-main)',
+                            color: 'var(--text-main)',
                             fontSize: 15,
                             outline: 'none'
                           }}
@@ -218,7 +241,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                       </div>
 
                       <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text-main)', marginBottom: 8 }}>
                           {t("Message", "الرسالة")}
                         </label>
                         <textarea
@@ -230,8 +253,9 @@ export function ContactPage({ lang }: ContactPageProps) {
                             width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
+                            border: '1px solid var(--card-border)',
+                            background: 'var(--bg-main)',
+                            color: 'var(--text-main)',
                             fontSize: 15,
                             outline: 'none',
                             resize: 'none'
@@ -244,7 +268,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                           onClick={handleSend}
                           disabled={loading || !form.name || !form.email || !form.phone}
                           style={{
-                            background: loading ? '#9ca3af' : 'var(--primary-dark)',
+                            background: loading ? '#9ca3af' : 'var(--primary)',
                             color: 'white',
                             border: 'none',
                             padding: '18px 60px',
@@ -255,8 +279,8 @@ export function ContactPage({ lang }: ContactPageProps) {
                             transition: 'all 0.2s',
                             boxShadow: loading ? 'none' : '0 4px 12px var(--shadow-main)'
                           }}
-                          onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
-                          onMouseLeave={e => !loading && (e.currentTarget.style.transform = 'translateY(0)')}
+                          onMouseEnter={e => !loading && ((e.currentTarget.style.transform = 'translateY(-2px)'), (e.currentTarget.style.background = 'var(--primary-dark)'))}
+                          onMouseLeave={e => !loading && ((e.currentTarget.style.transform = 'translateY(0)'), (e.currentTarget.style.background = 'var(--primary)'))}
                         >
                           {loading ? t("Sending...", "جاري الإرسال...") : t("Submit Message", "إرسال الرسالة")}
                         </button>

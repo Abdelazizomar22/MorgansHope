@@ -39,11 +39,17 @@ export default function ChatBot({ lang }: ChatBotProps) {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
     const ar = lang === 'ar';
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (containerRef.current) {
+            containerRef.current.scrollTo({
+                top: containerRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
     };
 
     useEffect(() => {
@@ -168,7 +174,7 @@ RESPONSE STYLE:
                 </p>
             </div>
 
-            <div style={{
+            <div ref={containerRef} style={{
                 flex: 1,
                 background: 'var(--card-bg)',
                 border: '1px solid var(--card-border)',

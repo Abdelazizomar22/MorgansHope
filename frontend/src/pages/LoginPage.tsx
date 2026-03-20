@@ -129,10 +129,10 @@ export default function LoginPage() {
   });
 
   return (
-    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
+    <div dir={ar ? 'rtl' : 'ltr'} className="login-container" style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* ── LEFT: BRAND PANEL ────────────────────────────────────────── */}
-      <div style={{ background: 'var(--panel-gradient)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 40px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+      <div className="login-brand-panel" style={{ background: 'var(--panel-gradient)', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 40px', color: 'white', position: 'relative', overflow: 'hidden' }}>
         {/* Grid texture */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
         {/* Glow blobs */}
@@ -168,7 +168,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── RIGHT: FORM PANEL ────────────────────────────────────────── */}
-      <div style={{ background: 'var(--bg-main)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 64px', position: 'relative' }}>
+      <div className="login-form-panel" style={{ background: 'var(--bg-main)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
         {/* Dot pattern */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(var(--text-muted) 1.2px, transparent 1.2px)', backgroundSize: '26px 26px', opacity: 0.15, pointerEvents: 'none' }} />
 
@@ -284,6 +284,27 @@ export default function LoginPage() {
         * { box-sizing: border-box; }
         input::placeholder { color: #b4bfce; }
 
+        .login-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+        .login-form-panel {
+          padding: 60px 64px;
+        }
+        .login-brand-panel {
+          display: flex;
+        }
+        @media (max-width: 768px) {
+          .login-container {
+            grid-template-columns: 1fr;
+          }
+          .login-form-panel {
+            padding: 40px 24px !important;
+          }
+          .login-brand-panel {
+            display: none !important;
+          }
+        }
       `}</style>
     </div>
   );
