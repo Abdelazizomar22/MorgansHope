@@ -164,10 +164,10 @@ export default function HomePage({ lang }: HomePageProps) {
   });
 
   const EGYPT_CARDS = [
-    { val: '~7,600', label: t('New cases/year in Egypt (GLOBOCAN)', 'حالة جديدة سنوياً في مصر (GLOBOCAN)'), color: '#ef4444', bg: '#fff1f2', flag: 'EG' },
-    { val: '#1', label: t('Global cause of cancer death in men', 'السبب العالمي لوفيات السرطان عند الرجال'), color: '#e67e22', bg: '#fff8f1', flag: '1st' },
-    { val: '80%', label: t('Cases linked to smoking', 'الحالات مرتبطة بالتدخين'), color: '#7c3aed', bg: '#f5f3ff', flag: '~' },
-    { val: '70-75%', label: t('Diagnosed at late stage (NCI Egypt)', 'تُشخَّص في مراحل متأخرة (NCI Egypt)'), color: '#3b82f6', bg: '#eff6ff', flag: '!' },
+    { val: '~7,600', label: t('New cases/year in Egypt (GLOBOCAN)', 'حالة جديدة سنوياً في مصر (GLOBOCAN)'), color: 'var(--primary)', bg: 'var(--card-bg)', flag: 'EG' },
+    { val: '#1', label: t('Global cause of cancer death in men', 'السبب العالمي لوفيات السرطان عند الرجال'), color: 'var(--primary)', bg: 'var(--card-bg)', flag: '1st' },
+    { val: '80%', label: t('Cases linked to smoking', 'الحالات مرتبطة بالتدخين'), color: 'var(--primary)', bg: 'var(--card-bg)', flag: '~' },
+    { val: '70-75%', label: t('Diagnosed at late stage (NCI Egypt)', 'تُشخَّص في مراحل متأخرة (NCI Egypt)'), color: 'var(--primary)', bg: 'var(--card-bg)', flag: '!' },
   ];
 
   const FEATURES = [
@@ -228,9 +228,9 @@ export default function HomePage({ lang }: HomePageProps) {
                   </Link>
                 </MotionHoverScale>
                 <MotionHoverScale style={{ display: 'inline-flex' }}>
-                  <Link to="/about" style={{ padding: '14px 26px', background: 'var(--card-bg)', color: 'var(--text-main)', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 14.5, border: '1.5px solid var(--card-border)', transition: 'background 0.2s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-light)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'var(--card-bg)'}
+                  <Link to="/about" style={{ padding: '14px 26px', background: 'var(--card-bg)', color: 'var(--primary)', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 14.5, border: '2px solid var(--primary)', transition: 'background 0.2s, color 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--card-bg)'; e.currentTarget.style.color = 'var(--primary)'; }}
                   >
                     {t('About Us', 'من نحن')}
                   </Link>
@@ -242,7 +242,7 @@ export default function HomePage({ lang }: HomePageProps) {
 
         {/* ══ STATS BAR ═════════════════════════════════════════════════════ */}
         <section ref={statsRef} style={{ background: 'var(--card-bg)', boxShadow: '0 2px 12px var(--shadow-main)', padding: '28px 40px', borderBottom: '1px solid var(--card-border)' }}>
-          <div style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(5,1fr)' }}>
+          <div style={{ maxWidth: 920, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(5,1fr)' }}>
             {[
               { val: '99.86%', label: t('CT Scan Accuracy', 'دقة CT Scan') },
               { val: '6', label: t('Cancer Types', 'أنواع السرطان') },

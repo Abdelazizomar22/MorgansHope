@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analysisApi } from '../utils/api';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 interface UploadPageProps { lang: 'en' | 'ar'; }
 type ScanType = 'xray' | 'ct';
@@ -56,6 +57,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const navigate = useNavigate();
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
+  const { isMobile } = useWindowSize();
 
   const [scanType, setScanType] = useState<ScanType>('xray');
   const [files, setFiles] = useState<File[]>([]);
@@ -167,8 +169,8 @@ export default function UploadPage({ lang }: UploadPageProps) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 40px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24 }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '24px 16px' : '32px 40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: 24 }}>
 
           {/* LEFT: Upload area */}
           <div>

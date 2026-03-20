@@ -87,13 +87,7 @@ export function AboutPage({ lang }: AboutPageProps) {
 
       </section>
 
-      {/* Disclaimer */}
-      <div style={{ background: 'var(--primary-dark)', borderTop: '3px solid var(--primary)', padding: '20px 40px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-        <p style={{ fontSize: 12.5, color: 'white', margin: 0, lineHeight: 1.7, maxWidth: 800, marginLeft: 'auto', marginRight: 'auto' }}>
-          <strong>{t('Medical Disclaimer:', 'إخلاء المسؤولية الطبي:')}</strong>{' '}
-          {t("Morgan's Hope is an experimental AI-driven diagnostic assistance tool developed for educational and research purposes. Results are not a final medical diagnosis. Always consult a qualified physician.", "مورجان هوب أداة مساعدة تشخيصية تجريبية للأغراض التعليمية والبحثية. النتائج ليست تشخيصاً طبياً نهائياً. استشر دائماً طبيباً متخصصاً.")}
-        </p>
-      </div>
+
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap');

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { hospitalsApi } from '../utils/api';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 interface HospitalsPageProps { lang: 'en' | 'ar'; }
 
@@ -180,6 +181,7 @@ const ALL_CITIES = ['All', 'Cairo', 'Alexandria', 'Mansoura', 'Assiut'];
 export default function HospitalsPage({ lang }: HospitalsPageProps) {
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
+  const { isMobile } = useWindowSize();
 
   const [search, setSearch] = useState('');
   const [cityF, setCityF] = useState('All');
@@ -215,7 +217,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 980, margin: '0 auto', padding: '28px 40px' }}>
+      <div style={{ maxWidth: 980, margin: '0 auto', padding: isMobile ? '24px 16px' : '28px 40px' }}>
 
         {/* Filters */}
         <div style={{ background: 'var(--card-bg)', borderRadius: 16, padding: '18px 20px', marginBottom: 24, border: '1px solid var(--card-border)', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -256,7 +258,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
                 onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 28px var(--shadow-hover)'}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 12px var(--shadow-main)'}>
 
-                <div style={{ padding: '22px 24px', display: 'flex', gap: 18, alignItems: 'flex-start' }}>
+                <div style={{ padding: '22px 24px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: 'flex-start' }}>
                   {/* Left icon */}
                   <div style={{ flexShrink: 0, textAlign: 'center' }}>
                     <div style={{ width: 56, height: 56, borderRadius: 14, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 6, boxShadow: '0 2px 8px var(--shadow-main)' }}><svg width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='1.6' strokeLinecap='round' strokeLinejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' /><line x1='9' y1='22' x2='9' y2='12' /><line x1='15' y1='22' x2='15' y2='12' /><line x1='9' y1='12' x2='15' y2='12' /><line x1='12' y1='9' x2='12' y2='15' /></svg></div>

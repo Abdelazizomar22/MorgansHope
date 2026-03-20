@@ -12,6 +12,7 @@ import AdminGuard from './components/AdminGuard';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -120,6 +121,7 @@ export default function App() {
       <AnimationProvider>
         <ThemeProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <AuthProvider>
               <AnimatedRoutes lang={lang} toggleLang={toggleLang} />
             </AuthProvider>
