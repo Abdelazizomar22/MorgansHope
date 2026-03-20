@@ -1,11 +1,19 @@
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
+import { useState, useEffect } from 'react';
 
 interface PrivacyPageProps { lang: 'en' | 'ar'; }
 
 export function PrivacyPage({ lang }: PrivacyPageProps) {
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const SECTIONS = [
         {
@@ -62,7 +70,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                 {/* Hero */}
                 <section style={{
                     background: 'linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%)',
-                    color: 'white', padding: '60px 40px', textAlign: 'center',
+                    color: 'white', padding: isMobile ? '40px 20px' : '60px 40px', textAlign: 'center',
                 }}>
                     <MotionFade direction="up" delay={0.1}>
                         <div style={{
@@ -73,7 +81,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             </svg>
                         </div>
-                        <h1 style={{ fontSize: 36, fontWeight: 900, margin: '0 0 10px', letterSpacing: -0.5 }}>
+                        <h1 style={{ fontSize: isMobile ? 32 : 36, fontWeight: 900, margin: '0 0 10px', letterSpacing: -0.5 }}>
                             {t('Privacy Policy', 'سياسة الخصوصية')}
                         </h1>
                         <p style={{ fontSize: 16, opacity: 0.85, margin: '0 0 12px' }}>
@@ -90,16 +98,16 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                 </section>
 
                 {/* Sections */}
-                <section style={{ padding: '60px 40px', maxWidth: 800, margin: '0 auto' }}>
+                <section style={{ padding: isMobile ? '40px 20px' : '60px 40px', maxWidth: 800, margin: '0 auto' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         {SECTIONS.map((sec, i) => (
                             <MotionFade key={i} direction="up" delay={i * 0.08}>
                                 <div style={{
-                                    background: 'var(--card-bg)',
-                                    border: '1px solid var(--card-border)',
-                                    borderRadius: 16, padding: '28px 32px',
-                                    boxShadow: '0 2px 12px var(--shadow-main)',
-                                }}>
+                                        background: 'var(--card-bg)',
+                                        border: '1px solid var(--card-border)',
+                                        borderRadius: 16, padding: isMobile ? '20px' : '28px 32px',
+                                        boxShadow: '0 2px 12px var(--shadow-main)',
+                                    }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                                         <div style={{
                                             padding: 10, background: 'rgba(var(--primary-rgb), 0.08)',

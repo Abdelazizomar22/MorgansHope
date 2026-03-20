@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 interface FooterProps {
     lang: 'en' | 'ar';
@@ -34,10 +35,18 @@ export default function Footer({ lang }: FooterProps) {
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <footer dir={ar ? 'rtl' : 'ltr'} style={{
             background: 'var(--primary)',
-            padding: '60px 40px 32px',
+            padding: isMobile ? '40px 20px 24px' : '60px 40px 50px',
             color: 'white',
             fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
         }}>
@@ -46,8 +55,8 @@ export default function Footer({ lang }: FooterProps) {
                 {/* ── TOP GRID ───────────────────────────────────────────── */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'minmax(280px, 1.5fr) 1fr 1fr',
-                    gap: 60,
+                    gridTemplateColumns: isMobile ? '1fr' : 'minmax(280px, 1.5fr) 1fr 1fr',
+                    gap: isMobile ? 40 : 60,
                     marginBottom: 60,
                     alignItems: 'start',
                 }}>
@@ -176,26 +185,28 @@ export default function Footer({ lang }: FooterProps) {
                 {/* ── DIVIDER ────────────────────────────────────────────── */}
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', marginBottom: 24 }} />
 
-                {/* ── DISCLAIMER ─────────────────────────────────────────── */}
-                <p style={{
-                    fontSize: 11.5, color: 'rgba(255,255,255,0.7)',
-                    lineHeight: 1.7, textAlign: 'center',
-                    maxWidth: 880, margin: '0 auto 40px',
-                }}>
-                    <strong style={{ fontWeight: 700 }}>
-                        {t('Medical Disclaimer: ', 'إخلاء المسؤولية الطبي: ')}
-                    </strong>
-                    {t(
-                        "Morgan's Hope is an experimental AI diagnostic assistance tool. Results are not a final medical diagnosis. The analysis is intended for informational and research purposes only and should NOT be used as a substitute for professional medical advice. Always consult a qualified physician or oncologist.",
-                        "مورجان هوب أداة مساعدة تشخيصية تجريبية بالذكاء الاصطناعي. النتائج ليست تشخيصاً طبياً نهائياً. التحليل مخصص للأغراض المعلوماتية والبحثية فقط ولا يجب استخدامه بديلاً عن المشورة الطبية المتخصصة. استشر دائماً طبيباً أو أخصائي أورام."
-                    )}
-                </p>
+                <div className='flex items-center justfiy-between gap-8'>
+                    {/* ── DISCLAIMER ─────────────────────────────────────────── */}
+                    <p style={{
+                        fontSize: 11.5, color: 'rgba(255,255,255,0.7)',
+                        lineHeight: 1.7,
+                        maxWidth: 880,
+                    }}>
+                        <strong style={{ fontWeight: 700 }}>
+                            {t('Medical Disclaimer: ', 'إخلاء المسؤولية الطبي: ')}
+                        </strong>
+                        {t(
+                            "Morgan's Hope is an experimental AI diagnostic assistance tool. Results are not a final medical diagnosis. The analysis is intended for informational and research purposes only and should NOT be used as a substitute for professional medical advice. Always consult a qualified physician or oncologist.",
+                            "مورجان هوب أداة مساعدة تشخيصية تجريبية بالذكاء الاصطناعي. النتائج ليست تشخيصاً طبياً نهائياً. التحليل مخصص للأغراض المعلوماتية والبحثية فقط ولا يجب استخدامه بديلاً عن المشورة الطبية المتخصصة. استشر دائماً طبيباً أو أخصائي أورام."
+                        )}
+                    </p>
 
-                {/* ── COPYRIGHT ──────────────────────────────────────────── */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 24, textAlign: 'center' }}>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
-                        © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
-                    </span>
+                    {/* ── COPYRIGHT ──────────────────────────────────────────── */}
+                    <div>
+                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
+                            © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
+                        </span>
+                    </div>
                 </div>
 
             </div>

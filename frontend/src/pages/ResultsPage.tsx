@@ -61,6 +61,13 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
   const [reportTargetSession, setReportTargetSession] = useState<AnalysisResult[] | null>(null);
   const [reportForm, setReportForm] = useState({ patientName: '', phone: '', email: '', scanType: '' });
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     (async () => {
       try {
@@ -410,7 +417,7 @@ ${result.nextStep ? `
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
-      <div style={{ background: 'linear-gradient(150deg, var(--primary-dark) 0%, var(--primary) 100%)', padding: '36px 40px 44px', color: 'white' }}>
+      <div style={{ background: 'linear-gradient(150deg, var(--primary-dark) 0%, var(--primary) 100%)', padding: isMobile ? '30px 20px' : '36px 40px 44px', color: 'white' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <div style={{ padding: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
@@ -436,7 +443,7 @@ ${result.nextStep ? `
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 40px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '20px' : '32px 40px' }}>
 
         {/* Tabs */}
         <div style={{ display: 'inline-flex', gap: 0, marginBottom: 28, background: 'var(--card-bg)', borderRadius: 10, padding: 4, boxShadow: '0 1px 6px var(--shadow-main)', border: '1px solid var(--card-border)' }}>
@@ -465,7 +472,7 @@ ${result.nextStep ? `
                 </Link>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: 20 }}>
                 {/* Main result card */}
                 <div>
                   {/* Urgency banner */}

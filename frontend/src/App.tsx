@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AnimationProvider } from './context/AnimationContext';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // Guards
 import AuthGuard from './components/AuthGuard';
@@ -44,69 +44,76 @@ function AnimatedRoutes({ lang, toggleLang }: { lang: 'en' | 'ar', toggleLang: (
 
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* ── Guest-only pages (redirect to / if already logged in) ── */}
-        <Route path="/login" element={<GuestGuard><LoginPage /></GuestGuard>} />
-        <Route path="/register" element={<GuestGuard><RegisterPage /></GuestGuard>} />
+      <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0.3 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}>
+        <Routes location={location} key={location.pathname}>
+          {/* ── Guest-only pages (redirect to / if already logged in) ── */}
+          <Route path="/login" element={<GuestGuard><LoginPage /></GuestGuard>} />
+          <Route path="/register" element={<GuestGuard><RegisterPage /></GuestGuard>} />
 
-        {/* ── Public pages (with Navbar, no auth needed) ── */}
-        <Route path="/about" element={<Layout lang={lang} onLangToggle={toggleLang}><AboutPage lang={lang} /></Layout>} />
-        <Route path="/contact" element={<Layout lang={lang} onLangToggle={toggleLang}><ContactPage lang={lang} /></Layout>} />
-        <Route path="/faqs" element={<Layout lang={lang} onLangToggle={toggleLang}><FAQsPage lang={lang} /></Layout>} />
-        <Route path="/privacy" element={<Layout lang={lang} onLangToggle={toggleLang}><PrivacyPage lang={lang} /></Layout>} />
+          {/* ── Public pages (with Navbar, no auth needed) ── */}
+          <Route path="/about" element={<Layout lang={lang} onLangToggle={toggleLang}><AboutPage lang={lang} /></Layout>} />
+          <Route path="/contact" element={<Layout lang={lang} onLangToggle={toggleLang}><ContactPage lang={lang} /></Layout>} />
+          <Route path="/faqs" element={<Layout lang={lang} onLangToggle={toggleLang}><FAQsPage lang={lang} /></Layout>} />
+          <Route path="/privacy" element={<Layout lang={lang} onLangToggle={toggleLang}><PrivacyPage lang={lang} /></Layout>} />
 
-        {/* ── Protected pages ── */}
-        <Route path="/" element={
-          <Layout lang={lang} onLangToggle={toggleLang}>
-            <AuthGuard><HomePage lang={lang} /></AuthGuard>
-          </Layout>
-        } />
-        <Route path="/upload" element={
-          <Layout lang={lang} onLangToggle={toggleLang}>
-            <AuthGuard><UploadPage lang={lang} /></AuthGuard>
-          </Layout>
-        } />
-        <Route path="/results" element={
-          <Layout lang={lang} onLangToggle={toggleLang}>
-            <AuthGuard><ResultsPage lang={lang} /></AuthGuard>
-          </Layout>
-        } />
-        <Route path="/hospitals" element={
-          <Layout lang={lang} onLangToggle={toggleLang}>
-            <AuthGuard><HospitalsPage lang={lang} /></AuthGuard>
-          </Layout>
-        } />
-        <Route path="/chat" element={
-          <Layout lang={lang} onLangToggle={toggleLang}>
-            <AuthGuard><ChatBot lang={lang} /></AuthGuard>
-          </Layout>
-        } />
-        <Route path="/profile" element={
-          <Layout lang={lang} onLangToggle={toggleLang}>
-            <AuthGuard><ProfilePage lang={lang} /></AuthGuard>
-          </Layout>
-        } />
+          {/* ── Protected pages ── */}
+          <Route path="/" element={
+            <Layout lang={lang} onLangToggle={toggleLang}>
+              <AuthGuard><HomePage lang={lang} /></AuthGuard>
+            </Layout>
+          } />
+          <Route path="/upload" element={
+            <Layout lang={lang} onLangToggle={toggleLang}>
+              <AuthGuard><UploadPage lang={lang} /></AuthGuard>
+            </Layout>
+          } />
+          <Route path="/results" element={
+            <Layout lang={lang} onLangToggle={toggleLang}>
+              <AuthGuard><ResultsPage lang={lang} /></AuthGuard>
+            </Layout>
+          } />
+          <Route path="/hospitals" element={
+            <Layout lang={lang} onLangToggle={toggleLang}>
+              <AuthGuard><HospitalsPage lang={lang} /></AuthGuard>
+            </Layout>
+          } />
+          <Route path="/chat" element={
+            <Layout lang={lang} onLangToggle={toggleLang}>
+              <AuthGuard><ChatBot lang={lang} /></AuthGuard>
+            </Layout>
+          } />
+          <Route path="/profile" element={
+            <Layout lang={lang} onLangToggle={toggleLang}>
+              <AuthGuard><ProfilePage lang={lang} /></AuthGuard>
+            </Layout>
+          } />
 
-        {/* ── Admin-only example (AdminGuard drops in wherever needed) ── */}
-        {/* <Route path="/admin" element={<AuthGuard><AdminGuard><AdminPage /></AdminGuard></AuthGuard>} /> */}
+          {/* ── Admin-only example (AdminGuard drops in wherever needed) ── */}
+          {/* <Route path="/admin" element={<AuthGuard><AdminGuard><AdminPage /></AdminGuard></AuthGuard>} /> */}
 
-        {/* ── Redirects ── */}
-        <Route path="/analysis" element={<Navigate to="/upload" replace />} />
+          {/* ── Redirects ── */}
+          <Route path="/analysis" element={<Navigate to="/upload" replace />} />
 
-        {/* ── 404 ── */}
-        <Route path="*" element={
-          <div style={{ textAlign: 'center', padding: '80px 40px', fontFamily: 'Sora, sans-serif' }}>
-            <div style={{ marginBottom: 16, color: '#9ca3af' }}>
-              <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
+          {/* ── 404 ── */}
+          <Route path="*" element={
+            <div style={{ textAlign: 'center', padding: '80px 40px', fontFamily: 'Sora, sans-serif' }}>
+              <div style={{ marginBottom: 16, color: '#9ca3af' }}>
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
+              <h1 style={{ fontSize: 34, fontWeight: 900, color: 'var(--primary-dark)', marginBottom: 10 }}>404 — Not Found</h1>
+              <a href="/" style={{ color: 'var(--primary)', fontWeight: 700 }}>← Home</a>
             </div>
-            <h1 style={{ fontSize: 34, fontWeight: 900, color: 'var(--primary-dark)', marginBottom: 10 }}>404 — Not Found</h1>
-            <a href="/" style={{ color: 'var(--primary)', fontWeight: 700 }}>← Home</a>
-          </div>
-        } />
-      </Routes>
+          } />
+        </Routes>
+      </motion.div>
     </AnimatePresence>
   );
 }

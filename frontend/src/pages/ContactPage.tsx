@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionHoverScale } from '../components/animations/MotionHoverScale';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
@@ -30,6 +30,13 @@ export function ContactPage({ lang }: ContactPageProps) {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleSend = () => {
     if (!form.name || !form.email || !form.message) return;
     setLoading(true);
@@ -57,69 +64,84 @@ export function ContactPage({ lang }: ContactPageProps) {
     }
   ];
 
+  const inputStyle = `w-full placeholder:text-[var(--text-muted)] outline-none border-[var(--input-border)] border-1 transition-colors duration:300
+  focus:border-[var(--input-focus)]`;
+
   return (
     <MotionPageTransition>
       <div dir={ar ? 'rtl' : 'ltr'} style={{
         minHeight: '100vh',
         background: 'var(--bg-main)',
         color: 'var(--text-main)',
-        padding: '100px 40px',
+        padding: isMobile ? '60px 20px' : '100px 40px',
         fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif"
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
-          {/* Top Contact Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: 24,
-            marginBottom: 80
-          }}>
-            {contactCards.map((card, i) => (
-              <MotionFade key={i} direction="up" delay={i * 0.1}>
+        {/* Top Contact Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: 24,
+          marginBottom: 80
+        }}>
+          {contactCards.map((card, i) => (
+            <MotionFade key={i} direction="up" delay={i * 0.1}>
+              <div style={{
+                background: 'var(--card-bg)',
+                border: '1.5px solid var(--card-border)',
+                borderRadius: 16,
+                padding: '30px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                minHeight: '180px',
+                justifyContent: 'center',
+                boxShadow: '0 2px 12px var(--shadow-main)',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+              }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--primary)';
+                  e.currentTarget.style.boxShadow = '0 4px 24px var(--shadow-main)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'var(--card-border)';
+                  e.currentTarget.style.boxShadow = '0 2px 12px var(--shadow-main)';
+                }}
+              >
                 <div style={{
-                  background: card.bg,
-                  borderRadius: 24,
-                  padding: '30px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  textAlign: 'center',
-                  minHeight: '180px',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  marginBottom: 16
                 }}>
-                  <div style={{
-                    background: 'var(--primary-dark)',
-                    color: 'white',
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 16
-                  }}>
-                    {card.icon}
-                  </div>
-                  <div style={{ fontSize: 13, color: 'var(--primary-dark)', opacity: 0.7, marginBottom: 8, fontWeight: 600 }}>
-                    {card.label}
-                  </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary-dark)' }}>
-                    {card.value}
-                  </div>
+                  {card.icon}
                 </div>
-              </MotionFade>
-            ))}
-          </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
+                  {card.label}
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)' }}>
+                  {card.value}
+                </div>
+              </div>
+            </MotionFade>
+          ))}
+        </div>
 
           {/* Bottom Section: Wide Form */}
           <div style={{ width: '100%' }}>
             {/* Form Section */}
             <MotionFade direction="up">
               <div style={{
-                background: '#ebf4ff',
+                background: 'var(--card-bg)',
                 borderRadius: 32,
-                padding: '50px',
+                padding: isMobile ? '30px 20px' : '50px',
                 boxShadow: '0 4px 24px var(--shadow-main)',
                 border: '1px solid var(--card-border)',
                 width: '100%'
@@ -150,11 +172,11 @@ export function ContactPage({ lang }: ContactPageProps) {
                   </div>
                 ) : (
                   <>
-                    <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 30, textAlign: ar ? 'right' : 'left' }}>
+                    <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 30, textAlign: ar ? 'right' : isMobile ? 'center' : 'left' }}>
                       {t("Send us a message", "أرسل لنا رسالة")}
                     </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 30 }}>
-                      <div style={{ gridColumn: 'span 1' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: isMobile ? 20 : 30 }}>
+                      <div style={{ gridColumn: '1 / -1' }}>
                         <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
                           {t("Name*", "الاسم*")}
                         </label>
@@ -162,41 +184,35 @@ export function ContactPage({ lang }: ContactPageProps) {
                           type="text"
                           placeholder={t("Enter your full name", "أدخل اسمك الكامل")}
                           value={form.name}
+                          className={inputStyle}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
                           style={{
-                            width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
-                            fontSize: 15,
-                            outline: 'none'
                           }}
                         />
                       </div>
-
-                      <div style={{ gridColumn: 'span 1' }}>
+                      {/* 
+                      <div style={{ gridColumn: 'span 2' }}>
                         <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
-                          {t("Phone no*", "رقم الهاتف*")}
+                          {t("Phone Number*", "رقم الهاتف*")}
                         </label>
                         <input
                           type="tel"
+                          className={inputStyle}
                           placeholder={t("Enter your phone number", "أدخل رقم هاتفك")}
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
                           style={{
-                            width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
                             fontSize: 15,
                             outline: 'none'
                           }}
                         />
-                      </div>
+                      </div> */}
 
-                      <div style={{ gridColumn: '1 / -1' }}>
+                      <div style={{ gridColumn: '1 / -1' }}> {/* 1 / -1 */}
                         <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
                           {t("Email*", "البريد الإلكتروني*")}
                         </label>
@@ -205,12 +221,10 @@ export function ContactPage({ lang }: ContactPageProps) {
                           placeholder={t("Enter your email address", "أدخل بريدك الإلكتروني")}
                           value={form.email}
                           onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          className={inputStyle}
                           style={{
-                            width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
                             fontSize: 15,
                             outline: 'none'
                           }}
@@ -219,47 +233,46 @@ export function ContactPage({ lang }: ContactPageProps) {
 
                       <div style={{ gridColumn: '1 / -1' }}>
                         <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
-                          {t("Message", "الرسالة")}
+                          {t("Message*", "الرسالة*")}
                         </label>
                         <textarea
                           rows={5}
                           placeholder={t("Enter your message here", "اكتب رسالتك هنا")}
                           value={form.message}
+                          className={inputStyle}
                           onChange={(e) => setForm({ ...form, message: e.target.value })}
                           style={{
-                            width: '100%',
                             padding: '16px 20px',
                             borderRadius: 14,
-                            border: '1px solid #d1d5db',
-                            background: 'white',
                             fontSize: 15,
-                            outline: 'none',
                             resize: 'none'
                           }}
                         />
                       </div>
 
                       <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: ar ? 'flex-start' : 'flex-end' }}>
-                        <button
-                          onClick={handleSend}
-                          disabled={loading || !form.name || !form.email || !form.phone}
-                          style={{
-                            background: loading ? '#9ca3af' : 'var(--primary-dark)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '18px 60px',
-                            borderRadius: 14,
-                            fontWeight: 800,
-                            fontSize: 16,
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.2s',
-                            boxShadow: loading ? 'none' : '0 4px 12px var(--shadow-main)'
-                          }}
-                          onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
-                          onMouseLeave={e => !loading && (e.currentTarget.style.transform = 'translateY(0)')}
-                        >
-                          {loading ? t("Sending...", "جاري الإرسال...") : t("Submit Message", "إرسال الرسالة")}
-                        </button>
+                        <MotionHoverScale>
+                          <button
+                            onClick={handleSend}
+                            disabled={loading || !form.name || !form.email || !form.phone}
+                            style={{
+                              background: loading ? '#9ca3af' : 'var(--primary-dark)',
+                              color: 'white',
+                              border: 'none',
+                              padding: '18px 60px',
+                              borderRadius: 14,
+                              fontWeight: 800,
+                              fontSize: 16,
+                              cursor: loading ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.2s',
+                              boxShadow: loading ? 'none' : '0 4px 12px var(--shadow-main)'
+                            }}
+                            onMouseEnter={e => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                            onMouseLeave={e => !loading && (e.currentTarget.style.transform = 'translateY(0)')}
+                          >
+                            {loading ? t("Sending...", "جاري الإرسال...") : t("Submit Message", "إرسال الرسالة")}
+                          </button>
+                        </MotionHoverScale>
                       </div>
                     </div>
                   </>
