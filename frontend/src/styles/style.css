@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+.animate-card {
+    @apply hover:scale-101 transition-all duration-300 hover:shadow-xl
+}

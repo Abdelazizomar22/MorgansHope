@@ -1,7 +1,6 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analysisApi } from '../utils/api';
-import { useWindowSize } from '../hooks/useWindowSize';
 
 interface UploadPageProps { lang: 'en' | 'ar'; }
 type ScanType = 'xray' | 'ct';
@@ -57,7 +56,6 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const navigate = useNavigate();
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
-  const { isMobile } = useWindowSize();
 
   const [scanType, setScanType] = useState<ScanType>('xray');
   const [files, setFiles] = useState<File[]>([]);
@@ -69,6 +67,13 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const [stage, setStage] = useState(0);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleFiles = (newFiles: FileList | null) => {
     if (!newFiles) return;
@@ -155,7 +160,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
-      <div style={{ background: 'var(--header-gradient)', padding: '36px 40px 44px', color: 'white' }}>
+      <div style={{ background: 'var(--header-gradient)', padding: isMobile ? '30px 20px' : '36px 40px 44px', color: 'white' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <div style={{ padding: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
@@ -169,7 +174,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '24px 16px' : '32px 40px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '20px' : '32px 40px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: 24 }}>
 
           {/* LEFT: Upload area */}

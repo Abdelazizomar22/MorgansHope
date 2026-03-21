@@ -12,12 +12,10 @@ const AnimationContext = createContext<AnimationContextType>({
 });
 
 export const AnimationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const systemPrefersReduced = useReducedMotion();
-    const [userDisabledInfo, setUserDisabledInfo] = useState(false);
+    // User requested "do not respect OS preference"
+    const [reducedMotion, setReducedMotion] = useState(false);
 
-    const reducedMotion = systemPrefersReduced || userDisabledInfo;
-
-    const toggleAnimation = () => setUserDisabledInfo((prev) => !prev);
+    const toggleAnimation = () => setReducedMotion((prev) => !prev);
 
     return (
         <AnimationContext.Provider value={{ reducedMotion, toggleAnimation }}>

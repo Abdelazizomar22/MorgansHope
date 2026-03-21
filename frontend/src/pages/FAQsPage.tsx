@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
 
@@ -15,6 +15,13 @@ export function FAQsPage({ lang }: FAQsPageProps) {
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
     const [open, setOpen] = useState<number | null>(0);
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const FAQS = [
         {
@@ -73,7 +80,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
                 {/* Hero */}
                 <section style={{
                     background: 'linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%)',
-                    color: 'white', padding: '60px 40px', textAlign: 'center',
+                    color: 'white', padding: isMobile ? '40px 20px' : '60px 40px', textAlign: 'center',
                 }}>
                     <MotionFade direction="up" delay={0.1}>
                         <div style={{
@@ -84,7 +91,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
                                 <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                             </svg>
                         </div>
-                        <h1 style={{ fontSize: 36, fontWeight: 900, margin: '0 0 10px', letterSpacing: -0.5 }}>
+                        <h1 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 900, margin: '0 0 10px', letterSpacing: -0.5 }}>
                             {t('Frequently Asked Questions', 'الأسئلة الشائعة')}
                         </h1>
                         <p style={{ fontSize: 16, opacity: 0.85, margin: 0 }}>
@@ -94,7 +101,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
                 </section>
 
                 {/* FAQ List */}
-                <section style={{ padding: '60px 40px', maxWidth: 760, margin: '0 auto' }}>
+                <section style={{ padding: isMobile ? '40px 20px' : '60px 40px', maxWidth: 760, margin: '0 auto' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                         {FAQS.map((faq, i) => (
                             <MotionFade key={i} direction="up" delay={i * 0.06}>
@@ -112,7 +119,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
                                         style={{
                                             width: '100%', display: 'flex', alignItems: 'center',
                                             justifyContent: 'space-between', gap: 16,
-                                            padding: '18px 22px', background: 'none', border: 'none',
+                                            padding: isMobile ? '16px' : '18px 22px', background: 'none', border: 'none',
                                             cursor: 'pointer', textAlign: ar ? 'right' : 'left',
                                             fontFamily: 'inherit',
                                         }}
@@ -132,7 +139,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
                                     {/* Answer */}
                                     {open === i && (
                                         <div style={{
-                                            padding: '0 22px 20px',
+                                            padding: isMobile ? '0 16px 16px' : '0 22px 20px',
                                             borderTop: '1px solid var(--card-border)',
                                             paddingTop: 16,
                                         }}>

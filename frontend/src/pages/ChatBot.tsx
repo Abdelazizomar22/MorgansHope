@@ -52,6 +52,13 @@ export default function ChatBot({ lang }: ChatBotProps) {
         }
     };
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     useEffect(() => {
         scrollToBottom();
     }, [messages, isLoading]);
@@ -158,15 +165,15 @@ RESPONSE STYLE:
     return (
         <div dir={ar ? 'rtl' : 'ltr'} style={{
             maxWidth: 900,
-            margin: '20px auto',
-            padding: '0 20px',
+            margin: isMobile ? '10px auto' : '20px auto',
+            padding: isMobile ? '0 10px' : '0 20px',
             fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
-            height: 'calc(100vh - 120px)',
+            height: isMobile ? 'calc(100vh - 100px)' : 'calc(100vh - 120px)',
             display: 'flex',
             flexDirection: 'column'
         }}>
             <div style={{ marginBottom: 15, textAlign: 'center' }}>
-                <h1 style={{ color: 'var(--primary)', fontWeight: 800, fontSize: 28, marginBottom: 5 }}>
+                <h1 style={{ color: 'var(--primary)', fontWeight: 800, fontSize: isMobile ? 24 : 28, marginBottom: 5 }}>
                     {t("Morgan's Hope Assistant", 'مساعد مورجان هوب الذكي')}
                 </h1>
                 <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
@@ -179,7 +186,7 @@ RESPONSE STYLE:
                 background: 'var(--card-bg)',
                 border: '1px solid var(--card-border)',
                 borderRadius: 24,
-                padding: '25px',
+                padding: isMobile ? '16px' : '25px',
                 overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
