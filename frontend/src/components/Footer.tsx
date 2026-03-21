@@ -1,9 +1,5 @@
 import { Link } from 'react-router-dom';
-<<<<<<< HEAD
-import { useWindowSize } from '../hooks/useWindowSize';
-=======
 import { useState, useEffect } from 'react';
->>>>>>> origin/pr/1/head
 
 interface FooterProps {
     lang: 'en' | 'ar';
@@ -34,57 +30,10 @@ const PAGES = (t: (en: string, ar: string) => string) => [
     { name: t('Privacy Policy', 'سياسة الخصوصية'), path: '/privacy' },
 ];
 
-// ── Responsive styles ─────────────────────────────────────────────────────────
-const FOOTER_STYLES = `
-  .footer-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.8fr;
-    gap: 60px;
-    margin-bottom: 60px;
-    align-items: start;
-  }
-  .footer-sub-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-  }
-  .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.12);
-    padding-top: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  @media (max-width: 860px) {
-    .footer-grid {
-      grid-template-columns: 1fr;
-      gap: 40px;
-    }
-    .footer-sub-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-  }
-  @media (max-width: 480px) {
-    .footer-sub-grid {
-      grid-template-columns: 1fr;
-      gap: 28px;
-    }
-    .footer-bottom {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-    }
-  }
-`;
-
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function Footer({ lang }: FooterProps) {
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
-    const { isMobile, isTablet } = useWindowSize();
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -95,29 +44,6 @@ export default function Footer({ lang }: FooterProps) {
     }, []);
 
     return (
-<<<<<<< HEAD
-        <>
-            <style>{FOOTER_STYLES}</style>
-            <footer dir={ar ? 'rtl' : 'ltr'} style={{
-                background: 'var(--primary)',
-                padding: '60px 40px 32px',
-                color: 'white',
-                fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
-            }}>
-                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-
-                    {/* ── TOP GRID ───────────────────────────────────────────── */}
-                    <div
-                        className="footer-grid"
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'minmax(300px,1fr) 2fr',
-                            gap: isMobile ? 28 : 60,
-                            marginBottom: 60,
-                            alignItems: 'start',
-                        }}
-                    >
-=======
         <footer dir={ar ? 'rtl' : 'ltr'} style={{
             background: 'var(--primary)',
             padding: isMobile ? '40px 20px 24px' : '60px 40px 50px',
@@ -134,202 +60,127 @@ export default function Footer({ lang }: FooterProps) {
                     marginBottom: 60,
                     alignItems: 'start',
                 }}>
->>>>>>> origin/pr/1/head
 
-                        {/* LEFT — Brand + Tagline + Social */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {/* LEFT — Brand + Tagline + Social */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                            {/* Logo + Name */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                                <img
-                                    src="/logo.png"
-                                    alt="Morgan's Hope Logo"
-                                    className="theme-logo"
-                                    style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }}
-                                />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <span style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
-                                    <span style={{ fontSize: 20, fontWeight: 400, fontStyle: 'italic', color: 'white', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
-                                </div>
-                            </div>
-
-                            {/* Tagline */}
-                            <div style={{ paddingLeft: ar ? 0 : 16, paddingRight: ar ? 16 : 0, marginTop: -6 }}>
-                                <p style={{
-                                    fontSize: 15,
-                                    fontStyle: 'italic',
-                                    fontWeight: 400,
-                                    color: 'rgba(255,255,255,0.8)',
-                                    margin: 0,
-                                    lineHeight: 1.5,
-                                    letterSpacing: 0.2,
-                                }}>
-                                    {t(
-                                        '"A Second Chance for Every Breath"',
-                                        '"فرصة ثانية لكل نَفَس"'
-                                    )}
-                                </p>
+                        {/* Logo + Name — mirrors Navbar exactly */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                            <img
+                                src="/logo.png"
+                                alt="Morgan's Hope Logo"
+                                className="theme-logo"
+                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }}
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <span style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
+                                <span style={{ fontSize: 20, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
                             </div>
                         </div>
 
-                        {/* RIGHT — Pages + Contact in sub-grid */}
-                        <div
-                            className="footer-sub-grid"
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-                                gap: isMobile ? 24 : 40,
-                            }}
-                        >
+                        {/* Tagline aligned to match 'Morgan's Hope' text */}
+                        <div>
+                            <p style={{
+                                fontSize: 16,
+                                fontStyle: 'italic',
+                                fontWeight: 400,
+                                color: 'rgba(255,255,255,0.85)',
+                                margin: 0,
+                                lineHeight: 1.5,
+                                letterSpacing: 0.2,
+                            }}>
+                                {t(
+                                    '"A Second Chance for Every Breath"',
+                                    '"فرصة ثانية لكل نَفَس"'
+                                )}
+                            </p>
+                        </div>
 
-                            {/* Pages */}
-                            <div>
-                                <h4 style={{
-                                    fontSize: 11, fontWeight: 700,
-                                    color: 'rgba(255,255,255,0.45)',
-                                    letterSpacing: 1.5, textTransform: 'uppercase',
-                                    margin: '0 0 18px 0',
-                                    paddingBottom: 12,
-                                    borderBottom: '1px solid rgba(255,255,255,0.1)',
-                                }}>
-                                    {t('Pages', 'الصفحات')}
-                                </h4>
-                                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px 20px' }}>
-                                    {PAGES(t).map((link, i) => (
-                                        <Link key={i} to={link.path} style={{
-                                            textDecoration: 'none',
-                                            color: 'rgba(255,255,255,0.8)',
-                                            fontSize: 13.5,
-                                            fontWeight: 500,
-                                            transition: 'color 0.15s',
-                                        }}
-                                            onMouseEnter={e => { e.currentTarget.style.color = 'white'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}
-                                        >
-                                            {link.name}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
+                        {/* Social Icons aligned to match 'Morgan's Hope' text */}
+                        <div style={{ display: 'flex', gap: 16 }}>
+                            {SOCIAL.map(({ Icon, href, label }) => (
+                                <a
+                                    key={label}
+                                    href={href}
+                                    aria-label={label}
+                                    style={{
+                                        color: 'white',
+                                        opacity: 0.8,
+                                        transition: 'opacity 0.2s, transform 0.2s',
+                                        display: 'flex',
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.opacity = '1';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.opacity = '0.8';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
+                                >
+                                    <Icon />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
 
-                            {/* Contact */}
-                            <div>
-                                <h4 style={{
-                                    fontSize: 11, fontWeight: 700,
-                                    color: 'rgba(255,255,255,0.45)',
-                                    letterSpacing: 1.5, textTransform: 'uppercase',
-                                    margin: '0 0 18px 0',
-                                    paddingBottom: 12,
-                                    borderBottom: '1px solid rgba(255,255,255,0.1)',
-                                }}>
-                                    {t('Contact', 'تواصل معنا')}
-                                </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                                    {[
-                                        { label: t('Phone', 'الهاتف'), value: '+20 123 456 7890' },
-                                        { label: t('Email', 'البريد'), value: 'info@morganshope.com' },
-                                        { label: t('Address', 'العنوان'), value: t('Cairo, Giza, Egypt', 'القاهرة، الجيزة، مصر') },
-                                    ].map(({ label, value }) => (
-                                        <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                            <span style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: 1, textTransform: 'uppercase' as const }}>
-                                                {label}
-                                            </span>
-                                            <span style={{ fontSize: 13.5, fontWeight: 500, color: 'rgba(255,255,255,0.88)' }}>
-                                                {value}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
+                    {/* MIDDLE — Pages */}
+                    <div>
+                        <h4 style={{
+                            fontSize: 16, fontWeight: 800, color: 'white',
+                            marginBottom: 20,
+                            borderBottom: '1px solid rgba(255,255,255,0.15)',
+                            paddingBottom: 10,
+                        }}>
+                            {t('Pages', 'الصفحات')}
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px' }}>
+                            {PAGES(t).map((link, i) => (
+                                <Link key={i} to={link.path} style={{
+                                    textDecoration: 'none',
+                                    color: 'white',
+                                    fontSize: 13.5,
+                                    fontWeight: 500,
+                                    opacity: 0.8,
+                                    transition: 'opacity 0.15s',
+                                }}
+                                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                                    onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}
+                                >
+                                    {link.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
 
-                                {/* Follow Us — Social Icons */}
-                                <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <span style={{
-                                        fontSize: 10.5, fontWeight: 700,
-                                        color: 'rgba(255,255,255,0.4)',
-                                        letterSpacing: 1, textTransform: 'uppercase' as const,
-                                        display: 'block', marginBottom: 12,
-                                    }}>
-                                        {t('Follow Us', 'تابعنا')}
+                    {/* RIGHT — Contact */}
+                    <div>
+                        <h4 style={{
+                            fontSize: 16, fontWeight: 800, color: 'white',
+                            marginBottom: 20,
+                            borderBottom: '1px solid rgba(255,255,255,0.15)',
+                            paddingBottom: 10,
+                        }}>
+                            {t('Contact information', 'معلومات التواصل')}
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            {[
+                                { label: t('Phone', 'الهاتف'), value: '+20 123 456 7890' },
+                                { label: t('Email', 'البريد'), value: 'info@morganshope.com' },
+                                { label: t('Address', 'العنوان'), value: t('Cairo, Giza, Egypt', 'القاهرة، الجيزة، مصر') },
+                            ].map(({ label, value }) => (
+                                <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' as const }}>
+                                        {label}
                                     </span>
-                                    <div style={{ display: 'flex', gap: 14 }}>
-                                        {SOCIAL.map(({ Icon, href, label }) => (
-                                            <a
-                                                key={label}
-                                                href={href}
-                                                aria-label={label}
-                                                style={{
-                                                    color: 'white',
-                                                    opacity: 0.7,
-                                                    transition: 'opacity 0.2s, transform 0.2s',
-                                                    display: 'flex',
-                                                }}
-                                                onMouseEnter={e => {
-                                                    e.currentTarget.style.opacity = '1';
-                                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                                }}
-                                                onMouseLeave={e => {
-                                                    e.currentTarget.style.opacity = '0.7';
-                                                    e.currentTarget.style.transform = 'translateY(0)';
-                                                }}
-                                            >
-                                                <Icon />
-                                            </a>
-                                        ))}
-                                    </div>
+                                    <span style={{ fontSize: 14, fontWeight: 600, color: 'white' }}>
+                                        {value}
+                                    </span>
                                 </div>
-                            </div>
-
+                            ))}
                         </div>
                     </div>
-
-                    {/* ── BOTTOM BAR ─────────────────────────────────────────── */}
-                    <div
-                        className="footer-bottom"
-                        style={{
-                            borderTop: '1px solid rgba(255,255,255,0.12)',
-                            paddingTop: 24,
-                            display: 'flex',
-                            alignItems: isMobile ? 'center' : 'center',
-                            justifyContent: 'space-between',
-                            gap: 20,
-                            flexWrap: 'wrap',
-                            flexDirection: isMobile ? 'column' : 'row',
-                            textAlign: isMobile ? 'center' : (ar ? 'right' : 'left'),
-                        }}
-                    >
-                        {/* Disclaimer */}
-                        <p style={{
-                            fontSize: 11, color: 'rgba(255,255,255,0.5)',
-                            lineHeight: 1.7, margin: 0,
-                            maxWidth: 640, flex: '1 1 auto',
-                            textAlign: isMobile ? 'center' : (ar ? 'right' : 'left'),
-                        }}>
-                            <strong style={{ fontWeight: 700, color: 'rgba(255,255,255,0.62)' }}>
-                                {t('Medical Disclaimer: ', 'إخلاء المسؤولية الطبي: ')}
-                            </strong>
-                            {t(
-                                "Morgan's Hope is an experimental AI diagnostic assistance tool. Results are not a final medical diagnosis. The analysis is intended for informational and research purposes only and should NOT be used as a substitute for professional medical advice. Always consult a qualified physician or oncologist.",
-                                "مورجان هوب أداة مساعدة تشخيصية تجريبية بالذكاء الاصطناعي. النتائج ليست تشخيصاً طبياً نهائياً. التحليل مخصص للأغراض المعلوماتية والبحثية فقط ولا يجب استخدامه بديلاً عن المشورة الطبية المتخصصة. استشر دائماً طبيباً أو أخصائي أورام."
-                            )}
-                        </p>
-
-                        {/* Copyright — now a single clean line */}
-                        <span style={{
-                            fontSize: 12.5,
-                            color: 'rgba(255,255,255,0.6)',
-                            fontWeight: 400,
-                            flexShrink: 0,
-                            whiteSpace: 'nowrap',
-                        }}>
-                            © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
-                        </span>
-                    </div>
-
                 </div>
-<<<<<<< HEAD
-            </footer>
-        </>
-=======
 
                 {/* ── DIVIDER ────────────────────────────────────────────── */}
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', marginBottom: 24 }} />
@@ -360,6 +211,5 @@ export default function Footer({ lang }: FooterProps) {
 
             </div>
         </footer>
->>>>>>> origin/pr/1/head
     );
 }

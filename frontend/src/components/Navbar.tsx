@@ -1,12 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-<<<<<<< HEAD
-import { useState } from 'react';
-import { useWindowSize } from '../hooks/useWindowSize';
-=======
 import { useState, useEffect } from 'react';
->>>>>>> origin/pr/1/head
 
 // SVG Icons
 const IconHome = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>;
@@ -29,10 +24,7 @@ const NAV = [
   { path: '/results', en: 'Results', ar: 'النتائج', Icon: IconResults },
   { path: '/chat', en: 'AI Assistant', ar: 'المساعد الذكي', Icon: IconChat },
   { path: '/hospitals', en: 'Hospitals', ar: 'المستشفيات', Icon: IconHospital },
-<<<<<<< HEAD
-=======
   // { path: '/about', en: 'About', ar: 'عن المشروع', Icon: IconAbout },
->>>>>>> origin/pr/1/head
   { path: '/contact', en: 'Contact', ar: 'تواصل', Icon: IconContact },
 ];
 
@@ -46,15 +38,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-<<<<<<< HEAD
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const { width } = useWindowSize();
-  const isMobile = width < 768;
-  const ar = lang === 'ar';
-  const t = (en: string, arText: string) => ar ? arText : en;
-
-  const handleLogout = () => { logout(); navigate('/login'); setUserMenuOpen(false); };
-=======
   const [navMobileOpen, setNavMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -70,43 +53,21 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
   const handleLogout = () => { logout(); navigate('/login'); setMenuOpen(false); setNavMobileOpen(false); };
 
   const closeMobileNav = () => setNavMobileOpen(false);
->>>>>>> origin/pr/1/head
 
   return (
     <nav dir={ar ? 'rtl' : 'ltr'} style={{
       background: 'var(--card-bg)',
       borderBottom: '1px solid var(--card-border)',
-<<<<<<< HEAD
-      padding: isMobile ? '0 12px' : '0 32px',
-=======
       padding: isMobile ? '0 16px' : '0 32px',
->>>>>>> origin/pr/1/head
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       height: 60, position: 'sticky', top: 0, zIndex: 200,
       boxShadow: '0 1px 12px var(--shadow-main)',
       fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
-      boxSizing: 'border-box',
-      width: '100%',
-      maxWidth: '100vw',
-      overflow: 'hidden',
     }}>
 
       {/* Logo */}
       <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 0 }}>
         <img src="/logo.png" alt="Morgan's Hope Logo" className="theme-logo"
-<<<<<<< HEAD
-          style={{ height: isMobile ? 46 : 60, width: isMobile ? 46 : 60, objectFit: 'contain', transform: isMobile ? 'scale(1.1)' : 'scale(1.4) translateY(-4px)', marginRight: isMobile ? 0 : -10 }} />
-        {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
-            <span style={{ fontSize: 18, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'var(--primary)', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
-          </div>
-        )}
-      </Link>
-
-      {/* Nav Links */}
-      <div style={{ display: isMobile ? 'none' : 'flex', gap: 0, alignItems: 'center' }}>
-=======
           style={{ height: 60, width: 60, objectFit: 'contain', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }} />
         <div className='hidden md:flex items-center gap-4'>
           <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
@@ -117,7 +78,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
       {/* Nav Links */}
       {!isMobile && (
       <div style={{ display: 'flex', gap: 0, alignItems: 'center' }}>
->>>>>>> origin/pr/1/head
         {NAV.map(({ path, en, ar: arLabel, Icon }) => {
           const active = location.pathname === path;
           return (
@@ -141,77 +101,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
 
       {/* Right controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 12 }}>
-<<<<<<< HEAD
-        {isMobile && (
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label={t('Toggle menu', 'فتح/إغلاق القائمة')}
-            style={{
-              background: 'var(--card-bg)',
-              border: '1.5px solid var(--card-border)',
-              borderRadius: 8,
-              width: 36,
-              height: 36,
-              cursor: 'pointer',
-              color: 'var(--text-main)',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px var(--shadow-main)',
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              {menuOpen ? (
-                <>
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </>
-              ) : (
-                <>
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </>
-              )}
-            </svg>
-          </button>
-        )}
-
-        {/* Theme Toggle */}
-        <button onClick={toggleTheme} style={{
-          background: 'var(--primary)', border: '1.5px solid var(--card-border)',
-          borderRadius: 8, padding: isMobile ? '5px' : '7px',
-          cursor: 'pointer', color: 'white',
-          transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 8px var(--shadow-main)'
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-dark)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)'; }}
-        >
-          {theme === 'light' ? <IconMoon /> : <IconSun />}
-        </button>
-
-        {/* AR / EN Toggle - Prominent */}
-        <button onClick={onLangToggle} style={{
-          background: 'var(--primary)', border: '1.5px solid var(--card-border)',
-          borderRadius: 8, padding: isMobile ? '6px 8px' : '6px 14px',
-          cursor: 'pointer', color: 'white', fontWeight: 800, fontSize: 13,
-          fontFamily: 'inherit', letterSpacing: 0.5,
-          transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: isMobile ? 0 : 6,
-          boxShadow: '0 2px 8px var(--shadow-main)'
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-dark)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)'; }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
-          {!isMobile && (ar ? 'EN' : 'عربي')}
-        </button>
-
-        {user ? (
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => setUserMenuOpen(!userMenuOpen)} style={{
-=======
         
         {isMobile && (
           <button onClick={() => setNavMobileOpen(!navMobileOpen)} style={{
@@ -226,7 +115,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
         {user ? (
           <div style={{ position: 'relative' }}>
             <button onClick={() => setMenuOpen(!menuOpen)} className='transition-colors duration-200' style={{
->>>>>>> origin/pr/1/head
               width: 38, height: 38, borderRadius: '50%',
               background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
               border: '2px solid var(--card-border)', color: 'white',
@@ -239,9 +127,9 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
           >
               {user.firstName?.[0]?.toUpperCase() || 'U'}
             </button>
-            {userMenuOpen && (
+            {menuOpen && (
               <>
-                <div onClick={() => setUserMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100 }} />
+                <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100 }} />
                 <div style={{
                   position: 'absolute', [ar ? 'left' : 'right']: 0, top: 46,
                   background: 'var(--card-bg)', borderRadius: 12, padding: '6px 0',
@@ -253,7 +141,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                     <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 13 }}>{user.firstName} {user.lastName}</div>
                     <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>{user.email}</div>
                   </div>
-                  <Link to="/profile" onClick={() => setUserMenuOpen(false)} style={{
+                  <Link to="/profile" onClick={() => setMenuOpen(false)} style={{
                     display: 'flex', alignItems: 'center', gap: 8,
                     padding: '10px 16px', textDecoration: 'none',
                     color: 'var(--text-main)', fontWeight: 600, fontSize: 13,
@@ -330,20 +218,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
         )}
       </div>
 
-<<<<<<< HEAD
-      {isMobile && menuOpen && (
-        <div style={{
-          position: 'absolute',
-          top: 60,
-          left: 0,
-          right: 0,
-          background: 'var(--card-bg)',
-          borderTop: '1px solid var(--card-border)',
-          borderBottom: '1px solid var(--card-border)',
-          boxShadow: '0 8px 24px var(--shadow-main)',
-          zIndex: 220,
-          padding: '10px 12px',
-=======
       {/* Mobile Menu Dropdown */}
       {isMobile && navMobileOpen && (
         <div style={{
@@ -353,31 +227,10 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
           display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 60px)', overflowY: 'auto',
           zIndex: 199
->>>>>>> origin/pr/1/head
         }}>
           {NAV.map(({ path, en, ar: arLabel, Icon }) => {
             const active = location.pathname === path;
             return (
-<<<<<<< HEAD
-              <Link
-                key={path}
-                to={path}
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  padding: '11px 12px',
-                  fontSize: 13.5,
-                  fontWeight: active ? 700 : 600,
-                  color: active ? 'var(--primary)' : 'var(--text-main)',
-                  background: active ? 'var(--primary-light)' : 'transparent',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <Icon />
-=======
               <Link key={path} to={path} onClick={closeMobileNav} style={{
                 textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12,
                 padding: '14px 12px', fontSize: 15, fontWeight: active ? 700 : 500,
@@ -385,7 +238,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                 borderBottom: '1px solid var(--card-border)'
               }}>
                 <span style={{ opacity: active ? 1 : 0.6 }}><Icon /></span>
->>>>>>> origin/pr/1/head
                 {ar ? arLabel : en}
               </Link>
             );

@@ -1,12 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-<<<<<<< HEAD
-import './index.css';
-
-=======
 import './styles/style.css';
->>>>>>> origin/pr/1/head
 // Global reset and theme variables
 const style = document.createElement('style');
 style.textContent = `
@@ -71,7 +66,6 @@ style.textContent = `
   a { color: inherit; }
   button, input, select, textarea { font-family: inherit; }
 `;
-document.body.style.overflowX = 'hidden';
 document.head.appendChild(style);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
