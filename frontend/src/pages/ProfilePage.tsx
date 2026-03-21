@@ -219,7 +219,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'flex', gap: 20 }}>
+          <div className='grid grid-cols-2 lg:grid-cols-3 gap-5'>
             {[
               { val: history.length, label: t('Total Scans', 'إجمالي الفحوصات') },
               { val: history.filter(h => h.isMalignant).length, label: t('Malignant', 'خبيثة') },

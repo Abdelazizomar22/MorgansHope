@@ -175,17 +175,17 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
+    <div dir={ar ? 'rtl' : 'ltr'} className="grid grid-cols-1 lg:grid-cols-2" style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* ── LEFT PANEL ────────────────────────────────────────────────── */}
-      <div style={{ background: 'var(--panel-gradient)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '60px 40px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+      <div className="flex flex-col justify-center items-center py-10 px-6 lg:py-[60px] lg:px-[40px] text-white relative overflow-hidden h-full min-h-[300px]"
+        style={{ padding: '20px 20px', background: 'var(--panel-gradient)' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
         <div style={{ position: 'absolute', width: 360, height: 360, borderRadius: '50%', background: 'radial-gradient(circle, rgba(var(--primary-light-rgb),0.11) 0%, transparent 70%)', top: '5%', left: '-15%', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(var(--primary-light-rgb),0.09) 0%, transparent 70%)', bottom: '5%', right: '-8%', pointerEvents: 'none' }} />
         {[340, 255, 175].map((s, i) => (
           <div key={i} style={{ position: 'absolute', width: s, height: s, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.055)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
         ))}
-
 
         <div style={{ position: 'relative', textAlign: 'center', maxWidth: 310 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
@@ -210,11 +210,12 @@ export default function RegisterPage() {
       </div>
 
       {/* ── RIGHT PANEL (FORM) ────────────────────────────────────────── */}
-      <div style={{ background: 'var(--bg-main)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '40px 56px', position: 'relative', overflowY: 'auto' }}>
+      <div className="flex flex-col justify-center items-center relative overflow-y-auto"
+        style={{ padding: '20px 20px 20px', background: 'var(--bg-main)' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(var(--text-muted) 1.2px, transparent 1.2px)', backgroundSize: '26px 26px', opacity: 0.15, pointerEvents: 'none' }} />
 
         {/* Toggles */}
-        <div style={{ position: 'fixed', top: 22, [ar ? 'left' : 'right']: 22, display: 'flex', gap: 10, zIndex: 10 }}>
+        <div className='fixed top-11' style={{ [ar ? 'left' : 'right']: 22, display: 'flex', gap: 10, zIndex: 10 }}>
           <button onClick={toggleTheme} style={{ background: 'var(--card-bg)', border: '1.5px solid var(--card-border)', borderRadius: 7, padding: '7px', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px var(--shadow-main)' }}>
             {theme === 'light' ? <IconMoon /> : <IconSun />}
           </button>
@@ -248,7 +249,7 @@ export default function RegisterPage() {
           )}
 
           {/* Name row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 13 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-[13px]">
             {[
               { key: 'firstName', en: 'First Name', ar: 'الاسم الأول', ph: ar ? 'أحمد' : 'John' },
               { key: 'lastName', en: 'Last Name', ar: 'اسم العائلة', ph: ar ? 'حسن' : 'Doe' },
@@ -285,7 +286,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Age & Gender row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 13 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-[13px]">
             <div>
               <label style={{ display: 'block', fontWeight: 700, color: 'var(--text-main)', fontSize: 12.5, marginBottom: 5, letterSpacing: 0.2 }}>
                 {t('Age', 'العمر')}{' '}
@@ -307,7 +308,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Smoking History */}
-          <div style={{ marginBottom: 13 }}>
+          <div style={{ marginTop: 13, marginBottom: 13 }}>
             <label style={{ display: 'block', fontWeight: 700, color: 'var(--text-main)', fontSize: 12.5, marginBottom: 5, letterSpacing: 0.2 }}>
               {t('Smoking History', 'تاريخ التدخين')}{' '}
               <span style={{ fontWeight: 500, color: 'var(--text-muted)', fontSize: 11 }}>({t('optional', 'اختياري')})</span>
@@ -358,7 +359,7 @@ export default function RegisterPage() {
                   </span>
                 </div>
                 {/* Requirement chips */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 8px' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1">
                   {requirements.map((req, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: req.ok ? '#16a34a' : '#94a3b8', fontWeight: req.ok ? 600 : 500 }}>
                       {reqIcon(req.ok)}{ar ? req.ar : req.en}
