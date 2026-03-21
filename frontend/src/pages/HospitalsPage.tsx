@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { hospitalsApi } from '../utils/api';
-import { useWindowSize } from '../hooks/useWindowSize';
 
 interface HospitalsPageProps { lang: 'en' | 'ar'; }
 
@@ -181,12 +180,18 @@ const ALL_CITIES = ['All', 'Cairo', 'Alexandria', 'Mansoura', 'Assiut'];
 export default function HospitalsPage({ lang }: HospitalsPageProps) {
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
-  const { isMobile } = useWindowSize();
 
   const [search, setSearch] = useState('');
   const [cityF, setCityF] = useState('All');
   const [typeF, setTypeF] = useState('All');
   const [expanded, setExpanded] = useState<number | null>(null);
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     hospitalsApi.getAll({ limit: 50 }).catch(() => { });
@@ -206,7 +211,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo',sans-serif" : "'Sora',sans-serif" }}>
 
       {/* Header */}
-      <div style={{ background: 'linear-gradient(150deg, var(--primary-dark) 0%, var(--primary) 100%)', padding: '44px 40px 50px', color: 'white' }}>
+      <div style={{ background: 'linear-gradient(150deg, var(--primary-dark) 0%, var(--primary) 100%)', padding: isMobile ? '30px 20px' : '44px 40px 50px', color: 'white' }}>
         <div style={{ maxWidth: 980, margin: '0 auto' }}>
           <h1 style={{ fontSize: 30, fontWeight: 900, margin: '0 0 6px', color: 'white' }}>
             {t('Oncology Centers in Egypt', 'مراكز الأورام في مصر')}
@@ -217,7 +222,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 980, margin: '0 auto', padding: isMobile ? '24px 16px' : '28px 40px' }}>
+      <div style={{ maxWidth: 980, margin: '0 auto', padding: isMobile ? '20px' : '28px 40px' }}>
 
         {/* Filters */}
         <div style={{ background: 'var(--card-bg)', borderRadius: 16, padding: '18px 20px', marginBottom: 24, border: '1px solid var(--card-border)', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -258,7 +263,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
                 onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 28px var(--shadow-hover)'}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 12px var(--shadow-main)'}>
 
-                <div style={{ padding: '22px 24px', display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: 'flex-start' }}>
+                <div style={{ padding: isMobile ? '16px' : '22px 24px', display: 'flex', gap: 18, alignItems: isMobile ? 'center' : 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
                   {/* Left icon */}
                   <div style={{ flexShrink: 0, textAlign: 'center' }}>
                     <div style={{ width: 56, height: 56, borderRadius: 14, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 6, boxShadow: '0 2px 8px var(--shadow-main)' }}><svg width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='white' strokeWidth='1.6' strokeLinecap='round' strokeLinejoin='round'><path d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' /><line x1='9' y1='22' x2='9' y2='12' /><line x1='15' y1='22' x2='15' y2='12' /><line x1='9' y1='12' x2='15' y2='12' /><line x1='12' y1='9' x2='12' y2='15' /></svg></div>
@@ -268,7 +273,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
                   </div>
 
                   {/* Info */}
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, width: isMobile ? '100%' : 'auto' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', marginBottom: 5 }}>
                       <h3 style={{ fontWeight: 900, color: 'var(--text-main)', margin: 0, fontSize: 16, lineHeight: 1.3 }}>
                         {ar ? h.hospitalNameAr : h.hospitalName}

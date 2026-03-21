@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { useWindowSize } from '../hooks/useWindowSize';
+=======
+import { useState, useEffect } from 'react';
+>>>>>>> origin/pr/1/head
 
 interface FooterProps {
     lang: 'en' | 'ar';
@@ -82,7 +86,16 @@ export default function Footer({ lang }: FooterProps) {
     const t = (en: string, arText: string) => ar ? arText : en;
     const { isMobile, isTablet } = useWindowSize();
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
+<<<<<<< HEAD
         <>
             <style>{FOOTER_STYLES}</style>
             <footer dir={ar ? 'rtl' : 'ltr'} style={{
@@ -104,6 +117,24 @@ export default function Footer({ lang }: FooterProps) {
                             alignItems: 'start',
                         }}
                     >
+=======
+        <footer dir={ar ? 'rtl' : 'ltr'} style={{
+            background: 'var(--primary)',
+            padding: isMobile ? '40px 20px 24px' : '60px 40px 50px',
+            color: 'white',
+            fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
+        }}>
+            <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+
+                {/* ── TOP GRID ───────────────────────────────────────────── */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : 'minmax(280px, 1.5fr) 1fr 1fr',
+                    gap: isMobile ? 40 : 60,
+                    marginBottom: 60,
+                    alignItems: 'start',
+                }}>
+>>>>>>> origin/pr/1/head
 
                         {/* LEFT — Brand + Tagline + Social */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -295,7 +326,40 @@ export default function Footer({ lang }: FooterProps) {
                     </div>
 
                 </div>
+<<<<<<< HEAD
             </footer>
         </>
+=======
+
+                {/* ── DIVIDER ────────────────────────────────────────────── */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', marginBottom: 24 }} />
+
+                <div className='flex items-center justfiy-between gap-8'>
+                    {/* ── DISCLAIMER ─────────────────────────────────────────── */}
+                    <p style={{
+                        fontSize: 11.5, color: 'rgba(255,255,255,0.7)',
+                        lineHeight: 1.7,
+                        maxWidth: 880,
+                    }}>
+                        <strong style={{ fontWeight: 700 }}>
+                            {t('Medical Disclaimer: ', 'إخلاء المسؤولية الطبي: ')}
+                        </strong>
+                        {t(
+                            "Morgan's Hope is an experimental AI diagnostic assistance tool. Results are not a final medical diagnosis. The analysis is intended for informational and research purposes only and should NOT be used as a substitute for professional medical advice. Always consult a qualified physician or oncologist.",
+                            "مورجان هوب أداة مساعدة تشخيصية تجريبية بالذكاء الاصطناعي. النتائج ليست تشخيصاً طبياً نهائياً. التحليل مخصص للأغراض المعلوماتية والبحثية فقط ولا يجب استخدامه بديلاً عن المشورة الطبية المتخصصة. استشر دائماً طبيباً أو أخصائي أورام."
+                        )}
+                    </p>
+
+                    {/* ── COPYRIGHT ──────────────────────────────────────────── */}
+                    <div>
+                        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
+                            © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </footer>
+>>>>>>> origin/pr/1/head
     );
 }

@@ -1,8 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+<<<<<<< HEAD
 import './index.css';
 
+=======
+import './styles/style.css';
+>>>>>>> origin/pr/1/head
 // Global reset and theme variables
 const style = document.createElement('style');
 style.textContent = `
