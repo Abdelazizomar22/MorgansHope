@@ -69,9 +69,9 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
       <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 0 }}>
         <img src="/logo.png" alt="Morgan's Hope Logo" className="theme-logo"
           style={{ height: 60, width: 60, objectFit: 'contain', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }} />
-        <div className='hidden md:flex items-center gap-4'>
+        <div className='hidden md:flex items-center gap-1.5'>
           <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
-          <span style={{ fontSize: 18, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'var(--primary)', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
+          <span style={{ fontSize: 18, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'var(--primary)', opacity: 0.85, marginLeft: 0, lineHeight: 1 }}>Hope</span>
         </div>
       </Link>
 
