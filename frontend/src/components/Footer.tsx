@@ -72,9 +72,9 @@ export default function Footer({ lang }: FooterProps) {
                                 className="theme-logo"
                                 style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }}
                             />
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
-                                <span style={{ fontSize: 20, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, marginLeft: 2, lineHeight: 1 }}>Hope</span>
+                                <span style={{ fontSize: 20, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, marginLeft: 0, lineHeight: 1 }}>Hope</span>
                             </div>
                         </div>
 
