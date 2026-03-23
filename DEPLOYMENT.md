@@ -180,11 +180,19 @@ FRONTEND_URL=https://your-frontend.netlify.app
 
 ```env
 VITE_API_URL=https://medtech-backend.onrender.com/api
+VITE_EMAILJS_SERVICE_ID=service_xxxxxxx
+VITE_EMAILJS_TEMPLATE_ID=template_xxxxxxx
+VITE_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
+VITE_GOOGLE_AUTH_URL=https://medtech-backend.onrender.com/api/auth/google
 ```
 
 وعدّل في `frontend/src/utils/api.ts` (إن رغبت) ليستخدم:
 
 - `baseURL = import.meta.env.VITE_API_URL || '/api'`
+
+ملاحظات مهمة:
+- `EmailJS` يحتاج إنشاء Service + Template + Public Key من [EmailJS](https://www.emailjs.com/) وربط الـ template بحيث يرسل إلى بريد الفريق الفعلي.
+- `VITE_GOOGLE_AUTH_URL` يفترض وجود مسار OAuth حقيقي في الـ backend مثل `/api/auth/google` مع Google Console credentials وredirect URI مضبوطين على رابط الدبلويمنت.
 
 5. بعد النشر:
    - احصل على URL، مثل:  

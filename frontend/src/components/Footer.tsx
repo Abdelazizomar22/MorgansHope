@@ -78,7 +78,7 @@ export default function Footer({ lang }: FooterProps) {
                         </div>
 
                         {/* Tagline aligned to match 'Morgan's Hope' text */}
-                        <div style={{ paddingLeft: 12 }}>
+                        <div style={{ paddingLeft: 12, marginTop: -6 }}>
                             <p style={{
                                 fontSize: 16,
                                 fontStyle: 'italic',
