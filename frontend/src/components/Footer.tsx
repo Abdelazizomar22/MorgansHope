@@ -12,10 +12,9 @@ const IconLinkedin = () => <svg width="20" height="20" viewBox="0 0 24 24" fill=
 const IconX = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" /></svg>;
 
 const SOCIAL = [
-    { Icon: IconFacebook, href: '#', label: 'Facebook' },
-    { Icon: IconInstagram, href: '#', label: 'Instagram' },
-    { Icon: IconLinkedin, href: '#', label: 'LinkedIn' },
-    { Icon: IconX, href: '#', label: 'X (Twitter)' },
+    { Icon: IconFacebook, href: 'https://www.facebook.com/share/1899FMPsKQ/', label: 'Facebook' },
+    { Icon: IconInstagram, href: 'https://www.instagram.com/morganshope23?igsh=MXYzaTJ2dGF5YmJ3Yg==', label: 'Instagram' },
+    { Icon: IconLinkedin, href: 'https://www.linkedin.com/company/morgan-s-hope/', label: 'LinkedIn' },
 ];
 
 // ── Pages list ────────────────────────────────────────────────────────────────
@@ -62,7 +61,7 @@ export default function Footer({ lang }: FooterProps) {
                 }}>
 
                     {/* LEFT — Brand + Tagline + Social */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
 
                         {/* Logo + Name — mirrors Navbar exactly */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
@@ -79,7 +78,7 @@ export default function Footer({ lang }: FooterProps) {
                         </div>
 
                         {/* Tagline aligned to match 'Morgan's Hope' text */}
-                        <div>
+                        <div style={{ paddingLeft: 12 }}>
                             <p style={{
                                 fontSize: 16,
                                 fontStyle: 'italic',
@@ -97,12 +96,14 @@ export default function Footer({ lang }: FooterProps) {
                         </div>
 
                         {/* Social Icons aligned to match 'Morgan's Hope' text */}
-                        <div style={{ display: 'flex', gap: 16 }}>
+                        <div style={{ display: 'flex', gap: 16, paddingLeft: 12 }}>
                             {SOCIAL.map(({ Icon, href, label }) => (
                                 <a
                                     key={label}
                                     href={href}
                                     aria-label={label}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     style={{
                                         color: 'white',
                                         opacity: 0.8,
@@ -165,9 +166,9 @@ export default function Footer({ lang }: FooterProps) {
                         </h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             {[
-                                { label: t('Phone', 'الهاتف'), value: '+20 123 456 7890' },
-                                { label: t('Email', 'البريد'), value: 'info@morganshope.com' },
-                                { label: t('Address', 'العنوان'), value: t('Cairo, Giza, Egypt', 'القاهرة، الجيزة، مصر') },
+                                { label: t('Phone', 'الهاتف'), value: '+20 2 35169531' },
+                                { label: t('Email', 'البريد'), value: 'morganshope40@gmail.com' },
+                                { label: t('Address', 'العنوان'), value: t('6th of October City, Giza, Egypt', 'مدينة 6 أكتوبر، الجيزة، مصر') },
                             ].map(({ label, value }) => (
                                 <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                     <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' as const }}>
@@ -185,7 +186,7 @@ export default function Footer({ lang }: FooterProps) {
                 {/* ── DIVIDER ────────────────────────────────────────────── */}
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', marginBottom: 24 }} />
 
-                <div className='flex items-center justfiy-between gap-8'>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 32 }}>
                     {/* ── DISCLAIMER ─────────────────────────────────────────── */}
                     <p style={{
                         fontSize: 11.5, color: 'rgba(255,255,255,0.7)',
@@ -202,7 +203,7 @@ export default function Footer({ lang }: FooterProps) {
                     </p>
 
                     {/* ── COPYRIGHT ──────────────────────────────────────────── */}
-                    <div>
+                    <div style={{ marginTop: '-4px' }}>
                         <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: 400 }}>
                             © 2026 Morgan's Hope. {t('All rights reserved.', 'جميع الحقوق محفوظة.')}
                         </span>

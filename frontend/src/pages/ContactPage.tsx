@@ -47,19 +47,19 @@ export function ContactPage({ lang }: ContactPageProps) {
     {
       icon: <IconPhone />,
       label: t("Talk to our support experts", "تحدث مع خبرائنا للدعم"),
-      value: "+1 (123) 456-7890",
+      value: "+20 2 35169531",
       bg: "#e1f5fe"
     },
     {
       icon: <IconMail />,
       label: t("Send your queries", "أرسل استفساراتك"),
-      value: "hello@morganshope.com",
+      value: "morganshope40@gmail.com",
       bg: "#ebf4ff"
     },
     {
       icon: <IconMapPin />,
       label: t("Where to find us", "أين تجدنا"),
-      value: t("Cairo, Giza, Egypt", "القاهرة، الجيزة، مصر"),
+      value: t("6th of October City, Giza, Egypt", "مدينة 6 أكتوبر، الجيزة، مصر"),
       bg: "#e0f2f1"
     }
   ];
@@ -78,61 +78,61 @@ export function ContactPage({ lang }: ContactPageProps) {
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
-        {/* Top Contact Cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 24,
-          marginBottom: 80
-        }}>
-          {contactCards.map((card, i) => (
-            <MotionFade key={i} direction="up" delay={i * 0.1}>
-              <div style={{
-                background: 'var(--card-bg)',
-                border: '1.5px solid var(--card-border)',
-                borderRadius: 16,
-                padding: '30px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center',
-                minHeight: '180px',
-                justifyContent: 'center',
-                boxShadow: '0 2px 12px var(--shadow-main)',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-              }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--primary)';
-                  e.currentTarget.style.boxShadow = '0 4px 24px var(--shadow-main)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'var(--card-border)';
-                  e.currentTarget.style.boxShadow = '0 2px 12px var(--shadow-main)';
-                }}
-              >
+          {/* Top Contact Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: 24,
+            marginBottom: 80
+          }}>
+            {contactCards.map((card, i) => (
+              <MotionFade key={i} direction="up" delay={i * 0.1}>
                 <div style={{
-                  background: 'var(--primary)',
-                  color: 'white',
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
+                  background: 'var(--card-bg)',
+                  border: '1.5px solid var(--card-border)',
+                  borderRadius: 16,
+                  padding: '30px',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
+                  textAlign: 'center',
+                  minHeight: '180px',
                   justifyContent: 'center',
-                  marginBottom: 16
-                }}>
-                  {card.icon}
+                  boxShadow: '0 2px 12px var(--shadow-main)',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = 'var(--primary)';
+                    e.currentTarget.style.boxShadow = '0 4px 24px var(--shadow-main)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'var(--card-border)';
+                    e.currentTarget.style.boxShadow = '0 2px 12px var(--shadow-main)';
+                  }}
+                >
+                  <div style={{
+                    background: 'var(--primary)',
+                    color: 'white',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 16
+                  }}>
+                    {card.icon}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
+                    {card.label}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)' }}>
+                    {card.value}
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
-                  {card.label}
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)' }}>
-                  {card.value}
-                </div>
-              </div>
-            </MotionFade>
-          ))}
-        </div>
+              </MotionFade>
+            ))}
+          </div>
 
           {/* Bottom Section: Wide Form */}
           <div style={{ width: '100%' }}>

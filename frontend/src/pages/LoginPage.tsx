@@ -133,7 +133,7 @@ export default function LoginPage() {
 
       {/* ── LEFT: BRAND PANEL ────────────────────────────────────────── */}
       <div className="flex flex-col justify-center items-center py-10 px-6 lg:py-[60px] lg:px-[40px] text-white relative overflow-hidden h-full min-h-[300px]"
-      style={{ padding: '20px 20px', background: 'var(--panel-gradient)' }}>
+        style={{ padding: '20px 20px', background: 'var(--panel-gradient)' }}>
         {/* Grid texture */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
         {/* Glow blobs */}
@@ -169,12 +169,12 @@ export default function LoginPage() {
       </div>
 
       {/* ── RIGHT: FORM PANEL ────────────────────────────────────────── */}
-      <div className="flex flex-col justify-center items-center py-10 px-6 lg:py-[60px] lg:px-[64px] relative" style={{ padding: '0 20px 20px', background: 'var(--bg-main)' }}>
-        {/* Dot pattern */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(var(--text-muted) 1.2px, transparent 1.2px)', backgroundSize: '26px 26px', opacity: 0.15, pointerEvents: 'none' }} />
+      <div className="flex flex-col justify-center items-center py-10 px-6 lg:py-[60px] lg:px-[64px] relative" style={{ padding: '40px 24px', background: 'var(--bg-main)' }}>
+        {/* Clean gradient background */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 20%, rgba(var(--primary-rgb),0.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(var(--primary-rgb),0.03) 0%, transparent 50%)', pointerEvents: 'none' }} />
 
-        {/* Toggles */}
-        <div className='fixed top-11' style={{ [ar ? 'left' : 'right']: 22, display: 'flex', gap: 10, zIndex: 2000 }}>
+        {/* Toggles — fixed top corner */}
+        <div style={{ position: 'fixed', top: 16, [ar ? 'left' : 'right']: 16, display: 'flex', gap: 8, zIndex: 2000 }}>
           <button onClick={toggleTheme} style={{ background: 'var(--card-bg)', border: '1.5px solid var(--card-border)', borderRadius: 7, padding: '7px', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px var(--shadow-main)' }}>
             {theme === 'light' ? <IconMoon /> : <IconSun />}
           </button>

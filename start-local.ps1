@@ -239,13 +239,13 @@ Write-Header "5. Starting Services"
 $jobs = @{}
 
 function Start-Service {
-    param([string]$Name, [string]$Dir, [string]$Command, [string]$Args, [string]$Color = "White")
+    param([string]$Name, [string]$Dir, [string]$Command, [string]$CmdArgs, [string]$Color = "White")
     $log = Get-LogPath $Name
     Write-Step "Starting $Name -> $log"
     # Use a new PowerShell window so the user can see each service's output separately
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = "powershell.exe"
-    $psi.Arguments = "-NoExit -Command `"`$Host.UI.RawUI.WindowTitle = '$Name'; cd '$Dir'; $Command $Args 2>&1 | Tee-Object -FilePath '$log'`""
+    $psi.Arguments = "-NoExit -Command `"`$Host.UI.RawUI.WindowTitle = '$Name'; cd '$Dir'; $Command $CmdArgs 2>&1 | Tee-Object -FilePath '$log'`""
     $psi.WorkingDirectory = $Dir
     $psi.UseShellExecute  = $true
     $proc = [System.Diagnostics.Process]::Start($psi)
@@ -264,18 +264,18 @@ if (-not $SkipAI) {
         Write-Warn "uvicorn not found globally - will use pip install inside service dirs."
     }
 
-    Start-Service -Name "CT-Service"    -Dir $CtDir   -Command "$pythonCmd -m uvicorn" -Args "main:app --port 8000 --reload"
+    Start-Service -Name "CT-Service"    -Dir $CtDir   -Command "$pythonCmd -m uvicorn" -CmdArgs "main:app --port 8000 --reload"
     Start-Sleep -Seconds 2
-    Start-Service -Name "XRay-Service" -Dir $XrayDir  -Command "$pythonCmd -m uvicorn" -Args "main:app --port 8001 --reload"
+    Start-Service -Name "XRay-Service" -Dir $XrayDir  -Command "$pythonCmd -m uvicorn" -CmdArgs "main:app --port 8001 --reload"
     Start-Sleep -Seconds 2
 }
 
 # Backend
-Start-Service -Name "Backend"  -Dir $BackendDir  -Command "npm" -Args "run dev"
+Start-Service -Name "Backend"  -Dir $BackendDir  -Command "npm" -CmdArgs "run dev"
 Start-Sleep -Seconds 3
 
 # Frontend
-Start-Service -Name "Frontend" -Dir $FrontendDir -Command "npm" -Args "run dev"
+Start-Service -Name "Frontend" -Dir $FrontendDir -Command "npm" -CmdArgs "run dev"
 Start-Sleep -Seconds 3
 
 # 6. HEALTH CHECK LOOP
