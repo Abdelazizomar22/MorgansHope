@@ -61,7 +61,7 @@ const IconMoon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="non
 
 
 const LungIcon = () => (
-  <img src="/logo.png" alt="Morgan's Hope Logo" className="theme-logo" style={{ width: 140, height: 140, objectFit: 'contain', transform: 'scale(1.3)', margin: '-20px 0' }} />
+  <img src="/logo.png" alt="Morgan's Hope Logo" className="theme-logo" style={{ width: 180, height: 180, objectFit: 'contain', transform: 'scale(1.2)', margin: '-16px 0' }} />
 );
 
 const strength = (p: string) => {
@@ -188,16 +188,13 @@ export default function RegisterPage() {
         ))}
 
         <div style={{ position: 'relative', textAlign: 'center', maxWidth: 310 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10 }}>
-            {t('Secure Medical Portal', 'بوابة طبية آمنة')}
-          </div>
-          <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}><LungIcon /></div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, margin: '0 0 5px', letterSpacing: -0.3 }}>
+          <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'center' }}><LungIcon /></div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, margin: '0 0 6px', letterSpacing: -0.4, lineHeight: 1.1 }}>
             <span style={{ color: 'white' }}>Morgan's </span>
             <span style={{ color: 'white', opacity: 0.85 }}>Hope</span>
           </h1>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', marginBottom: 30, letterSpacing: 0.3 }}>
-            {t('"Legacy of Care, Vision of Hope."', '"إرث من الرعاية، ورؤية من الأمل."')}
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', marginBottom: 32, letterSpacing: 0.3 }}>
+            {t('"A Second Chance for Every Breath"', '"فرصة ثانية لكل نَفَس"')}
           </p>
 
 
@@ -211,11 +208,11 @@ export default function RegisterPage() {
 
       {/* ── RIGHT PANEL (FORM) ────────────────────────────────────────── */}
       <div className="flex flex-col justify-center items-center relative overflow-y-auto"
-        style={{ padding: '20px 20px 20px', background: 'var(--bg-main)' }}>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(var(--text-muted) 1.2px, transparent 1.2px)', backgroundSize: '26px 26px', opacity: 0.15, pointerEvents: 'none' }} />
+        style={{ padding: '40px 24px', background: 'var(--bg-main)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 20%, rgba(var(--primary-rgb),0.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(var(--primary-rgb),0.03) 0%, transparent 50%)', pointerEvents: 'none' }} />
 
-        {/* Toggles */}
-        <div className='fixed top-11' style={{ [ar ? 'left' : 'right']: 22, display: 'flex', gap: 10, zIndex: 10 }}>
+        {/* Toggles — fixed top corner */}
+        <div style={{ position: 'fixed', top: 16, [ar ? 'left' : 'right']: 16, display: 'flex', gap: 8, zIndex: 2000 }}>
           <button onClick={toggleTheme} style={{ background: 'var(--card-bg)', border: '1.5px solid var(--card-border)', borderRadius: 7, padding: '7px', cursor: 'pointer', color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px var(--shadow-main)' }}>
             {theme === 'light' ? <IconMoon /> : <IconSun />}
           </button>
@@ -225,12 +222,7 @@ export default function RegisterPage() {
         </div>
 
         <div style={{ width: '100%', maxWidth: 400, position: 'relative' }}>
-          {/* Dev Admin Toggle */}
-          <div style={{ marginTop: 10, textAlign: 'center' }}>
-            <label style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer', opacity: 0.5 }} onClick={() => { (window as any).isAdminDev = !(window as any).isAdminDev; alert((window as any).isAdminDev ? 'Admin registration enabled' : 'Admin registration disabled'); }}>
-              Development Tools
-            </label>
-          </div>
+
           {/* Heading */}
           <div style={{ marginBottom: 22 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--primary)', borderRadius: 6, padding: '6px 12px', marginBottom: 12, boxShadow: '0 2px 8px var(--shadow-main)' }}>
