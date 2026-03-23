@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import emailjs from '@emailjs/browser';
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionHoverScale } from '../components/animations/MotionHoverScale';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
@@ -29,6 +30,7 @@ export function ContactPage({ lang }: ContactPageProps) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
@@ -37,10 +39,35 @@ export function ContactPage({ lang }: ContactPageProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!form.name || !form.email || !form.message) return;
-    setLoading(true);
-    setTimeout(() => { setSent(true); setLoading(false); }, 1500);
+
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (!serviceId || !templateId || !publicKey) {
+      setError(t('Contact email is not configured yet. Please add EmailJS environment variables.', 'بريد التواصل غير مُعد بعد. أضف متغيرات EmailJS البيئية أولاً.'));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      await emailjs.send(serviceId, templateId, {
+        from_name: form.name,
+        from_email: form.email,
+        phone: form.phone || 'Not provided',
+        message: form.message,
+        reply_to: form.email,
+      }, { publicKey });
+      setSent(true);
+      setForm({ name: '', phone: '', email: '', message: '' });
+    } catch {
+      setError(t('Failed to send your message. Please try again.', 'فشل إرسال رسالتك. حاول مرة أخرى.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const contactCards = [
@@ -126,9 +153,15 @@ export function ContactPage({ lang }: ContactPageProps) {
                   <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
                     {card.label}
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)' }}>
-                    {card.value}
-                  </div>
+                  {card.value.includes('@') ? (
+                    <a href={`mailto:${card.value}`} style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)', textDecoration: 'none' }}>
+                      {card.value}
+                    </a>
+                  ) : (
+                    <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-main)' }}>
+                      {card.value}
+                    </div>
+                  )}
                 </div>
               </MotionFade>
             ))}
@@ -250,11 +283,12 @@ export function ContactPage({ lang }: ContactPageProps) {
                         />
                       </div>
 
-                      <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: ar ? 'flex-start' : 'flex-end' }}>
+                      <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: ar ? 'flex-start' : 'flex-end', gap: 10 }}>
+                        {error && <div style={{ color: '#dc3545', fontSize: 13, fontWeight: 700 }}>{error}</div>}
                         <MotionHoverScale>
                           <button
                             onClick={handleSend}
-                            disabled={loading || !form.name || !form.email || !form.phone}
+                            disabled={loading || !form.name || !form.email || !form.message}
                             style={{
                               background: loading ? '#9ca3af' : 'var(--primary-dark)',
                               color: 'white',

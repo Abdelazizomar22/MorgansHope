@@ -314,7 +314,8 @@ export default function HomePage({ lang }: HomePageProps) {
             <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(var(--card-border) 1.5px, transparent 1.5px)', backgroundSize: '20px 20px', opacity: 0.2, pointerEvents: 'none' }} />
 
             {EGYPT_CARDS.map((c, i) => {
-              const displayVal = useCounter(c.val, 1600, vTrig);
+              const animatedVal = useCounter(c.val, 1600, vTrig);
+              const displayVal = vTrig ? animatedVal : c.val;
               const formattedVal = c.format ? displayVal.toLocaleString() : displayVal;
 
               return (

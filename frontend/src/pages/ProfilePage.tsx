@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { analysisApi, authApi } from '../utils/api';
@@ -6,24 +6,29 @@ import type { AnalysisResult } from '../types';
 
 interface ProfilePageProps { lang: 'en' | 'ar'; }
 
-const IconUser = () => <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>;
-const IconPhone = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, verticalAlign: 'text-bottom' }}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>;
-const IconSettings = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8, verticalAlign: 'text-bottom' }}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>;
-const IconTrash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: 6 }}><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>;
+const IconUser = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>;
+const IconMail = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>;
+const IconPhone = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>;
+const IconCamera = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>;
+const IconEdit = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" /></svg>;
+const IconShield = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>;
+const IconLock = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>;
+const IconUpload = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>;
+const IconTrash = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg>;
 
 const URGENCY_COLORS: Record<string, { bg: string; color: string }> = {
   Normal: { bg: '#f0fdf4', color: '#16a34a' },
   'No Finding': { bg: '#f0fdf4', color: '#16a34a' },
-  Benign: { bg: '#fffbeb', color: '#fd7e14' },
-  'Nodule/Mass': { bg: '#fff0f0', color: '#dc3545' },
-  Adenocarcinoma: { bg: '#fff0f0', color: '#dc3545' },
-  Large_Cell_Carcinoma: { bg: '#fff0f0', color: '#dc3545' },
-  Squamous_Cell_Carcinoma: { bg: '#fff0f0', color: '#7b0012' },
-  Malignant_General: { bg: '#fff0f0', color: '#dc3545' },
+  Benign: { bg: '#fffbeb', color: '#d97706' },
+  'Nodule/Mass': { bg: '#fff1f2', color: '#dc2626' },
+  Adenocarcinoma: { bg: '#fff1f2', color: '#dc2626' },
+  Large_Cell_Carcinoma: { bg: '#fff1f2', color: '#dc2626' },
+  Squamous_Cell_Carcinoma: { bg: '#fff1f2', color: '#991b1b' },
+  Malignant_General: { bg: '#fff1f2', color: '#dc2626' },
 };
 
 function getStyle(cls: string) {
-  return URGENCY_COLORS[cls] || { bg: '#f0f4f8', color: '#1e2d3d' };
+  return URGENCY_COLORS[cls] || { bg: '#eef2ff', color: '#334155' };
 }
 
 export default function ProfilePage({ lang }: ProfilePageProps) {
@@ -37,6 +42,10 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
   const [editing, setEditing] = useState(false);
   const [changePwd, setChangePwd] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showAvatarPreview, setShowAvatarPreview] = useState(false);
+  const [focused, setFocused] = useState('');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
 
   const [form, setForm] = useState({
     firstName: user?.firstName || '',
@@ -45,25 +54,91 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     age: user?.age ? String(user.age) : '',
     gender: user?.gender || '',
     smokingHistory: user?.smokingHistory || '',
-    medicalHistory: user?.medicalHistory || ''
+    medicalHistory: user?.medicalHistory || '',
   });
+
   const [pwd, setPwd] = useState({ current: '', newPwd: '', confirm: '' });
   const [saveMsg, setSaveMsg] = useState('');
   const [saveErr, setSaveErr] = useState('');
 
   useEffect(() => {
-    analysisApi.getHistory(1, 50).then(r => setHistory(r.data.data || [])).catch(() => { }).finally(() => setLoading(false));
+    analysisApi.getHistory(1, 50).then((r) => setHistory(r.data.data || [])).catch(() => { }).finally(() => setLoading(false));
   }, []);
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    setForm({
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      phone: user?.phone || '',
+      age: user?.age ? String(user.age) : '',
+      gender: user?.gender || '',
+      smokingHistory: user?.smokingHistory || '',
+      medicalHistory: user?.medicalHistory || '',
+    });
+  }, [user]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 900);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const apiBase = import.meta.env.VITE_API_URL || '/api';
+  const uploadsBase = apiBase.replace(/\/api\/?$/, '/api/uploads');
+  const avatarSrc = user?.profilePicture ? `${uploadsBase}/${user.profilePicture}` : '';
+  const userInitial = user?.firstName?.[0]?.toUpperCase() || user?.lastName?.[0]?.toUpperCase() || 'U';
+
+  const fieldStyle = (field: string, extra?: CSSProperties): CSSProperties => ({
+    width: '100%',
+    padding: '12px 14px',
+    borderRadius: 14,
+    border: `1.5px solid ${focused === field ? 'var(--primary)' : 'var(--card-border)'}`,
+    background: 'var(--card-bg)',
+    color: 'var(--text-main)',
+    fontSize: 14,
+    fontFamily: 'inherit',
+    outline: 'none',
+    boxSizing: 'border-box',
+    boxShadow: focused === field ? '0 0 0 4px rgba(var(--primary-rgb),0.08)' : 'none',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    ...extra,
+  });
+
+  const cardStyle: CSSProperties = {
+    background: 'var(--card-bg)',
+    borderRadius: 24,
+    border: '1px solid var(--card-border)',
+    boxShadow: '0 14px 40px var(--shadow-main)',
+  };
+
+  const secondaryButton: CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    minHeight: 44,
+    padding: '0 16px',
+    borderRadius: 14,
+    border: '1px solid var(--card-border)',
+    background: 'var(--card-bg)',
+    color: 'var(--text-main)',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    fontSize: 14,
+    fontWeight: 700,
+  };
+
+  const primaryButton: CSSProperties = {
+    ...secondaryButton,
+    border: 'none',
+    background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
+    color: '#fff',
+    boxShadow: '0 14px 30px rgba(var(--primary-rgb),0.25)',
+  };
+
   const handleSaveProfile = async () => {
-    setSaveErr(''); setSaveMsg('');
+    setSaveErr('');
+    setSaveMsg('');
     try {
       const payload = {
         ...form,
@@ -71,11 +146,13 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
         gender: (form.gender || undefined) as 'male' | 'female' | 'other' | undefined,
         smokingHistory: (form.smokingHistory || undefined) as 'never' | 'former' | 'current' | undefined,
       };
-      const r = await authApi.updateProfile(payload);
-      if (r.data.data) updateUser(r.data.data);
-      setSaveMsg(t('Profile updated!', 'تم تحديث الملف الشخصي!'));
+      const response = await authApi.updateProfile(payload);
+      if (response.data.data) updateUser(response.data.data);
+      setSaveMsg(t('Profile saved successfully.', 'تم حفظ الملف الشخصي بنجاح.'));
       setEditing(false);
-    } catch (e: any) { setSaveErr(e?.response?.data?.message || t('Failed to update.', 'فشل التحديث.')); }
+    } catch (err: any) {
+      setSaveErr(err?.response?.data?.message || t('Could not update profile.', 'تعذر تحديث الملف الشخصي.'));
+    }
   };
 
   const handleAvatarClick = () => {
@@ -84,317 +161,429 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     input.accept = 'image/jpeg,image/png,image/webp';
     input.onchange = async (e: any) => {
       const file = e.target.files?.[0];
-      if (file) {
-        try {
-          const r = await authApi.uploadAvatar(file);
-          if (r.data.data) updateUser(r.data.data);
-        } catch (err: any) { alert(err?.response?.data?.message || t('Failed to upload avatar', 'فشل رفع الصورة')); }
+      if (!file) return;
+      try {
+        setAvatarUploading(true);
+        setSaveErr('');
+        const response = await authApi.uploadAvatar(file);
+        if (response.data.data) updateUser(response.data.data);
+        setSaveMsg(t('Profile photo updated.', 'تم تحديث صورة الملف الشخصي.'));
+      } catch (err: any) {
+        setSaveErr(err?.response?.data?.message || t('Could not upload photo.', 'تعذر رفع الصورة.'));
+      } finally {
+        setAvatarUploading(false);
       }
     };
     input.click();
   };
 
+  const handleAvatarPress = () => {
+    if (editing) {
+      handleAvatarClick();
+      return;
+    }
+    if (avatarSrc) {
+      setShowAvatarPreview(true);
+    }
+  };
+
   const handleChangePwd = async () => {
-    if (pwd.newPwd !== pwd.confirm) { setSaveErr(t("Passwords don't match.", 'كلمتا المرور غير متطابقتين.')); return; }
-    setSaveErr(''); setSaveMsg('');
+    if (pwd.newPwd !== pwd.confirm) {
+      setSaveErr(t("Passwords do not match.", 'كلمتا المرور غير متطابقتين.'));
+      return;
+    }
+    setSaveErr('');
+    setSaveMsg('');
     try {
       await authApi.updateProfile({ currentPassword: pwd.current, newPassword: pwd.newPwd });
-      setSaveMsg(t('Password changed!', 'تم تغيير كلمة المرور!'));
+      setSaveMsg(t('Password updated.', 'تم تحديث كلمة المرور.'));
       setChangePwd(false);
       setPwd({ current: '', newPwd: '', confirm: '' });
-    } catch (e: any) { setSaveErr(e?.response?.data?.message || t('Failed.', 'فشل.')); }
+    } catch (err: any) {
+      setSaveErr(err?.response?.data?.message || t('Could not update password.', 'تعذر تحديث كلمة المرور.'));
+    }
   };
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
+  const formatDate = (date: string) => new Date(date).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
 
   const getActionBtn = (item: AnalysisResult) => {
-    if (item.isMalignant) return { label: t('View Recommended Hospitals', 'المستشفيات الموصى بها'), href: '/hospitals', color: '#dc3545', bg: '#fff0f0' };
-    if (item.imageType === 'xray') return { label: t('Download PDF', 'تحميل PDF'), href: `/results?id=${item.id}`, color: '#004080', bg: '#e8f4ff' };
-    return { label: t('View Report', 'عرض التقرير'), href: `/results?id=${item.id}`, color: '#0a1628', bg: '#f0f9ff' };
+    if (item.isMalignant) return { label: t('Recommended hospitals', 'المستشفيات المقترحة'), href: '/hospitals' };
+    if (item.imageType === 'xray') return { label: t('Open PDF', 'فتح PDF'), href: `/results?id=${item.id}` };
+    return { label: t('Open report', 'فتح التقرير'), href: `/results?id=${item.id}` };
   };
 
-  return (
-    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo',sans-serif" : "'Sora',sans-serif", padding: isMobile ? '20px 16px' : '32px 24px' }}>
-      <div style={{ maxWidth: 1040, margin: '0 auto' }}>
+  const infoRow = (label: string, value?: string | null) => (
+    <div style={{ padding: '14px 0', borderTop: '1px solid color-mix(in srgb, var(--card-border) 88%, transparent)' }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 14, color: value ? 'var(--text-main)' : 'var(--text-muted)', lineHeight: 1.6 }}>
+        {value || t('Not added yet', 'لم تتم إضافته بعد')}
+      </div>
+    </div>
+  );
 
-        {/* ─── Profile hero card ─── */}
-        <div style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '32px 36px', marginBottom: 24, border: '1px solid var(--card-border)', boxShadow: '0 2px 12px var(--shadow-main)', display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
-          {/* Avatar */}
-          <div onClick={handleAvatarClick} style={{ width: 90, height: 90, borderRadius: '50%', border: '2.5px solid var(--primary)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--primary-light)', flexShrink: 0, cursor: 'pointer', overflow: 'hidden', position: 'relative' }}>
-            {user?.profilePicture ? <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || ''}/uploads/${user.profilePicture}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" /> : <IconUser />}
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.2s', color: 'white', fontSize: 12, fontWeight: 700 }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0'}>
-              {t('Edit', 'تعديل')}
+  return (
+    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", padding: isMobile ? '20px 14px 36px' : '32px 24px 48px' }}>
+      <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+        <div style={{ ...cardStyle, padding: isMobile ? 20 : 28, marginBottom: 20, background: 'linear-gradient(180deg, color-mix(in srgb, var(--card-bg) 95%, transparent), var(--card-bg))' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18, flex: 1, minWidth: 260 }}>
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={handleAvatarPress}
+                  disabled={avatarUploading}
+                  style={{ width: isMobile ? 88 : 104, height: isMobile ? 88 : 104, borderRadius: '50%', border: '2px solid rgba(var(--primary-rgb),0.32)', background: 'linear-gradient(180deg, rgba(var(--primary-rgb),0.18), rgba(var(--primary-rgb),0.08))', color: 'var(--primary)', display: 'grid', placeItems: 'center', overflow: 'hidden', cursor: avatarUploading ? 'default' : (editing || avatarSrc ? 'pointer' : 'default') }}
+                >
+                  {avatarSrc ? (
+                    <img src={avatarSrc} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: isMobile ? 34 : 40, fontWeight: 900, color: 'var(--primary)', lineHeight: 1 }}>
+                      {userInitial}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAvatarClick}
+                  disabled={avatarUploading}
+                  aria-label={t('Change profile photo', 'تغيير صورة الملف الشخصي')}
+                  style={{ position: 'absolute', bottom: 2, [ar ? 'left' : 'right']: 2, width: 32, height: 32, borderRadius: '50%', background: 'var(--card-bg)', border: '1px solid var(--card-border)', display: 'grid', placeItems: 'center', color: 'var(--primary)', cursor: avatarUploading ? 'default' : 'pointer', boxShadow: '0 6px 16px rgba(15,23,42,0.12)' }}
+                >
+                  <IconCamera />
+                </button>
+              </div>
+
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <h1 style={{ margin: '0 0 8px', fontSize: isMobile ? 28 : 34, lineHeight: 1.05, letterSpacing: -0.7 }}>
+                  {user?.firstName} {user?.lastName}
+                </h1>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, color: 'var(--text-muted)', fontSize: 14 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><IconMail /> {user?.email}</span>
+                  {user?.phone && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><IconPhone /> {user.phone}</span>}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: ar ? 'flex-start' : 'flex-end' }}>
+              <button type="button" onClick={() => setEditing((value) => !value)} style={editing ? secondaryButton : primaryButton}>
+                <IconEdit />
+                {editing ? t('Close editing', 'إغلاق التعديل') : t('Edit profile', 'تعديل الملف الشخصي')}
+              </button>
+              <a href="/upload" style={{ ...secondaryButton, textDecoration: 'none' }}>
+                <IconUpload />
+                {t('Upload scan', 'رفع صورة')}
+              </a>
             </div>
           </div>
 
-          <div style={{ flex: 1 }}>
-            {editing ? (
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, maxWidth: 480 }}>
-                {[
-                  { key: 'firstName', label: t('First Name', 'الاسم الأول'), type: 'text' },
-                  { key: 'lastName', label: t('Last Name', 'اسم العائلة'), type: 'text' },
-                  { key: 'phone', label: t('Phone', 'الهاتف'), type: 'tel' },
-                  { key: 'age', label: t('Age', 'العمر'), type: 'number' },
-                  {
-                    key: 'gender', label: t('Gender', 'الجنس'), type: 'select', options: [
-                      { value: '', label: t('Select', 'اختر') },
-                      { value: 'male', label: t('Male', 'ذكر') },
-                      { value: 'female', label: t('Female', 'أنثى') }
-                    ]
-                  },
-                  {
-                    key: 'smokingHistory', label: t('Smoking History', 'تاريخ التدخين'), type: 'select', options: [
-                      { value: '', label: t('Select History', 'اختر الحالة') },
-                      { value: 'never', label: t('Never Smoked', 'لم أدخن أبداً') },
-                      { value: 'former', label: t('Former Smoker', 'مدخن سابق') },
-                      { value: 'current', label: t('Current Smoker', 'مدخن حالي') }
-                    ]
-                  },
-                  { key: 'medicalHistory', label: t('Medical History', 'التاريخ المرضي'), type: 'textarea' },
-                ].map(f => (
-                  <div key={f.key} style={{ gridColumn: (f.key === 'phone' || f.key === 'smokingHistory' || f.key === 'medicalHistory') ? '1 / -1' : 'auto' }}>
-                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>{f.label}</label>
-                    {f.type === 'select' ? (
-                      <select value={form[f.key as keyof typeof form] || ''}
-                        onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid var(--card-border)', background: 'var(--bg-main)', color: 'var(--text-main)', fontSize: 14, fontFamily: 'inherit', outline: 'none', appearance: 'none' }}
-                        onFocus={e => e.target.style.borderColor = 'var(--primary)'} onBlur={e => e.target.style.borderColor = 'var(--card-border)'}>
-                        {f.options?.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                      </select>
-                    ) : f.type === 'textarea' ? (
-                      <textarea value={form[f.key as keyof typeof form] || ''}
-                        onChange={e => setForm({ ...form, [f.key]: e.target.value })} rows={3}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid var(--card-border)', background: 'var(--bg-main)', color: 'var(--text-main)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
-                        onFocus={e => e.target.style.borderColor = 'var(--primary)'} onBlur={e => e.target.style.borderColor = 'var(--card-border)'} />
-                    ) : (
-                      <input type={f.type} value={form[f.key as keyof typeof form] || ''}
-                        onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid var(--card-border)', background: 'var(--bg-main)', color: 'var(--text-main)', fontSize: 14, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
-                        onFocus={e => e.target.style.borderColor = 'var(--primary)'} onBlur={e => e.target.style.borderColor = 'var(--card-border)'} />
-                    )}
-                  </div>
-                ))}
-                <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, marginTop: 4 }}>
-                  <button onClick={handleSaveProfile} style={{ padding: '9px 20px', background: 'var(--primary)', color: 'white', borderRadius: 9, border: 'none', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    {t('Save', 'حفظ')}
-                  </button>
-                  <button onClick={() => setEditing(false)} style={{ padding: '9px 16px', background: 'var(--bg-main)', color: 'var(--text-main)', borderRadius: 9, border: '1px solid var(--card-border)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    {t('Cancel', 'إلغاء')}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <h2 style={{ fontSize: 26, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 6px' }}>
-                  {user?.firstName} {user?.lastName}
-                </h2>
-                <p style={{ color: 'var(--text-muted)', margin: '0 0 2px', fontSize: 14 }}>{user?.email}</p>
-                {user?.phone && <p style={{ color: 'var(--text-muted)', margin: '0 0 2px', fontSize: 14 }}><IconPhone /> {user.phone}</p>}
-                {(user?.age || user?.gender || user?.smokingHistory) && (
-                  <p style={{ color: 'var(--text-muted)', margin: '0 0 16px', fontSize: 13 }}>
-                    {[
-                      user.age ? `${user.age} ${t('yo', 'سنة')}` : null,
-                      user.gender ? (user.gender === 'male' ? t('Male', 'ذكر') : user.gender === 'female' ? t('Female', 'أنثى') : t('Other', 'آخر')) : null,
-                      user.smokingHistory ? (user.smokingHistory === 'never' ? t('Never Smoked', 'لم يدخن') : user.smokingHistory === 'former' ? t('Former Smoker', 'مدخن سابق') : t('Current Smoker', 'مدخن حالي')) : null
-                    ].filter(Boolean).join(' • ')}
-                  </p>
-                )}
-                {user?.medicalHistory && (
-                  <div style={{ marginBottom: 20, padding: 12, background: 'var(--bg-main)', borderRadius: 10, border: '1px solid var(--card-border)' }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', marginBottom: 4 }}>{t('Medical History', 'التاريخ المرضي')}</div>
-                    <div style={{ fontSize: 13, color: 'var(--text-main)', lineHeight: 1.6 }}>{user.medicalHistory}</div>
-                  </div>
-                )}
-                <div style={{ marginBottom: 16 }}></div>
-                <button onClick={() => setEditing(true)}
-                  style={{ padding: '10px 22px', background: 'var(--primary)', color: 'white', borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {t('Edit Profile', 'تعديل الملف الشخصي')}
-                </button>
-              </>
-            )}
-            {saveMsg && <p style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 13, marginTop: 8 }}>{saveMsg}</p>}
-            {saveErr && <p style={{ color: '#dc3545', fontWeight: 700, fontSize: 13, marginTop: 8 }}>{saveErr}</p>}
-          </div>
-
-          {/* Stats */}
-          <div className='grid grid-cols-2 lg:grid-cols-3 gap-5'>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 12, marginTop: 18 }}>
             {[
-              { val: history.length, label: t('Total Scans', 'إجمالي الفحوصات') },
-              { val: history.filter(h => h.isMalignant).length, label: t('Malignant', 'خبيثة') },
-              { val: history.filter(h => !h.isMalignant && h.hasFindings).length, label: t('Findings', 'نتائج') },
-            ].map((s, i) => (
-              <div key={i} style={{ textAlign: 'center', padding: '14px 20px', background: 'var(--bg-main)', borderRadius: 14, border: '1px solid var(--card-border)', minWidth: 80 }}>
-                <div style={{ fontSize: 26, fontWeight: 900, color: 'var(--primary)' }}>{s.val}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, fontWeight: 700 }}>{s.label}</div>
+              {
+                value: history.length,
+                label: t('Total analyses', 'إجمالي التحليلات'),
+                color: 'var(--primary)',
+                bg: 'rgba(var(--primary-rgb),0.08)',
+                border: 'rgba(var(--primary-rgb),0.14)',
+              },
+              {
+                value: history.filter((item) => item.isMalignant).length,
+                label: t('Cases needing follow-up', 'حالات تحتاج متابعة'),
+                color: '#dc2626',
+                bg: 'rgba(220,38,38,0.08)',
+                border: 'rgba(220,38,38,0.16)',
+              },
+              {
+                value: history.filter((item) => !item.isMalignant && item.hasFindings).length,
+                label: t('Detected findings', 'نتائج مكتشفة'),
+                color: '#d97706',
+                bg: 'rgba(217,119,6,0.08)',
+                border: 'rgba(217,119,6,0.16)',
+              },
+            ].map((item) => (
+              <div key={item.label} style={{ padding: '16px 18px', borderRadius: 18, border: `1px solid ${item.border}`, background: item.bg }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: item.color, marginBottom: 4 }}>{item.value}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>{item.label}</div>
               </div>
             ))}
           </div>
+
+          {(saveMsg || saveErr) && (
+            <div style={{ marginTop: 16, padding: '12px 14px', borderRadius: 14, border: `1px solid ${saveErr ? 'rgba(220,38,38,0.22)' : 'rgba(var(--primary-rgb),0.18)'}`, background: saveErr ? 'rgba(220,38,38,0.06)' : 'rgba(var(--primary-rgb),0.06)', color: saveErr ? '#dc2626' : 'var(--primary)', fontSize: 13, fontWeight: 700 }}>
+              {saveErr || saveMsg}
+            </div>
+          )}
         </div>
 
-        {/* ─── Main layout ─── */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 280px', gap: 20 }}>
-
-          {/* Left: History table */}
-          <div style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '28px 24px', border: '1px solid var(--card-border)', boxShadow: '0 2px 12px var(--shadow-main)' }}>
-            <h3 style={{ fontWeight: 900, color: 'var(--text-main)', margin: '0 0 20px', fontSize: 20 }}>
-              {t('My Analysis History', 'سجل التحليلات')}
-            </h3>
-
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>{t('Loading...', 'تحميل...')}</div>
-            ) : history.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px' }}>
-                <div style={{ color: 'var(--text-muted)', marginBottom: 12, display: 'flex', justifyContent: 'center' }}>
-                  <svg width='44' height='44' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.2' strokeLinecap='round' strokeLinejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' /><polyline points='14 2 14 8 20 8' /></svg>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.7fr) minmax(300px, 0.9fr)', gap: 20 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ ...cardStyle, padding: isMobile ? 20 : 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: 20 }}>{t('Personal information', 'المعلومات الشخصية')}</h2>
+                  <p style={{ margin: '6px 0 0', color: 'var(--text-muted)', fontSize: 13 }}>
+                    {t('Manage your main account details here.', 'يمكنك تعديل بيانات الحساب الأساسية من هنا.')}
+                  </p>
                 </div>
-                <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{t('No analyses yet.', 'لا توجد تحليلات بعد.')}</p>
               </div>
-            ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--card-border)' }}>
-                      {[
-                        t('Image Type', 'نوع الصورة'),
-                        t('Result', 'النتيجة'),
-                        t('Confidence', 'الثقة'),
-                        t('Date', 'التاريخ'),
-                        t('Action', 'الإجراء'),
-                        '',
-                      ].map((h, i) => (
-                        <th key={i} style={{ padding: '10px 12px', textAlign: ar ? 'right' : 'left', color: '#94a3b8', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {history.map(item => {
-                      const sty = getStyle(item.classification);
-                      const act = getActionBtn(item);
-                      return (
-                        <tr key={item.id} style={{ borderBottom: '1px solid #f0f4f0', transition: 'background .15s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#f8fbfc'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                          {/* Image type */}
-                          <td style={{ padding: '12px 12px', fontWeight: 700, color: 'var(--text-main)' }}>
-                            {item.imageType.toUpperCase()}
-                          </td>
-                          {/* Result badge */}
-                          <td style={{ padding: '12px 12px' }}>
-                            <span style={{ background: sty.bg, color: sty.color, border: `1px solid ${sty.color}30`, borderRadius: 99, padding: '4px 12px', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' }}>
-                              {item.classification}
-                            </span>
-                          </td>
-                          {/* Confidence bar */}
-                          <td style={{ padding: '12px 12px', minWidth: 120 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <div style={{ flex: 1, height: 8, background: 'var(--bg-main)', border: '1px solid var(--card-border)', borderRadius: 99, overflow: 'hidden' }}>
-                                <div style={{ height: '100%', width: `${Math.round(item.confidence * 100)}%`, background: sty.color, borderRadius: 99 }} />
-                              </div>
-                              <span style={{ fontSize: 12, fontWeight: 700, color: sty.color, minWidth: 34 }}>{Math.round(item.confidence * 100)}%</span>
-                            </div>
-                          </td>
-                          {/* Date */}
-                          <td style={{ padding: '12px 12px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{formatDate(item.createdAt)}</td>
-                          {/* Action button */}
-                          <td style={{ padding: '12px 12px' }}>
-                            <a href={act.href}
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', background: 'var(--bg-main)', color: 'var(--text-main)', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: 12, border: `1.5px solid var(--card-border)`, whiteSpace: 'nowrap' }}>
-                              {act.label}
-                            </a>
-                          </td>
-                          {/* Delete */}
-                          <td style={{ padding: '12px 8px' }}>
-                            <button onClick={async () => { await analysisApi.delete(item.id); setHistory(h => h.filter(x => x.id !== item.id)); }}
-                              style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(220,53,69,0.3)', background: 'rgba(220,53,69,0.05)', color: '#dc3545', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <IconTrash />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
 
-          {/* Right: Account Settings */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ background: 'var(--card-bg)', borderRadius: 20, padding: '24px', border: '1px solid var(--card-border)', boxShadow: '0 2px 12px var(--shadow-main)' }}>
-              <h3 style={{ fontWeight: 900, color: 'var(--text-main)', margin: '0 0 18px', fontSize: 18, display: 'flex', alignItems: 'center' }}>
-                <IconSettings /> {t('Account Settings', 'إعدادات الحساب')}
-              </h3>
-
-              {/* Change password */}
-              {!changePwd ? (
-                <button onClick={() => setChangePwd(true)}
-                  style={{ width: '100%', padding: '13px', background: 'var(--primary)', color: 'white', borderRadius: 12, border: 'none', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  {t('Change Password', 'تغيير كلمة المرور')}
-                </button>
-              ) : (
-                <div style={{ background: 'var(--bg-main)', borderRadius: 12, padding: '16px', marginBottom: 10, border: '1px solid var(--card-border)' }}>
+              {editing ? (
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
                   {[
-                    { key: 'current', label: t('Current Password', 'كلمة المرور الحالية') },
-                    { key: 'newPwd', label: t('New Password', 'كلمة المرور الجديدة') },
-                    { key: 'confirm', label: t('Confirm Password', 'تأكيد كلمة المرور') },
-                  ].map(f => (
-                    <div key={f.key} style={{ marginBottom: 10 }}>
-                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>{f.label}</label>
-                      <input type="password" value={pwd[f.key as keyof typeof pwd]}
-                        onChange={e => setPwd({ ...pwd, [f.key]: e.target.value })}
-                        style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid var(--card-border)', background: 'var(--card-bg)', color: 'var(--text-main)', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
-                        onFocus={e => e.target.style.borderColor = 'var(--primary)'} onBlur={e => e.target.style.borderColor = 'var(--card-border)'} />
+                    { key: 'firstName', label: t('First name', 'الاسم الأول'), type: 'text' },
+                    { key: 'lastName', label: t('Last name', 'اسم العائلة'), type: 'text' },
+                    { key: 'phone', label: t('Phone', 'الهاتف'), type: 'tel' },
+                    { key: 'age', label: t('Age', 'العمر'), type: 'number' },
+                  ].map((field) => (
+                    <div key={field.key}>
+                      <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>{field.label}</label>
+                      <input
+                        type={field.type}
+                        value={form[field.key as keyof typeof form] || ''}
+                        onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+                        onFocus={() => setFocused(field.key)}
+                        onBlur={() => setFocused('')}
+                        style={fieldStyle(field.key)}
+                      />
                     </div>
                   ))}
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={handleChangePwd} style={{ flex: 1, padding: '9px', background: 'var(--primary)', color: 'white', borderRadius: 9, border: 'none', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>
-                      {t('Save', 'حفظ')}
-                    </button>
-                    <button onClick={() => { setChangePwd(false); setSaveErr(''); }} style={{ padding: '9px 14px', background: 'var(--bg-main)', color: 'var(--text-main)', borderRadius: 9, border: '1px solid var(--card-border)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>
-                      {t('Cancel', 'إلغاء')}
-                    </button>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>{t('Gender', 'النوع')}</label>
+                    <select
+                      value={form.gender}
+                      onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                      onFocus={() => setFocused('gender')}
+                      onBlur={() => setFocused('')}
+                      style={fieldStyle('gender', { appearance: 'none' })}
+                    >
+                      <option value="">{t('Select', 'اختر')}</option>
+                      <option value="male">{t('Male', 'ذكر')}</option>
+                      <option value="female">{t('Female', 'أنثى')}</option>
+                      <option value="other">{t('Other', 'أخرى')}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>{t('Smoking history', 'تاريخ التدخين')}</label>
+                    <select
+                      value={form.smokingHistory}
+                      onChange={(e) => setForm({ ...form, smokingHistory: e.target.value })}
+                      onFocus={() => setFocused('smokingHistory')}
+                      onBlur={() => setFocused('')}
+                      style={fieldStyle('smokingHistory', { appearance: 'none' })}
+                    >
+                      <option value="">{t('Select', 'اختر')}</option>
+                      <option value="never">{t('Never smoked', 'لم أدخن')}</option>
+                      <option value="former">{t('Former smoker', 'مدخن سابق')}</option>
+                      <option value="current">{t('Current smoker', 'مدخن حالي')}</option>
+                    </select>
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>{t('Medical history', 'التاريخ المرضي')}</label>
+                    <textarea
+                      rows={4}
+                      value={form.medicalHistory}
+                      onChange={(e) => setForm({ ...form, medicalHistory: e.target.value })}
+                      onFocus={() => setFocused('medicalHistory')}
+                      onBlur={() => setFocused('')}
+                      style={fieldStyle('medicalHistory', { resize: 'vertical' })}
+                    />
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 4 }}>
+                    <button type="button" onClick={handleSaveProfile} style={primaryButton}>{t('Save changes', 'حفظ التغييرات')}</button>
+                    <button type="button" onClick={() => { setEditing(false); setSaveErr(''); }} style={secondaryButton}>{t('Cancel', 'إلغاء')}</button>
                   </div>
                 </div>
-              )}
-
-              {/* Delete account */}
-              {!confirmDelete ? (
-                <button onClick={() => setConfirmDelete(true)}
-                  style={{ width: '100%', padding: '13px', background: 'transparent', color: '#dc3545', borderRadius: 12, border: '1.5px solid #dc3545', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                  <IconTrash /> {t('Delete Account', 'حذف الحساب')}
-                </button>
               ) : (
-                <div style={{ background: 'rgba(220,53,69,0.05)', borderRadius: 12, padding: '14px', marginBottom: 10, border: '1.5px solid rgba(220,53,69,0.4)' }}>
-                  <p style={{ fontSize: 13, color: '#dc3545', fontWeight: 700, margin: '0 0 12px' }}>
-                    {t('This cannot be undone!', 'هذا الإجراء لا يمكن التراجع عنه!')}
-                  </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button style={{ flex: 1, padding: '9px', background: '#dc3545', color: 'white', borderRadius: 9, border: 'none', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>
-                      {t('Yes, Delete', 'نعم، احذف')}
-                    </button>
-                    <button onClick={() => setConfirmDelete(false)} style={{ padding: '9px 14px', background: 'var(--bg-main)', color: 'var(--text-main)', borderRadius: 9, border: '1px solid var(--card-border)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13 }}>
-                      {t('Cancel', 'إلغاء')}
-                    </button>
-                  </div>
+                <div>
+                  {infoRow(t('Full name', 'الاسم الكامل'), `${user?.firstName || ''} ${user?.lastName || ''}`.trim())}
+                  {infoRow(t('Phone', 'الهاتف'), user?.phone || '')}
+                  {infoRow(t('Age', 'العمر'), user?.age ? `${user.age}` : '')}
+                  {infoRow(t('Gender', 'النوع'), user?.gender ? (user.gender === 'male' ? t('Male', 'ذكر') : user.gender === 'female' ? t('Female', 'أنثى') : t('Other', 'أخرى')) : '')}
+                  {infoRow(t('Smoking history', 'تاريخ التدخين'), user?.smokingHistory ? (user.smokingHistory === 'never' ? t('Never smoked', 'لم أدخن') : user.smokingHistory === 'former' ? t('Former smoker', 'مدخن سابق') : t('Current smoker', 'مدخن حالي')) : '')}
+                  {infoRow(t('Medical history', 'التاريخ المرضي'), user?.medicalHistory || '')}
                 </div>
               )}
-
-              {/* Logout */}
-              <button onClick={handleLogout}
-                style={{ width: '100%', padding: '13px', background: 'transparent', color: '#dc3545', borderRadius: 12, border: '1.5px solid #dc3545', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                {t('Logout', 'تسجيل الخروج')}
-              </button>
             </div>
 
-            {/* Quick upload */}
-            <a href="/upload" style={{ display: 'block', background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))', color: 'white', borderRadius: 16, padding: '18px', textAlign: 'center', textDecoration: 'none', fontWeight: 800, fontSize: 15, boxShadow: '0 4px 16px var(--shadow-main)' }}>
-              {t('Upload New Scan', 'رفع صورة جديدة')}
-            </a>
+            <div style={{ ...cardStyle, padding: isMobile ? 20 : 24 }}>
+              <div style={{ marginBottom: 18 }}>
+                <h2 style={{ margin: 0, fontSize: 20 }}>{t('Analysis history', 'سجل التحليلات')}</h2>
+                <p style={{ margin: '6px 0 0', color: 'var(--text-muted)', fontSize: 13 }}>
+                  {t('Review past results and open the related report quickly.', 'راجع النتائج السابقة وافتح التقرير المرتبط بسرعة.')}
+                </p>
+              </div>
+
+              {loading ? (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '30px 10px' }}>{t('Loading history...', 'جارٍ تحميل السجل...')}</div>
+              ) : history.length === 0 ? (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '30px 10px' }}>{t('No analyses yet.', 'لا توجد تحليلات بعد.')}</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {history.map((item) => {
+                    const state = getStyle(item.classification);
+                    const action = getActionBtn(item);
+                    return (
+                      <div key={item.id} style={{ border: '1px solid var(--card-border)', borderRadius: 18, padding: isMobile ? 14 : 16 }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ minWidth: 180, flex: 1 }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                              <strong style={{ fontSize: 15 }}>{item.imageType.toUpperCase()}</strong>
+                              <span style={{ padding: '5px 10px', borderRadius: 999, background: state.bg, color: state.color, fontSize: 12, fontWeight: 800 }}>
+                                {item.classification}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, color: 'var(--text-muted)', fontSize: 13 }}>
+                              <span>{t('Date', 'التاريخ')}: {formatDate(item.createdAt)}</span>
+                              <span>{t('Confidence', 'الثقة')}: {Math.round(item.confidence * 100)}%</span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            <a href={action.href} style={{ ...secondaryButton, textDecoration: 'none', minHeight: 40 }}>
+                              {action.label}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await analysisApi.delete(item.id);
+                                setHistory((current) => current.filter((entry) => entry.id !== item.id));
+                              }}
+                              style={{ ...secondaryButton, minHeight: 40, color: '#dc2626', border: '1px solid rgba(220,38,38,0.24)' }}
+                            >
+                              <IconTrash />
+                              {t('Delete', 'حذف')}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ ...cardStyle, padding: isMobile ? 20 : 24 }}>
+              <h2 style={{ margin: '0 0 6px', fontSize: 20 }}>{t('Account controls', 'التحكم في الحساب')}</h2>
+              <p style={{ margin: '0 0 16px', color: 'var(--text-muted)', fontSize: 13 }}>
+                {t('Common actions are grouped in one place for quicker access.', 'تم جمع الإجراءات المتكررة في مكان واحد لسهولة الوصول.')}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button type="button" onClick={() => setChangePwd((value) => !value)} style={{ ...secondaryButton, width: '100%', justifyContent: 'center' }}>
+                  <IconLock />
+                  {changePwd ? t('Hide password form', 'إخفاء نموذج كلمة المرور') : t('Change password', 'تغيير كلمة المرور')}
+                </button>
+                <button type="button" onClick={handleAvatarClick} disabled={avatarUploading} style={{ ...secondaryButton, width: '100%', justifyContent: 'center' }}>
+                  <IconCamera />
+                  {avatarUploading ? t('Uploading photo...', 'جارٍ رفع الصورة...') : t('Update profile photo', 'تحديث صورة الملف الشخصي')}
+                </button>
+                <a href="/upload" style={{ ...primaryButton, width: '100%', justifyContent: 'center', textDecoration: 'none' }}>
+                  <IconUpload />
+                  {t('Upload a new scan', 'رفع صورة جديدة')}
+                </a>
+                <button type="button" onClick={handleLogout} style={{ ...secondaryButton, width: '100%', justifyContent: 'center', color: '#dc2626', border: '1px solid rgba(220,38,38,0.24)' }}>
+                  {t('Sign out', 'تسجيل الخروج')}
+                </button>
+              </div>
+
+              {changePwd && (
+                <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--card-border)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {[
+                      { key: 'current', label: t('Current password', 'كلمة المرور الحالية') },
+                      { key: 'newPwd', label: t('New password', 'كلمة المرور الجديدة') },
+                      { key: 'confirm', label: t('Confirm new password', 'تأكيد كلمة المرور الجديدة') },
+                    ].map((field) => (
+                      <div key={field.key}>
+                        <label style={{ display: 'block', marginBottom: 6, fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>{field.label}</label>
+                        <input
+                          type="password"
+                          value={pwd[field.key as keyof typeof pwd]}
+                          onChange={(e) => setPwd({ ...pwd, [field.key]: e.target.value })}
+                          onFocus={() => setFocused(field.key)}
+                          onBlur={() => setFocused('')}
+                          style={fieldStyle(field.key, { letterSpacing: '0.18em' })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 14 }}>
+                    <button type="button" onClick={handleChangePwd} style={primaryButton}>{t('Save password', 'حفظ كلمة المرور')}</button>
+                    <button type="button" onClick={() => { setChangePwd(false); setSaveErr(''); }} style={secondaryButton}>{t('Cancel', 'إلغاء')}</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ ...cardStyle, padding: isMobile ? 20 : 24 }}>
+              <h2 style={{ margin: '0 0 6px', fontSize: 20 }}>{t('Privacy notice', 'ملاحظة الخصوصية')}</h2>
+              <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.7 }}>
+                {t('Your account information and uploaded scans stay protected and are only used inside your medical workflow.', 'بيانات حسابك والصور المرفوعة تبقى محمية وتستخدم فقط داخل مسار المتابعة الطبية الخاص بك.')}
+              </p>
+            </div>
+
+            <div style={{ ...cardStyle, padding: isMobile ? 20 : 24, border: '1px solid rgba(220,38,38,0.18)' }}>
+              <h2 style={{ margin: '0 0 6px', fontSize: 20, color: '#dc2626' }}>{t('Danger zone', 'منطقة حساسة')}</h2>
+              <p style={{ margin: '0 0 16px', color: 'var(--text-muted)', fontSize: 13 }}>
+                {t('Use this only if you really want to remove your account.', 'استخدم هذا الخيار فقط إذا كنت تريد حذف الحساب بالفعل.')}
+              </p>
+
+              {!confirmDelete ? (
+                <button type="button" onClick={() => setConfirmDelete(true)} style={{ ...secondaryButton, width: '100%', justifyContent: 'center', color: '#dc2626', border: '1px solid rgba(220,38,38,0.24)' }}>
+                  <IconTrash />
+                  {t('Delete account', 'حذف الحساب')}
+                </button>
+              ) : (
+                <div style={{ padding: 14, borderRadius: 16, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.18)' }}>
+                  <p style={{ margin: '0 0 12px', color: '#dc2626', fontSize: 13, fontWeight: 700 }}>
+                    {t('This action cannot be undone.', 'لا يمكن التراجع عن هذا الإجراء.')}
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                    <button type="button" style={{ ...primaryButton, background: '#dc2626', boxShadow: 'none' }}>
+                      {t('Confirm delete', 'تأكيد الحذف')}
+                    </button>
+                    <button type="button" onClick={() => setConfirmDelete(false)} style={secondaryButton}>
+                      {t('Cancel', 'إلغاء')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {showAvatarPreview && avatarSrc && (
+        <div
+          onClick={() => setShowAvatarPreview(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ position: 'relative', maxWidth: 520, width: '100%', padding: 14, borderRadius: 28, background: 'var(--card-bg)', border: '1px solid var(--card-border)', boxShadow: '0 24px 70px rgba(15,23,42,0.32)' }}
+          >
+            <button
+              type="button"
+              onClick={() => setShowAvatarPreview(false)}
+              style={{ position: 'absolute', top: 14, [ar ? 'left' : 'right']: 14, width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--card-border)', background: 'var(--card-bg)', color: 'var(--text-main)', cursor: 'pointer', fontSize: 20, lineHeight: 1 }}
+            >
+              ×
+            </button>
+            <img src={avatarSrc} alt="Profile preview" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 22, display: 'block' }} />
+          </div>
+        </div>
+      )}
+
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap');`}</style>
     </div>
   );

@@ -21,6 +21,7 @@ import './models/AnalysisResult';
 import authRoutes from './routes/auth';
 import analysisRoutes from './routes/analysis';
 import hospitalRoutes from './routes/hospitals';
+import chatRoutes from './routes/chat';
 
 // ── App ──────────────────────────────────────────────────────────────────────
 const app = express();
@@ -88,6 +89,7 @@ app.use(
 app.use('/api/auth', authRoutes);
 app.use('/api/analysis', analysisRoutes);
 app.use('/api/hospitals', hospitalRoutes);
+app.use('/api/chat', chatRoutes);
 
 // ── Health ────────────────────────────────────────────────────────────────────
 const CT_URL = process.env.CT_SERVICE_URL || 'http://localhost:8000';

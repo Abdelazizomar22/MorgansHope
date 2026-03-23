@@ -152,4 +152,9 @@ export const healthApi = {
     api.get<ApiResponse<{ server: string; ai: { ctService: string; xrayService: string }; timestamp: string }>>('/health'),
 };
 
+export const chatApi = {
+  send: (data: { message: string; history: Array<{ role: 'user' | 'assistant'; content: string }> }) =>
+    api.post<ApiResponse<{ reply: string; usedLatestAnalysis: boolean }>>('/chat', data),
+};
+
 export default api;

@@ -49,6 +49,12 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
 
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
+  const menuItemHover = 'color-mix(in srgb, var(--primary) 14%, var(--card-bg))';
+  const menuItemHoverDanger = 'color-mix(in srgb, #ef4444 10%, var(--card-bg))';
+  const apiBase = import.meta.env.VITE_API_URL || '/api';
+  const uploadsBase = apiBase.replace(/\/api\/?$/, '/api/uploads');
+  const avatarSrc = user?.profilePicture ? `${uploadsBase}/${user.profilePicture}` : '';
+  const userInitial = user?.firstName?.[0]?.toUpperCase() || user?.lastName?.[0]?.toUpperCase() || 'U';
 
   const handleLogout = () => { logout(); navigate('/login'); setMenuOpen(false); setNavMobileOpen(false); };
 
@@ -120,12 +126,18 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
               border: '2px solid var(--card-border)', color: 'white',
               fontWeight: 800, fontSize: 14, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'inherit', boxShadow: '0 2px 8px var(--shadow-main)'
+              fontFamily: 'inherit', boxShadow: '0 2px 8px var(--shadow-main)',
+              overflow: 'hidden',
+              padding: 0
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-light)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)'; }}
           >
-              {user.firstName?.[0]?.toUpperCase() || 'U'}
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="User avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                userInitial
+              )}
             </button>
             {menuOpen && (
               <>
@@ -145,9 +157,9 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                     display: 'flex', alignItems: 'center', gap: 8,
                     padding: '10px 16px', textDecoration: 'none',
                     color: 'var(--text-main)', fontWeight: 600, fontSize: 13,
-                    transition: 'background 0.1s',
+                    transition: 'background 0.16s ease, color 0.16s ease',
                   }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-light)'}
+                    onMouseEnter={e => e.currentTarget.style.background = menuItemHover}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <span style={{ color: 'var(--primary)' }}><IconUser /></span>
@@ -159,9 +171,9 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                     borderTop: '1px solid var(--card-border)',
                     textAlign: ar ? 'right' : 'left', cursor: 'pointer',
                     color: '#ef4444', fontWeight: 600, fontSize: 13,
-                    fontFamily: 'inherit', transition: 'background 0.1s',
+                    fontFamily: 'inherit', transition: 'background 0.16s ease, color 0.16s ease',
                   }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-light)'}
+                    onMouseEnter={e => e.currentTarget.style.background = menuItemHoverDanger}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <IconLogout />{t('Sign Out', 'تسجيل الخروج')}
