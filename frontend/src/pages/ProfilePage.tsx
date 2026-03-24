@@ -85,8 +85,13 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
 
   const apiBase = import.meta.env.VITE_API_URL || '/api';
   const uploadsBase = apiBase.replace(/\/api\/?$/, '/api/uploads');
-  const avatarSrc = user?.profilePicture ? `${uploadsBase}/${user.profilePicture}` : '';
+  const avatarSrc = user?.profilePicture
+    ? (/^https?:\/\//i.test(user.profilePicture) || user.profilePicture.startsWith('data:')
+      ? user.profilePicture
+      : `${uploadsBase}/${user.profilePicture}`)
+    : '';
   const userInitial = user?.firstName?.[0]?.toUpperCase() || user?.lastName?.[0]?.toUpperCase() || 'U';
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   const fieldStyle = (field: string, extra?: CSSProperties): CSSProperties => ({
     width: '100%',
@@ -182,7 +187,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
       handleAvatarClick();
       return;
     }
-    if (avatarSrc) {
+    if (avatarSrc && !avatarFailed) {
       setShowAvatarPreview(true);
     }
   };
@@ -239,8 +244,14 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                   disabled={avatarUploading}
                   style={{ width: isMobile ? 88 : 104, height: isMobile ? 88 : 104, borderRadius: '50%', border: '2px solid rgba(var(--primary-rgb),0.32)', background: 'linear-gradient(180deg, rgba(var(--primary-rgb),0.18), rgba(var(--primary-rgb),0.08))', color: 'var(--primary)', display: 'grid', placeItems: 'center', overflow: 'hidden', cursor: avatarUploading ? 'default' : (editing || avatarSrc ? 'pointer' : 'default') }}
                 >
-                  {avatarSrc ? (
-                    <img src={avatarSrc} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {avatarSrc && !avatarFailed ? (
+                    <img
+                      src={avatarSrc}
+                      alt="Avatar"
+                      referrerPolicy="no-referrer"
+                      onError={() => setAvatarFailed(true)}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                   ) : (
                     <span style={{ fontSize: isMobile ? 34 : 40, fontWeight: 900, color: 'var(--primary)', lineHeight: 1 }}>
                       {userInitial}
@@ -563,7 +574,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
         </div>
       </div>
 
-      {showAvatarPreview && avatarSrc && (
+      {showAvatarPreview && avatarSrc && !avatarFailed && (
         <div
           onClick={() => setShowAvatarPreview(false)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 50 }}
@@ -579,7 +590,12 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
             >
               ×
             </button>
-            <img src={avatarSrc} alt="Profile preview" style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 22, display: 'block' }} />
+            <img
+              src={avatarSrc}
+              alt="Profile preview"
+              referrerPolicy="no-referrer"
+              style={{ width: '100%', aspectRatio: '1 / 1', objectFit: 'cover', borderRadius: 22, display: 'block' }}
+            />
           </div>
         </div>
       )}
