@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 interface FooterProps {
@@ -56,11 +56,11 @@ export default function Footer({ lang }: FooterProps) {
                     display: 'grid',
                     gridTemplateColumns: isMobile ? '1fr' : 'minmax(280px, 1.5fr) 1fr 1fr',
                     gap: isMobile ? 40 : 60,
-                    marginBottom: 60,
+                    marginBottom: isMobile ? 12 : 16,
                     alignItems: 'start',
                 }}>
 
-                    {/* LEFT — Brand + Tagline + Social */}
+                    {/* LEFT — Brand + Tagline */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
 
                         {/* Logo + Name — mirrors Navbar exactly */}
@@ -95,34 +95,6 @@ export default function Footer({ lang }: FooterProps) {
                             </p>
                         </div>
 
-                        {/* Social Icons aligned to match 'Morgan's Hope' text */}
-                        <div style={{ display: 'flex', gap: 16, paddingLeft: 12 }}>
-                            {SOCIAL.map(({ Icon, href, label }) => (
-                                <a
-                                    key={label}
-                                    href={href}
-                                    aria-label={label}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                        color: 'white',
-                                        opacity: 0.8,
-                                        transition: 'opacity 0.2s, transform 0.2s',
-                                        display: 'flex',
-                                    }}
-                                    onMouseEnter={e => {
-                                        e.currentTarget.style.opacity = '1';
-                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                    }}
-                                    onMouseLeave={e => {
-                                        e.currentTarget.style.opacity = '0.8';
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                    }}
-                                >
-                                    <Icon />
-                                </a>
-                            ))}
-                        </div>
                     </div>
 
                     {/* MIDDLE — Pages */}
@@ -178,6 +150,33 @@ export default function Footer({ lang }: FooterProps) {
                                         {value}
                                     </span>
                                 </div>
+                            ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: 16, marginTop: 20, paddingTop: 2 }}>
+                            {SOCIAL.map(({ Icon, href, label }) => (
+                                <a
+                                    key={label}
+                                    href={href}
+                                    aria-label={label}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        color: 'white',
+                                        opacity: 0.8,
+                                        transition: 'opacity 0.2s, transform 0.2s',
+                                        display: 'flex',
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.opacity = '1';
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.opacity = '0.8';
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                    }}
+                                >
+                                    <Icon />
+                                </a>
                             ))}
                         </div>
                     </div>

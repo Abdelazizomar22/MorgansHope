@@ -53,8 +53,13 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
   const menuItemHoverDanger = 'color-mix(in srgb, #ef4444 10%, var(--card-bg))';
   const apiBase = import.meta.env.VITE_API_URL || '/api';
   const uploadsBase = apiBase.replace(/\/api\/?$/, '/api/uploads');
-  const avatarSrc = user?.profilePicture ? `${uploadsBase}/${user.profilePicture}` : '';
+  const avatarSrc = user?.profilePicture
+    ? (/^https?:\/\//i.test(user.profilePicture) || user.profilePicture.startsWith('data:')
+      ? user.profilePicture
+      : `${uploadsBase}/${user.profilePicture}`)
+    : '';
   const userInitial = user?.firstName?.[0]?.toUpperCase() || user?.lastName?.[0]?.toUpperCase() || 'U';
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   const handleLogout = () => { logout(); navigate('/login'); setMenuOpen(false); setNavMobileOpen(false); };
 
@@ -133,8 +138,14 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-light)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary)'; }}
           >
-              {avatarSrc ? (
-                <img src={avatarSrc} alt="User avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {avatarSrc && !avatarFailed ? (
+                <img
+                  src={avatarSrc}
+                  alt="User avatar"
+                  referrerPolicy="no-referrer"
+                  onError={() => setAvatarFailed(true)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               ) : (
                 userInitial
               )}
