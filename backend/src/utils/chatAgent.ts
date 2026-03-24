@@ -14,6 +14,13 @@ interface GenerateChatReplyInput {
   latestAnalysis?: InstanceType<typeof AnalysisResult> | null;
 }
 
+type CommandIntent = 'explain_result' | 'summarize_case' | 'next_step' | 'urgent_care' | 'general';
+
+interface TriageResult {
+  level: 'emergency' | 'urgent' | 'routine';
+  matchedSignals: string[];
+}
+
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
@@ -21,9 +28,16 @@ const detectArabic = (text: string) => /[\u0600-\u06FF]/.test(text);
 
 const normalizeText = (text: string) => text.trim().toLowerCase();
 
+const formatPercent = (value?: number | string | null) => {
+  const num = Number(value);
+  if (Number.isNaN(num)) return null;
+  return `${Math.round(num * 100)}%`;
+};
+
 const summarizeUser = (user: InstanceType<typeof User>, ar: boolean) => {
+  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
   const parts = [
-    `${user.firstName} ${user.lastName}`.trim(),
+    fullName || null,
     user.age ? (ar ? `العمر ${user.age}` : `age ${user.age}`) : null,
     user.gender ? (ar ? `النوع ${user.gender}` : `gender ${user.gender}`) : null,
     user.smokingHistory ? (ar ? `تاريخ التدخين ${user.smokingHistory}` : `smoking history ${user.smokingHistory}`) : null,
@@ -38,77 +52,380 @@ const summarizeAnalysis = (analysis?: InstanceType<typeof AnalysisResult> | null
     return ar ? 'لا توجد نتيجة تحليل حديثة مرتبطة بالمستخدم.' : 'There is no recent scan result linked to this user.';
   }
 
-  const confidence = Math.round(Number(analysis.confidence) * 100);
-  return ar
-    ? `آخر تحليل للمستخدم: نوع الصورة ${analysis.imageType}، التصنيف ${analysis.classification}، الثقة ${confidence}%، ${analysis.isMalignant ? 'وقد تحتاج الحالة إلى متابعة عالية الأهمية' : analysis.hasFindings ? 'وتوجد ملاحظات تحتاج متابعة' : 'ولا توجد ملاحظات خطيرة واضحة'}.`
-    : `Latest user analysis: ${analysis.imageType} scan, classification ${analysis.classification}, confidence ${confidence}%, and ${analysis.isMalignant ? 'the case may require high-priority follow-up' : analysis.hasFindings ? 'there are findings that need follow-up' : 'there are no obvious high-risk findings'}.`;
-};
+  const confidence = formatPercent(analysis.confidence) || (ar ? 'غير متاح' : 'not available');
 
-function buildSystemPrompt(ar: boolean, userSummary: string, analysisSummary: string) {
   if (ar) {
     return [
-      'أنت وكيل طبي ذكي داخل منصة Morgan\'s Hope.',
-      'دورك: فهم سؤال المستخدم، الرد بلغة واضحة وهادئة، وتقديم إرشاد طبي معلوماتي فقط بدون تشخيص نهائي.',
-      'النطاق الأساسي للمنصة: صحة الرئة، سرطان الرئة، تفسير نتائج الفحص، التوجيه بعد التحليل، وشرح كيفية استخدام المنصة.',
-      'قواعد صارمة:',
-      '- لا تعطِ تشخيصًا نهائيًا أو جرعات أدوية.',
-      '- إذا كانت الحالة تبدو خطيرة أو توجد أعراض إنذار، انصح بسرعة بمراجعة طبيب أو طوارئ.',
-      '- إذا سأل عن أمر خارج نطاق الرئة، أجب بمعلومة عامة قصيرة ثم وضّح أن المنصة تركز حاليًا على صحة الرئة.',
-      '- استعمل نقاطًا واضحة عند الحاجة.',
-      '- لو سأل عن نتيجة تحليل، استخدم سياق المستخدم ونتيجته الأخيرة إن وُجدت.',
-      `ملخص المستخدم: ${userSummary || 'غير متوفر'}`,
-      `ملخص آخر تحليل: ${analysisSummary}`,
-      'أسلوب الرد: دافئ، مختصر، منظم، وعملي.',
+      `آخر تحليل: نوع الصورة ${analysis.imageType || 'غير محدد'}`,
+      `التصنيف ${analysis.classification || 'غير متاح'}`,
+      `الثقة ${confidence}`,
+      analysis.isMalignant
+        ? 'الحالة تبدو عالية الخطورة وتحتاج متابعة سريعة'
+        : analysis.hasFindings
+          ? 'توجد ملاحظات تحتاج متابعة'
+          : 'لا توجد ملاحظات خطيرة واضحة',
+    ].join('، ');
+  }
+
+  return [
+    `Latest analysis: ${analysis.imageType || 'unspecified'} scan`,
+    `classification ${analysis.classification || 'unavailable'}`,
+    `confidence ${confidence}`,
+    analysis.isMalignant
+      ? 'the case looks high risk and needs prompt follow-up'
+      : analysis.hasFindings
+        ? 'there are findings that need follow-up'
+        : 'there are no obvious high-risk findings',
+  ].join(', ');
+};
+
+const inferConversationMemory = (history: ChatTurn[], ar: boolean) => {
+  const recentUserMessages = history
+    .filter((item) => item.role === 'user')
+    .slice(-6)
+    .map((item) => item.content.trim())
+    .filter(Boolean);
+
+  if (!recentUserMessages.length) {
+    return ar ? 'لا توجد ذاكرة محادثة سابقة مهمة.' : 'No important prior conversation memory.';
+  }
+
+  const joined = normalizeText(recentUserMessages.join(' '));
+  const topics: string[] = [];
+
+  if (/result|analysis|report|scan|نتيجة|تحليل|تقرير|أشعة/.test(joined)) {
+    topics.push(ar ? 'سأل من قبل عن نتيجة التحليل أو التقرير' : 'previously asked about scan results or reports');
+  }
+  if (/symptom|symptoms|cough|breath|pain|fever|blood|عرض|أعراض|سعال|كحة|تنفس|ضيق|ألم|حمى|دم/.test(joined)) {
+    topics.push(ar ? 'تحدث من قبل عن أعراض أو علامات تقلقه' : 'previously discussed symptoms or warning signs');
+  }
+  if (/use|upload|platform|website|رفع|استخدم|منصة|موقع/.test(joined)) {
+    topics.push(ar ? 'طلب مساعدة في استخدام المنصة' : 'asked for help using the platform');
+  }
+  if (/doctor|urgent|emergency|طبيب|طوارئ|فورا|فوراً|عاجل/.test(joined)) {
+    topics.push(ar ? 'كان مهتما بمعرفة متى يحتاج لمراجعة طبية عاجلة' : 'was concerned about when urgent medical review is needed');
+  }
+
+  const lastUserMessage = recentUserMessages[recentUserMessages.length - 1];
+  const lastSnippet = lastUserMessage.length > 140 ? `${lastUserMessage.slice(0, 137)}...` : lastUserMessage;
+
+  if (!topics.length) {
+    return ar ? `آخر ما قاله المستخدم: ${lastSnippet}` : `Most recent user context: ${lastSnippet}`;
+  }
+
+  return ar
+    ? `ذاكرة المحادثة: ${topics.join('، ')}. آخر رسالة للمستخدم: ${lastSnippet}`
+    : `Conversation memory: ${topics.join(', ')}. Latest user message: ${lastSnippet}`;
+};
+
+const inferCommandIntent = (message: string): CommandIntent => {
+  const text = normalizeText(message);
+
+  if (/explain.*result|explain.*analysis|شرح.*نتيجة|اشرح.*نتيجة|اشرح.*تحليل|شرح.*تحليل/.test(text)) {
+    return 'explain_result';
+  }
+  if (/summarize.*case|summarize.*status|summary|لخص.*حالتي|لخص.*وضعي|ملخص.*حالتي|تلخيص.*حالتي/.test(text)) {
+    return 'summarize_case';
+  }
+  if (/next step|what should i do|what do i do now|الخطوة التالية|ماذا أفعل الآن|اعمل ايه|اعمل ماذا/.test(text)) {
+    return 'next_step';
+  }
+  if (/urgent|emergency|go to hospital|seek care|طوارئ|عاجل|مستشفى|أراجع الطبيب فور|متى أراجع الطبيب/.test(text)) {
+    return 'urgent_care';
+  }
+
+  return 'general';
+};
+
+const detectTriage = (message: string, history: ChatTurn[]): TriageResult => {
+  const text = normalizeText(
+    [history.filter((item) => item.role === 'user').slice(-2).map((item) => item.content).join(' '), message]
+      .filter(Boolean)
+      .join(' ')
+  );
+
+  const emergencySignals = [
+    { pattern: /coughing blood|blood in sputum|نفث دم|سعال دم|كحة دم|دم مع الكحة/, label: 'blood' },
+    { pattern: /can'?t breathe|unable to breathe|severe shortness of breath|اختناق|مش عارف اتنفس|ضيق نفس شديد/, label: 'breathing difficulty' },
+    { pattern: /blue lips|confused|passed out|fainted|إغماء|فقدان وعي|ازرقاق/, label: 'critical instability' },
+    { pattern: /severe chest pain|crushing chest pain|ألم صدر شديد/, label: 'severe chest pain' },
+  ];
+
+  const urgentSignals = [
+    { pattern: /persistent cough|chronic cough|سعال مستمر|كحة مستمرة/, label: 'persistent cough' },
+    { pattern: /shortness of breath|ضيق نفس/, label: 'shortness of breath' },
+    { pattern: /unexplained weight loss|فقدان وزن غير مبرر/, label: 'weight loss' },
+    { pattern: /fever|حمى|حرارة/, label: 'fever' },
+    { pattern: /hoarseness|بحة/, label: 'hoarseness' },
+    { pattern: /smoker|smoking|مدخن|تدخين/, label: 'smoking exposure' },
+  ];
+
+  const matchedEmergency = emergencySignals.filter((item) => item.pattern.test(text)).map((item) => item.label);
+  if (matchedEmergency.length) {
+    return { level: 'emergency', matchedSignals: matchedEmergency };
+  }
+
+  const matchedUrgent = urgentSignals.filter((item) => item.pattern.test(text)).map((item) => item.label);
+  if (matchedUrgent.length >= 2 || /urgent|عاجل|فورا|فوراً|طوارئ/.test(text)) {
+    return { level: 'urgent', matchedSignals: matchedUrgent };
+  }
+
+  return { level: 'routine', matchedSignals: matchedUrgent };
+};
+
+const getCaseSummary = (
+  ar: boolean,
+  user: InstanceType<typeof User>,
+  latestAnalysis?: InstanceType<typeof AnalysisResult> | null,
+  triage?: TriageResult,
+) => {
+  const base = summarizeUser(user, ar) || (ar ? 'لا توجد بيانات كثيرة في الملف الشخصي.' : 'There is limited profile data available.');
+  const analysisSummary = summarizeAnalysis(latestAnalysis, ar);
+
+  if (ar) {
+    return [
+      'هذا ملخص حالتك الحالي:',
+      `- بياناتك: ${base}`,
+      `- آخر تحليل: ${analysisSummary}`,
+      `- مستوى المتابعة الحالي: ${
+        triage?.level === 'emergency'
+          ? 'حالة تستدعي الطوارئ'
+          : triage?.level === 'urgent'
+            ? 'تحتاج مراجعة طبية قريبة'
+            : 'لا توجد علامة طارئة واضحة من الرسالة الحالية'
+      }`,
     ].join('\n');
   }
 
   return [
-    'You are the Morgan\'s Hope Smart Medical Assistant.',
-    'Your job is to understand the user, respond calmly, and provide informational medical guidance only, never a final diagnosis.',
-    'Platform focus: lung health, lung cancer screening, respiratory education, scan result explanation, next-step guidance, and platform help.',
+    'Here is your current case summary:',
+    `- Profile: ${base}`,
+    `- Latest analysis: ${analysisSummary}`,
+    `- Current urgency: ${
+      triage?.level === 'emergency'
+        ? 'seek emergency care'
+        : triage?.level === 'urgent'
+          ? 'arrange prompt medical review'
+          : 'no clear emergency signal from the current message'
+    }`,
+  ].join('\n');
+};
+
+const getExplainResultReply = (ar: boolean, analysis?: InstanceType<typeof AnalysisResult> | null) => {
+  if (!analysis) {
+    return ar
+      ? 'لا أرى نتيجة تحليل حديثة في حسابك الآن. بعد رفع فحص مكتمل، أستطيع شرح النتيجة ومعنى التصنيف والخطوة التالية.'
+      : 'I do not see a recent completed analysis in your account yet. Once you have one, I can explain the result, the classification, and the likely next step.';
+  }
+
+  const confidence = formatPercent(analysis.confidence) || (ar ? 'غير متاح' : 'not available');
+
+  if (ar) {
+    return [
+      'هذا شرح مبسط لآخر نتيجة لديك:',
+      `- نوع الفحص: ${analysis.imageType || 'غير محدد'}`,
+      `- التصنيف: ${analysis.classification || 'غير متاح'}`,
+      `- درجة الثقة: ${confidence}`,
+      `- ماذا يعني هذا؟ ${
+        analysis.isMalignant
+          ? 'النتيجة تبدو مقلقة وتحتاج مراجعة سريعة مع طبيب مختص لتأكيدها.'
+          : analysis.hasFindings
+            ? 'هناك ملاحظات تحتاج متابعة طبية، لكنها ليست تشخيصًا نهائيًا وحدها.'
+            : 'لا توجد إشارة عالية الخطورة واضحة في آخر تحليل، مع بقاء المتابعة الطبية حسب الأعراض.'
+      }`,
+      '- مهم: هذه أداة مساعدة ولا تغني عن تقييم الطبيب أو التقرير الرسمي.',
+    ].join('\n');
+  }
+
+  return [
+    'Here is a simple explanation of your latest result:',
+    `- Scan type: ${analysis.imageType || 'unspecified'}`,
+    `- Classification: ${analysis.classification || 'unavailable'}`,
+    `- Confidence: ${confidence}`,
+    `- What it likely means: ${
+      analysis.isMalignant
+        ? 'the result looks concerning and deserves prompt specialist review for confirmation.'
+        : analysis.hasFindings
+          ? 'there are findings worth medical follow-up, but this is not a final diagnosis by itself.'
+          : 'there is no clearly high-risk signal in the latest analysis, while symptoms still matter.'
+    }`,
+    '- Important: this tool is supportive only and does not replace a physician or an official report.',
+  ].join('\n');
+};
+
+const getNextStepReply = (
+  ar: boolean,
+  analysis?: InstanceType<typeof AnalysisResult> | null,
+  triage?: TriageResult,
+) => {
+  if (triage?.level === 'emergency') {
+    return ar
+      ? 'بناءً على الأعراض المذكورة، الخطوة التالية هي طلب رعاية طارئة فورًا أو التوجه لأقرب طوارئ الآن، خاصة إذا كان هناك ضيق نفس شديد أو دم مع السعال أو ألم صدر شديد.'
+      : 'Based on the symptoms mentioned, the next step is to seek emergency care now, especially if there is severe shortness of breath, coughing blood, or severe chest pain.';
+  }
+
+  if (triage?.level === 'urgent' || analysis?.isMalignant) {
+    return ar
+      ? [
+          'الخطوة التالية الأنسب غالبًا:',
+          '- احجز مراجعة قريبة مع طبيب صدرية أو أورام.',
+          '- احتفظ بالتقرير أو صورة الفحص الأخيرة لعرضها على الطبيب.',
+          '- اكتب الأعراض ومدة كل عرض وأي تاريخ تدخين أو مرض مزمن.',
+          '- إذا ساء التنفس أو ظهر دم مع السعال، تحرك للطوارئ فورًا.',
+        ].join('\n')
+      : [
+          'The most appropriate next step is usually:',
+          '- Arrange a prompt visit with a pulmonologist or relevant specialist.',
+          '- Keep your latest scan/report available for review.',
+          '- Write down your symptoms, duration, smoking history, and chronic conditions.',
+          '- If breathing worsens or blood appears with coughing, seek emergency care immediately.',
+        ].join('\n');
+  }
+
+  if (analysis?.hasFindings) {
+    return ar
+      ? [
+          'الخطوة التالية المقترحة:',
+          '- راجع طبيبك خلال وقت قريب لقراءة النتيجة في سياق الأعراض.',
+          '- تابع أي أعراض مستمرة مثل الكحة أو ضيق النفس أو نقص الوزن.',
+          '- لو تحب، أقدر ألخص لك النتيجة بشكل أبسط قبل الزيارة.',
+        ].join('\n')
+      : [
+          'Suggested next step:',
+          '- Review the result with your doctor soon so it can be interpreted with your symptoms.',
+          '- Monitor persistent symptoms such as cough, breathlessness, or weight loss.',
+          '- If you want, I can simplify the result further before your visit.',
+        ].join('\n');
+  }
+
+  return ar
+    ? [
+        'الخطوة التالية المقترحة:',
+        '- استمر في المتابعة حسب الأعراض وتوصيات طبيبك.',
+        '- إذا ظهر سعال مستمر أو ضيق نفس أو فقدان وزن غير مبرر، احجز مراجعة طبية.',
+        '- أقدر أيضًا أشرح لك متى تصبح الأعراض مقلقة أكثر.',
+      ].join('\n')
+    : [
+        'Suggested next step:',
+        '- Continue routine follow-up based on your symptoms and your doctor’s advice.',
+        '- If you develop persistent cough, shortness of breath, or unexplained weight loss, book a medical review.',
+        '- I can also explain which warning signs should raise more concern.',
+      ].join('\n');
+};
+
+const getUrgentCareReply = (ar: boolean, triage: TriageResult) => {
+  if (triage.level === 'emergency') {
+    return ar
+      ? 'هناك مؤشرات مقلقة في رسالتك. إذا كان لديك ضيق نفس شديد، سعال مصحوب بدم، ألم صدر شديد، أو إغماء، فتوجه للطوارئ أو اطلب مساعدة طبية عاجلة الآن.'
+      : 'Your message includes worrying signals. If you have severe shortness of breath, coughing blood, severe chest pain, or fainting, go to emergency care now.';
+  }
+
+  if (triage.level === 'urgent') {
+    return ar
+      ? 'الأعراض المذكورة تستحق مراجعة طبية قريبة خلال أقرب وقت، خصوصًا إذا كانت مستمرة أو تزداد سوءًا. لو ظهر ضيق نفس شديد أو دم مع السعال، تحرك للطوارئ فورًا.'
+      : 'The symptoms mentioned deserve prompt medical review soon, especially if they are persistent or worsening. If severe shortness of breath or blood with coughing appears, seek emergency care immediately.';
+  }
+
+  return ar
+    ? 'لا توجد علامة طارئة واضحة في الرسالة الحالية، لكن إذا ظهرت أعراض مثل ضيق نفس شديد، دم مع السعال، ألم صدر شديد، أو إغماء، فهذه مؤشرات تستدعي رعاية عاجلة.'
+    : 'There is no clear emergency signal in the current message, but symptoms like severe shortness of breath, coughing blood, severe chest pain, or fainting should trigger urgent medical care.';
+};
+
+function buildSystemPrompt(
+  ar: boolean,
+  userSummary: string,
+  analysisSummary: string,
+  memorySummary: string,
+  triage: TriageResult,
+  intent: CommandIntent,
+) {
+  if (ar) {
+    return [
+      'أنت وكيل طبي ذكي داخل منصة Morgan\'s Hope.',
+      'مهمتك تقديم مساعدة معلوماتية عملية ومطمئنة في مجال صحة الرئة دون إعطاء تشخيص نهائي.',
+      'ركز على: شرح النتائج، تلخيص الحالة، اقتراح الخطوة التالية، فرز الأعراض الخطيرة، ومساعدة المستخدم في استخدام المنصة.',
+      'قواعد صارمة:',
+      '- لا تعطي تشخيصًا نهائيًا أو جرعات أدوية.',
+      '- إذا ظهرت أعراض إنذارية خطيرة فاذكر الحاجة لمراجعة عاجلة أو طوارئ بوضوح.',
+      '- استخدم سياق المستخدم وذاكرة المحادثة وآخر تحليل إن وجد.',
+      '- إذا طلب المستخدم أمرًا واضحًا مثل شرح آخر نتيجة أو تلخيص الحالة أو الخطوة التالية، نفذ المطلوب مباشرة.',
+      `ملخص المستخدم: ${userSummary || 'غير متوفر'}`,
+      `ملخص آخر تحليل: ${analysisSummary}`,
+      `ذاكرة المحادثة: ${memorySummary}`,
+      `تصنيف الخطورة الحالي: ${triage.level}${triage.matchedSignals.length ? ` (${triage.matchedSignals.join(', ')})` : ''}`,
+      `نية الرسالة الحالية: ${intent}`,
+      'أسلوب الرد: عربي واضح، قصير نسبيًا، منظم بنقاط عند الحاجة، وعملي.',
+    ].join('\n');
+  }
+
+  return [
+    'You are the Morgan\'s Hope smart medical agent.',
+    'Provide practical, calm, informational guidance focused on lung health without giving a final diagnosis.',
+    'Focus areas: result explanation, case summarization, next-step guidance, triage for risky symptoms, and platform help.',
     'Hard rules:',
     '- Never provide a final diagnosis or medication dosing.',
-    '- If the case sounds urgent or contains red-flag symptoms, advise prompt review by a physician or emergency care.',
-    '- If the question is outside lung health, answer briefly and clarify that Morgan\'s Hope currently focuses on lung health.',
-    '- Use bullet points when helpful.',
-    '- If asked about scan results, use the available user and latest-analysis context carefully.',
+    '- If red-flag symptoms are present, clearly advise urgent review or emergency care.',
+    '- Use user context, conversation memory, and the latest analysis when available.',
+    '- If the user requests a direct command like explain latest result, summarize my case, or suggest next step, fulfill it directly.',
     `User summary: ${userSummary || 'Unavailable'}`,
     `Latest analysis summary: ${analysisSummary}`,
-    'Response style: warm, structured, practical, and not alarmist.',
+    `Conversation memory: ${memorySummary}`,
+    `Current triage: ${triage.level}${triage.matchedSignals.length ? ` (${triage.matchedSignals.join(', ')})` : ''}`,
+    `Current intent: ${intent}`,
+    'Response style: warm, concise, structured, and practical.',
   ].join('\n');
 }
 
-function getHeuristicReply(message: string, ar: boolean, analysis?: InstanceType<typeof AnalysisResult> | null) {
+function getHeuristicReply(
+  message: string,
+  ar: boolean,
+  user: InstanceType<typeof User>,
+  analysis?: InstanceType<typeof AnalysisResult> | null,
+  history: ChatTurn[] = [],
+) {
   const text = normalizeText(message);
+  const intent = inferCommandIntent(message);
+  const triage = detectTriage(message, history);
 
-  if (/hello|hi|hey|مرحبا|اهلا|السلام|ازيك/.test(text)) {
+  if (intent === 'explain_result') {
+    return getExplainResultReply(ar, analysis);
+  }
+
+  if (intent === 'summarize_case') {
+    return getCaseSummary(ar, user, analysis, triage);
+  }
+
+  if (intent === 'next_step') {
+    return getNextStepReply(ar, analysis, triage);
+  }
+
+  if (intent === 'urgent_care') {
+    return getUrgentCareReply(ar, triage);
+  }
+
+  if (/hello|hi|hey|مرحبا|اهلا|أهلا|السلام|ازيك|ازيكم/.test(text)) {
     return ar
-      ? 'مرحبًا، أنا مساعد Morgan\'s Hope الذكي. أقدر أساعدك في أسئلة صحة الرئة، تفسير نتائج الفحص، أو كيفية استخدام المنصة.'
-      : 'Hello, I am the Morgan\'s Hope smart assistant. I can help with lung-health questions, scan result explanations, and platform guidance.';
+      ? 'مرحبًا، أنا مساعد Morgan\'s Hope الذكي. أستطيع شرح آخر نتيجة، تلخيص حالتك، اقتراح الخطوة التالية، أو توضيح متى تحتاج مراجعة عاجلة.'
+      : 'Hello, I am the Morgan\'s Hope smart assistant. I can explain your latest result, summarize your case, suggest the next step, or help clarify when urgent review is needed.';
   }
 
   if (/result|report|analysis|scan|نتيجة|تحليل|تقرير|أشعة/.test(text) && analysis) {
-    const confidence = Math.round(Number(analysis.confidence) * 100);
-    return ar
-      ? `آخر نتيجة متاحة لديك تشير إلى ${analysis.classification} بنسبة ثقة ${confidence}%. ${analysis.isMalignant ? 'هذه النتيجة تستحق متابعة سريعة مع طبيب مختص.' : analysis.hasFindings ? 'يوجد ما يستحق المراجعة الطبية والمتابعة.' : 'لا تظهر ملاحظات خطيرة واضحة في آخر نتيجة.'} إذا أردت، أستطيع شرح معنى النتيجة أو الخطوة التالية.`
-      : `Your latest available result shows ${analysis.classification} with ${confidence}% confidence. ${analysis.isMalignant ? 'This deserves prompt follow-up with a specialist.' : analysis.hasFindings ? 'There are findings worth medical review and follow-up.' : 'There are no clearly high-risk findings in the latest result.'} If you want, I can explain what this result means or suggest the next step.`;
+    return getExplainResultReply(ar, analysis);
   }
 
-  if (/symptom|symptoms|cough|breath|pain|fever|عرض|اعراض|سعال|كحة|تنفس|ألم|حمى/.test(text)) {
-    return ar
-      ? 'لو عندك أعراض تنفسية مستمرة مثل كحة لا تتحسن، ضيق نفس، ألم صدر، أو فقدان وزن غير مبرر، فالأفضل مراجعة طبيب صدرية. إذا أحببت، اكتب لي الأعراض وسأرتبها لك بشكل أوضح.'
-      : 'If you have persistent respiratory symptoms such as a cough that does not improve, shortness of breath, chest pain, or unexplained weight loss, it is best to see a chest physician. If you want, tell me the symptoms and I will help organize them clearly.';
+  if (/symptom|symptoms|cough|breath|pain|fever|blood|عرض|أعراض|سعال|كحة|تنفس|ضيق|ألم|حمى|دم/.test(text)) {
+    return getUrgentCareReply(ar, triage);
   }
 
   if (/upload|how.*use|website|platform|رفع|استخدم|المنصة|الموقع/.test(text)) {
     return ar
-      ? 'يمكنك استخدام المنصة برفع صورة CT أو X-ray من صفحة الرفع، ثم سيظهر لك التصنيف والنتيجة والتوصية التالية. إذا أردت، أشرح لك الخطوات واحدة واحدة.'
-      : 'You can use the platform by uploading a CT or X-ray image from the upload page, then viewing the classification, result, and recommended next step. If you want, I can walk you through it step by step.';
+      ? 'يمكنك استخدام المنصة برفع صورة CT أو X-ray من صفحة الرفع، ثم ستظهر النتيجة والتصنيف والتوصية التالية. وإذا أردت، أشرح لك أيضًا كيف تقرأ النتيجة أو ماذا تفعل بعدها.'
+      : 'You can use the platform by uploading a CT or X-ray image from the upload page, then reviewing the result, classification, and recommended next step. I can also explain how to read the result or what to do after it.';
   }
 
   return ar
-    ? 'أقدر أساعدك بشكل أفضل إذا كتبت سؤالك بصورة محددة أكثر، مثل: شرح نتيجة تحليل، أعراض تقلقك، أو كيفية استخدام المنصة.'
-    : 'I can help better if you ask a more specific question, such as explaining a scan result, discussing concerning symptoms, or how to use the platform.';
+    ? 'أقدر أساعدك بشكل أدق إذا اخترت واحدًا من هذه الطلبات: شرح آخر نتيجة، تلخيص حالتي، اقتراح الخطوة التالية، أو متى أحتاج مراجعة عاجلة.'
+    : 'I can help more precisely if you ask for one of these: explain my latest result, summarize my case, suggest the next step, or tell me when urgent care is needed.';
 }
 
 async function callGemini(systemPrompt: string, history: ChatTurn[], message: string) {
@@ -121,7 +438,7 @@ async function callGemini(systemPrompt: string, history: ChatTurn[], message: st
       role: 'model',
       parts: [{ text: 'Understood. I will respond as the Morgan\'s Hope smart medical assistant.' }],
     },
-    ...history.slice(-8).map((item) => ({
+    ...history.slice(-10).map((item) => ({
       role: item.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: item.content }],
     })),
@@ -146,17 +463,24 @@ export async function generateChatReply({
   user,
   latestAnalysis,
 }: GenerateChatReplyInput): Promise<string> {
-  const ar = detectArabic(message);
+  const ar = detectArabic(`${message} ${history.map((item) => item.content).join(' ')}`);
+  const intent = inferCommandIntent(message);
+  const triage = detectTriage(message, history);
   const userSummary = summarizeUser(user, ar);
   const analysisSummary = summarizeAnalysis(latestAnalysis, ar);
-  const heuristic = getHeuristicReply(message, ar, latestAnalysis);
+  const memorySummary = inferConversationMemory(history, ar);
+  const heuristic = getHeuristicReply(message, ar, user, latestAnalysis, history);
 
   if (!GEMINI_API_KEY) {
     return heuristic;
   }
 
   try {
-    const reply = await callGemini(buildSystemPrompt(ar, userSummary, analysisSummary), history, message);
+    const reply = await callGemini(
+      buildSystemPrompt(ar, userSummary, analysisSummary, memorySummary, triage, intent),
+      history,
+      message,
+    );
     return reply || heuristic;
   } catch (error) {
     console.error('Chat agent fallback triggered:', error);

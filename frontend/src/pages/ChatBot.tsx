@@ -35,15 +35,15 @@ export default function ChatBot({ lang }: ChatBotProps) {
   const quickPrompts = ar
     ? [
       'اشرح آخر نتيجة تحليل',
-      'ما أعراض سرطان الرئة؟',
-      'متى أراجع الطبيب فورًا؟',
-      'كيف أستخدم المنصة؟',
+      'لخص حالتي',
+      'ما الخطوة التالية؟',
+      'متى أحتاج مراجعة عاجلة؟',
     ]
     : [
       'Explain my latest result',
-      'What are the symptoms of lung cancer?',
+      'Summarize my case',
+      'What should I do next?',
       'When should I seek urgent care?',
-      'How do I use the platform?',
     ];
 
   useEffect(() => {
@@ -114,8 +114,8 @@ export default function ChatBot({ lang }: ChatBotProps) {
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 620, margin: '0 auto' }}>
           {t(
-            'A stronger medical assistant for lung-health questions, result explanation, and next-step guidance.',
-            'مساعد أقوى لأسئلة صحة الرئة، وشرح النتائج، واقتراح الخطوة التالية.'
+            'A smarter agent for result explanation, case summaries, next-step guidance, and urgent-symptom triage.',
+            'وكيل أذكى لشرح النتائج، تلخيص الحالة، اقتراح الخطوة التالية، وفرز الأعراض العاجلة.'
           )}
         </p>
       </div>
@@ -152,8 +152,8 @@ export default function ChatBot({ lang }: ChatBotProps) {
             </p>
             <p style={{ fontSize: 14, opacity: 0.7, marginBottom: 18 }}>
               {t(
-                'Ask about symptoms, your latest analysis, warning signs, or how to use the platform.',
-                'اسأل عن الأعراض، أو آخر نتيجة تحليل، أو علامات الخطر، أو كيفية استخدام المنصة.'
+                'Ask about your latest analysis, a summary of your case, the next step, or warning signs that need urgent review.',
+                'اسأل عن آخر نتيجة، أو ملخص حالتك، أو الخطوة التالية، أو علامات الخطر التي تحتاج مراجعة عاجلة.'
               )}
             </p>
 
@@ -241,7 +241,7 @@ export default function ChatBot({ lang }: ChatBotProps) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={t('Ask me anything about lung health or your results...', 'اسألني أي شيء عن صحة الرئة أو نتائجك...')}
+          placeholder={t('Ask about your latest result, your case summary, or the next step...', 'اسأل عن آخر نتيجة، أو ملخص حالتك، أو الخطوة التالية...')}
           style={{
             flex: 1,
             padding: '12px 20px',
