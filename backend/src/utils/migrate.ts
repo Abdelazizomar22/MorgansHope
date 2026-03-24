@@ -4,6 +4,7 @@ import '../models/User';
 import '../models/City';
 import '../models/Hospital';
 import '../models/AnalysisResult';
+import '../models/ChatMessage';
 
 async function migrate() {
   try {

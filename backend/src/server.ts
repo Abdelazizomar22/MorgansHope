@@ -17,6 +17,7 @@ import User from './models/User';
 import './models/City';
 import './models/Hospital';
 import './models/AnalysisResult';
+import './models/ChatMessage';
 
 import authRoutes from './routes/auth';
 import analysisRoutes from './routes/analysis';

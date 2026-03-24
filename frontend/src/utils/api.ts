@@ -153,8 +153,8 @@ export const healthApi = {
 };
 
 export const chatApi = {
-  send: (data: { message: string; history: Array<{ role: 'user' | 'assistant'; content: string }> }) =>
-    api.post<ApiResponse<{ reply: string; usedLatestAnalysis: boolean }>>('/chat', data),
+    send: (data: { message: string; history: Array<{ role: 'user' | 'assistant'; content: string }> }) =>
+      api.post<ApiResponse<{ reply: string; usedLatestAnalysis: boolean; memoryTurnsUsed: number }>>('/chat', data),
 };
 
 export default api;
