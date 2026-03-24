@@ -45,7 +45,7 @@ export function AboutPage({ lang }: AboutPageProps) {
         {/* Hero */}
         <section style={{ background: 'linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%)', color: 'white', padding: isMobile ? '40px 20px' : '70px 40px', textAlign: 'center', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
           <MotionFade direction="up" delay={0.1}>
-            <h1 style={{ fontSize: isMobile ? 32 : 38, fontWeight: 900, margin: '0 0 8px', position: 'relative', zIndex: 2 }}>Morgan's <span style={{ opacity: 0.9 }}>Hope</span></h1>
+            <h1 style={{ fontSize: isMobile ? 32 : 38, fontWeight: 900, margin: '0 0 14px', position: 'relative', zIndex: 2 }}>Morgan's <span style={{ opacity: 0.9 }}>Hope</span></h1>
             <p style={{ fontSize: isMobile ? 15 : 17, fontStyle: 'italic', opacity: 0.95, margin: '0 0 16px', position: 'relative', zIndex: 2 }}>
               {t('"Legacy of Care, Vision of Hope."', '"إرث من الرعاية، ورؤية من الأمل."')}
             </p>
@@ -65,8 +65,8 @@ export function AboutPage({ lang }: AboutPageProps) {
                 <h2 style={{ fontSize: isMobile ? 24 : 28, fontWeight: 900, color: 'var(--text-main)', marginBottom: 16 }}>
                   {t('The Story Behind "Morgan\'s Hope"', 'القصة وراء "مورجان هوب"')}
                 </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? 14 : 16, lineHeight: 1.8, maxWidth: 740, margin: '0 auto' }}>
-                  {t("Inspired by the legendary character Arthur Morgan, whose tragic battle with tuberculosis—a severe lung disease—left a lasting impact on millions. His story is a poignant reminder of how silent and devastating respiratory illnesses can be. Morgan's Hope was founded on the belief that early detection is the ultimate weapon against these invisible enemies. We built this AI platform to give patients the 'second chance' that many, like Arthur, never had.", "مستوحى من الشخصية الأسطورية آرثر مورجان، الذي ترك صراعه المأساوي مع مرض السل—وهو مرض رئوي حاد—أثراً لا يُنسى في ملايين الأشخاص. قصته هي تذكير مؤثر بمدى صمت وفتك أمراض الجهاز التنفسي. تأسس 'مورجان هوب' على إيمان بأن الكشف المبكر هو السلاح الأقوى ضد هذه الأعداء الخفية. لقد بنينا منصة الذكاء الاصطناعي هذه لمنح المرضى 'الفرصة الثانية' التي لم يحظَ بها الكثيرون، مثل آرثر.")}
+                <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? 14 : 16, lineHeight: 1.78, maxWidth: 740, margin: '0 auto' }}>
+                  {t("Morgan's Hope was inspired by Arthur Morgan and his tragic fight with tuberculosis. His story reflects how silent and dangerous lung disease can be. We built this platform on one belief: early detection gives patients a real second chance.", "استلهمنا Morgan's Hope من قصة آرثر مورجان وصراعه المأساوي مع السل. قصته تذكرنا بمدى صمت وخطورة أمراض الرئة. بنينا هذه المنصة على إيمان واحد: الكشف المبكر يمنح المريض فرصة ثانية حقيقية.")}
                 </p>
               </div>
             </MotionHoverScale>
@@ -82,10 +82,8 @@ export function AboutPage({ lang }: AboutPageProps) {
                 <h2 style={{ fontSize: isMobile ? 24 : 28, fontWeight: 900, color: 'var(--text-main)', marginBottom: 16 }}>
                   {t('Who we are?', 'من نحن؟')}
                 </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? 14 : 16, lineHeight: 1.8, maxWidth: 700, margin: '0 auto' }}>
-                  {t("Morgan's Hope aims to ease the patient's diagnostic journey using Artificial Intelligence. We provide a platform that seamlessly connects patients with cutting-edge medical imaging analysis, empowering early and accurate detection.", "مشروع مورجان هوب يستهدف التسهيل للمرضى باستخدام الذكاء الاصطناعي. نحن نقدم منصة تربط بسلاسة بين المرضى وتحليل الصور الطبية المتطور، لتمكين الكشف المبكر والدقيق.")}
-                  <br /><br />
-                  {t("Our latest features include a sophisticated AI Medical Chatbot for instant health guidance and a Batch Scanning system that processes multiple images simultaneously, saving valuable time.", "تشمل أحدث ميزاتنا مساعداً طبياً ذكياً للحصول على إرشادات صحية فورية، ونظام فحص للدفعات يعالج صوراً متعددة في نفس الوقت، مما يوفر وقتاً ثميناً.")}
+                <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? 14 : 16, lineHeight: 1.78, maxWidth: 700, margin: '0 auto' }}>
+                  {t("Morgan's Hope simplifies the diagnostic journey through AI-powered imaging analysis. It offers faster, clearer early-screening support, with a smart medical chatbot and batch scanning for multiple images at once.", "Morgan's Hope يبسّط رحلة التشخيص عبر تحليل الصور الطبية بالذكاء الاصطناعي. ويوفر دعمًا أسرع وأوضح للكشف المبكر، مع مساعد طبي ذكي ونظام فحص دفعات لمعالجة عدة صور في وقت واحد.")}
                 </p>
               </div>
             </MotionHoverScale>

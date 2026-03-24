@@ -107,7 +107,7 @@ export function ContactPage({ lang }: ContactPageProps) {
     {
       icon: <IconPhone />,
       label: t('Talk to our support experts', 'تحدث مع خبرائنا للدعم'),
-      value: '+20 2 35169531',
+      value: '0235169531',
     },
     {
       icon: <IconMail />,
@@ -383,8 +383,8 @@ export function ContactPage({ lang }: ContactPageProps) {
                         <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
                           {t('Next step', 'الخطوة التالية')}
                         </div>
-                        <div style={{ marginTop: 8, fontSize: 15, fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.7 }}>
-                          {t('You can send another message now or come back later for follow-up.', 'يمكنك إرسال رسالة أخرى الآن أو العودة لاحقًا للمتابعة.')}
+                        <div style={{ marginTop: 8, fontSize: 15, fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.6 }}>
+                          {t('Send another message now, or return later for follow-up.', 'أرسل رسالة أخرى الآن، أو ارجع لاحقًا للمتابعة.')}
                         </div>
                       </div>
                     </div>
