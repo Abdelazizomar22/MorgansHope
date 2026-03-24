@@ -25,6 +25,7 @@ interface AuthContextType {
 interface RegisterData {
   firstName: string; lastName: string; email: string;
   password: string; confirmPassword: string;
+  acceptedDisclaimer: boolean;
   phone?: string; age?: number;
   gender?: 'male' | 'female' | 'other';
   smokingHistory?: 'never' | 'former' | 'current';

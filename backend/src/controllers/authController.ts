@@ -45,6 +45,9 @@ export const registerValidators = [
     if (val !== req.body.password) throw new Error('Passwords do not match');
     return true;
   }),
+  body('acceptedDisclaimer')
+    .custom((value) => value === true)
+    .withMessage('You must accept the medical disclaimer to continue'),
   body('phone').optional().trim(),
 ];
 

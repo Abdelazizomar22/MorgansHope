@@ -169,6 +169,7 @@ export default function RegisterPage() {
         email: form.email,
         password: form.password,
         confirmPassword: form.confirmPassword,
+        acceptedDisclaimer: agreed,
         phone: form.phone || undefined,
         age: form.age ? parseInt(form.age, 10) : undefined,
         gender: (form.gender || undefined) as 'male' | 'female' | 'other' | undefined,
