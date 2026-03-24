@@ -22,7 +22,7 @@ Opens http://localhost:3001. Set `VITE_API_URL` if the API is not at the same ho
 npm run build
 ```
 
-Output: `dist/`. For production deploy (e.g. Netlify) use **Publish directory:** `dist`.
+Output: `dist/`.
 
 ## Structure
 

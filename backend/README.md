@@ -1,17 +1,19 @@
-# Backend — Morgan's Hope API
+# Backend - Morgan's Hope API
 
-Node.js + Express + TypeScript + Sequelize (MySQL). Port **3000**.
+Node.js + Express + TypeScript + Sequelize. Runs on port `3000`.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and set DB and URLs:
+1. Copy `.env.example` to `.env`
+2. Set the values you need:
+   - `USE_SQLITE=1` for local SQLite development
+   - or external DB credentials if you do not want SQLite
+   - `CT_SERVICE_URL`
+   - `XRAY_SERVICE_URL`
+   - `GEMINI_API_KEY`
+   - `FRONTEND_URL` for production CORS
 
-   - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
-   - `CT_SERVICE_URL` (default http://localhost:8000)
-   - `XRAY_SERVICE_URL` (default http://localhost:8001)
-   - `FRONTEND_URL` for CORS in production
-
-2. Install and prepare DB:
+Install dependencies and prepare the database:
 
 ```bash
 npm install
@@ -25,9 +27,14 @@ npm run seed
 npm run dev
 ```
 
-API: http://localhost:3000. Health: http://localhost:3000/api/health.
+Notes:
+- `npm run dev` uses `ts-node` for better compatibility on this Windows setup.
+- `npm run dev:watch` keeps the older watcher-based flow.
 
-## Build (production)
+API: `http://localhost:3000`
+Health: `http://localhost:3000/api/health`
+
+## Build
 
 ```bash
 npm run build
@@ -36,12 +43,12 @@ npm run start
 
 ## Structure
 
-- `src/server.ts` — Express app, middleware, routes
-- `src/config/database.ts` — Sequelize config
-- `src/models/` — User, AnalysisResult, Hospital, City
-- `src/controllers/` — auth, analysis, hospital
-- `src/routes/` — auth, analysis, hospitals
-- `src/middleware/` — auth, upload
-- `src/utils/` — migrate, seed, asyncHandler
+- `src/server.ts` - Express app and route setup
+- `src/config/database.ts` - Sequelize config
+- `src/models/` - User, AnalysisResult, Hospital, City, ChatMessage
+- `src/controllers/` - auth, analysis, hospital
+- `src/routes/` - auth, analysis, hospitals, chat
+- `src/middleware/` - auth, upload
+- `src/utils/` - migrate, seed, asyncHandler, chatAgent
 
-Uploads are stored in `uploads/` (created automatically). AI calls go to CT and X-Ray services via `CT_SERVICE_URL` and `XRAY_SERVICE_URL`.
+Uploads are stored in `uploads/`. Chat memory is stored in the `chat_messages` table.

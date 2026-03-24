@@ -271,11 +271,11 @@ if (-not $SkipAI) {
 }
 
 # Backend
-Start-Service -Name "Backend"  -Dir $BackendDir  -Command "npm" -CmdArgs "run dev"
+Start-Service -Name "Backend"  -Dir $BackendDir  -Command "cmd.exe" -CmdArgs "/c npm.cmd run dev"
 Start-Sleep -Seconds 3
 
 # Frontend
-Start-Service -Name "Frontend" -Dir $FrontendDir -Command "npm" -CmdArgs "run dev"
+Start-Service -Name "Frontend" -Dir $FrontendDir -Command "cmd.exe" -CmdArgs "/c npm.cmd run dev"
 Start-Sleep -Seconds 3
 
 # 6. HEALTH CHECK LOOP
