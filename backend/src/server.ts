@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
 
 import sequelize from './config/database';
+import passport from './config/passport';
 import User from './models/User';
 import './models/City';
 import './models/Hospital';
@@ -48,6 +49,7 @@ app.use(compression());
 
 // ── Cookie parser ─────────────────────────────────────────────────────────────
 app.use(cookieParser());
+app.use(passport.initialize());
 
 // ── Request ID tracing ────────────────────────────────────────────────────────
 app.use((_req, res, next) => {

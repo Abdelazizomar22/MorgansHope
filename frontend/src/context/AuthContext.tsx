@@ -15,6 +15,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  completeSocialLogin: (token: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: SafeUser) => void;
@@ -89,6 +90,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate(redirectTo, { replace: true });
   };
 
+  const completeSocialLogin = async (incomingToken: string) => {
+    localStorage.setItem('medtech_token', incomingToken);
+    setToken(incomingToken);
+    const res = await authApi.me();
+    const currentUser = res.data.data ?? null;
+    setUser(currentUser);
+
+    const redirectTo = sessionStorage.getItem(REDIRECT_KEY) || '/';
+    sessionStorage.removeItem(REDIRECT_KEY);
+    navigate(redirectTo, { replace: true });
+  };
+
   // ── Register ──────────────────────────────────────────────────────────────
   const register = async (data: RegisterData) => {
     const res = await authApi.register(data);
@@ -125,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [location, user, loading]);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isAdmin, login, register, logout, updateUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, loading, isAdmin, login, completeSocialLogin, register, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
