@@ -63,6 +63,39 @@ Default admin:
 
 ---
 
+## Pre-Launch QA (Required)
+
+Run this quick checklist before production deployment:
+
+- Authentication
+  - Email/password login works with valid and invalid credentials.
+  - `Keep me signed in` tested both checked and unchecked.
+  - Google login tested for:
+    - new user creation,
+    - existing user login,
+    - cancel/deny flow from Google,
+    - account without a usable photo (fallback initial must appear).
+
+- Registration safety
+  - Registration fails with a clear message when medical disclaimer is not accepted.
+  - Registration succeeds only after disclaimer acceptance.
+
+- Contact flow
+  - Contact form submission succeeds in UI.
+  - Inbox email includes sender name, sender email, phone, message, and submitted time.
+
+- Chatbot behavior
+  - General greeting (for example: "Hi" / "ازيك") gets a normal conversational reply.
+  - Medical questions still trigger triage-aware guidance.
+  - Commands like "explain my latest result" and "suggest next step" return focused responses.
+
+- Production configuration
+  - Production OAuth callback/origin values are set in Google Cloud Console.
+  - Production `FRONTEND_URL`, `VITE_API_URL`, and backend env values are set correctly.
+  - All exposed/previously shared keys are rotated before launch.
+
+---
+
 ## Disclaimer
 
 This system is a diagnostic support tool only and does not replace a physician's judgment. All results should be reviewed by a qualified medical professional.
