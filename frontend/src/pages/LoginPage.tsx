@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthLayout, AuthSection } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
@@ -65,7 +65,7 @@ const IconMoon = () => (
 );
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, completeSocialLogin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [lang, setLang] = useState<'en' | 'ar'>('en');
   const [email, setEmail] = useState('');
@@ -78,7 +78,32 @@ export default function LoginPage() {
 
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
-  const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL;
+  const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/google`;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const socialToken = params.get('token');
+    const googleAuth = params.get('googleAuth');
+    const socialError = params.get('message');
+
+    if (googleAuth === 'error' && socialError) {
+      setError(socialError);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    if (googleAuth === 'success' && socialToken) {
+      setLoading(true);
+      completeSocialLogin(socialToken)
+        .catch(() => {
+          setError(t('Google sign-in could not be completed. Please try again.', 'تعذر إكمال تسجيل الدخول عبر Google. حاول مرة أخرى.'));
+        })
+        .finally(() => {
+          setLoading(false);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        });
+    }
+  }, [completeSocialLogin]);
 
   const handleSubmit = async () => {
     if (!email || !pass) {

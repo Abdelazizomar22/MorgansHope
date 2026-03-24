@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
+import passport from '../config/passport';
+import { authCookieOptions, makeGoogleAccessToken, makeGoogleRefreshToken } from '../config/passport';
 import {
   register, registerValidators,
   login, loginValidators,
@@ -14,6 +16,18 @@ import { authenticate } from '../middleware/auth';
 import upload from '../middleware/upload';
 
 const router = Router();
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
+const GOOGLE_CONFIGURED = Boolean(
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.GOOGLE_CALLBACK_URL,
+);
+
+const googleRedirect = (status: 'success' | 'error', params: Record<string, string>) => {
+  const search = new URLSearchParams({ googleAuth: status, ...params });
+  return `${FRONTEND_URL}/login?${search.toString()}`;
+};
 
 router.get('/debug', async (req: Request, res: Response) => {
   if (process.env.NODE_ENV === 'production') {
@@ -68,6 +82,33 @@ router.get('/dev-setup', async (req: Request, res: Response) => {
     email,
     password,
   });
+});
+
+router.get('/google', (req, res, next) => {
+  if (!GOOGLE_CONFIGURED) {
+    return res.redirect(googleRedirect('error', { message: 'Google sign-in is not configured yet.' }));
+  }
+
+  return passport.authenticate('google', { session: false, scope: ['profile', 'email'] })(req, res, next);
+});
+
+router.get('/google/callback', (req, res, next) => {
+  if (!GOOGLE_CONFIGURED) {
+    return res.redirect(googleRedirect('error', { message: 'Google sign-in is not configured yet.' }));
+  }
+
+  return passport.authenticate('google', { session: false }, async (error: unknown, user?: InstanceType<typeof User>) => {
+    if (error || !user) {
+      const message = error instanceof Error ? error.message : 'Google sign-in failed.';
+      return res.redirect(googleRedirect('error', { message }));
+    }
+
+    const accessToken = makeGoogleAccessToken(user.id);
+    const refreshToken = makeGoogleRefreshToken(user.id);
+
+    res.cookie('medtech_refresh', refreshToken, authCookieOptions(30 * 24 * 60 * 60 * 1000));
+    return res.redirect(googleRedirect('success', { token: accessToken }));
+  })(req, res, next);
 });
 
 router.post('/register', registerValidators, register);

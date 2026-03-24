@@ -225,10 +225,9 @@ export function ContactPage({ lang }: ContactPageProps) {
                           }}
                         />
                       </div>
-                      {/* 
-                      <div style={{ gridColumn: 'span 2' }}>
+                      <div style={{ gridColumn: '1 / -1' }}>
                         <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
-                          {t("Phone Number*", "رقم الهاتف*")}
+                          {t("Phone Number", "رقم الهاتف")}
                         </label>
                         <input
                           type="tel"
@@ -243,7 +242,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                             outline: 'none'
                           }}
                         />
-                      </div> */}
+                      </div>
 
                       <div style={{ gridColumn: '1 / -1' }}> {/* 1 / -1 */}
                         <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
