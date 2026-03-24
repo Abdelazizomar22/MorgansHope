@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+﻿import type { CSSProperties, ReactNode } from 'react';
 
 interface AuthLayoutProps {
   dir: 'ltr' | 'rtl';
@@ -57,9 +57,9 @@ export function AuthLayout({
             <div className="auth-brand-copy" style={{ maxWidth: 660, margin: '0 auto' }}>
               <h1 className="auth-brand-title" style={{ fontSize: 'clamp(3.4rem, 6.6vw, 5.2rem)', letterSpacing: '-0.065em', lineHeight: 0.92, transform: 'translateY(-104px)' }}>
                 <span>Morgan&apos;s</span>
-                <span style={{ color: 'rgba(255, 255, 255, 0.82)' }}>Hope</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.82)', fontStyle: 'italic', fontWeight: 500 }}>Hope</span>
               </h1>
-              <p className="auth-brand-slogan" style={{ marginTop: -30, fontSize: 'clamp(0.98rem, 1.45vw, 1.1rem)', transform: 'translateY(-70px)' }}>{brandSlogan}</p>
+              <p className="auth-brand-slogan" style={{ marginTop: -26, fontSize: 'clamp(0.98rem, 1.45vw, 1.1rem)', transform: 'translateY(-66px)' }}>{brandSlogan}</p>
             </div>
           </div>
 
@@ -111,3 +111,4 @@ export function AuthSection({ badge, title, description, children }: AuthSection
     </section>
   );
 }
+
