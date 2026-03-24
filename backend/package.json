@@ -4,7 +4,8 @@
   "description": "Morgan's Hope — AI Lung Cancer Detection API",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "ts-node src/server.ts",
+    "dev:watch": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "migrate": "ts-node src/utils/migrate.ts",
