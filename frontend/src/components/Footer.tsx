@@ -138,7 +138,7 @@ export default function Footer({ lang }: FooterProps) {
                         </h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             {[
-                                { label: t('Phone', 'الهاتف'), value: '+20 2 35169531' },
+                                { label: t('Phone', 'الهاتف'), value: '0235169531' },
                                 { label: t('Email', 'البريد'), value: 'morganshope40@gmail.com' },
                                 { label: t('Address', 'العنوان'), value: t('6th of October City, Giza, Egypt', 'مدينة 6 أكتوبر، الجيزة، مصر') },
                             ].map(({ label, value }) => (

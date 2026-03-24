@@ -216,12 +216,6 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
 
   const formatDate = (date: string) => new Date(date).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
 
-  const getActionBtn = (item: AnalysisResult) => {
-    if (item.isMalignant) return { label: t('Recommended hospitals', 'المستشفيات المقترحة'), href: '/hospitals' };
-    if (item.imageType === 'xray') return { label: t('Open PDF', 'فتح PDF'), href: `/results?id=${item.id}` };
-    return { label: t('Open report', 'فتح التقرير'), href: `/results?id=${item.id}` };
-  };
-
   const infoRow = (label: string, value?: string | null) => (
     <div style={{ padding: '14px 0', borderTop: '1px solid color-mix(in srgb, var(--card-border) 88%, transparent)' }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
@@ -440,11 +434,10 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {history.map((item) => {
                     const state = getStyle(item.classification);
-                    const action = getActionBtn(item);
                     return (
                       <div key={item.id} style={{ border: '1px solid var(--card-border)', borderRadius: 18, padding: isMobile ? 14 : 16 }}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ minWidth: 180, flex: 1 }}>
+                        <div style={{ display: 'block' }}>
+                          <div style={{ minWidth: 180 }}>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 8 }}>
                               <strong style={{ fontSize: 15 }}>{item.imageType.toUpperCase()}</strong>
                               <span style={{ padding: '5px 10px', borderRadius: 999, background: state.bg, color: state.color, fontSize: 12, fontWeight: 800 }}>
@@ -457,17 +450,28 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                            <a href={action.href} style={{ ...secondaryButton, textDecoration: 'none', minHeight: 40 }}>
-                              {action.label}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'flex-start', marginTop: 12 }}>
+                            <a
+                              href={`/results?id=${item.id}`}
+                              style={{ ...secondaryButton, textDecoration: 'none', minHeight: 40, minWidth: 158 }}
+                            >
+                              {t('View report', 'عرض التقرير')}
                             </a>
+                            {item.isMalignant && (
+                              <a
+                                href="/hospitals"
+                                style={{ ...secondaryButton, textDecoration: 'none', minHeight: 40, minWidth: 158 }}
+                              >
+                                {t('Recommended hospitals', 'المستشفيات المقترحة')}
+                              </a>
+                            )}
                             <button
                               type="button"
                               onClick={async () => {
                                 await analysisApi.delete(item.id);
                                 setHistory((current) => current.filter((entry) => entry.id !== item.id));
                               }}
-                              style={{ ...secondaryButton, minHeight: 40, color: '#dc2626', border: '1px solid rgba(220,38,38,0.24)' }}
+                              style={{ ...secondaryButton, minHeight: 40, color: '#dc2626', border: '1px solid rgba(220,38,38,0.24)', minWidth: 108 }}
                             >
                               <IconTrash />
                               {t('Delete', 'حذف')}

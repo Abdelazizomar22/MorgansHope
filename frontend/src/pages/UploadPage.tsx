@@ -153,7 +153,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const sideCards = [
     { Icon: IconShield, title: t('Privacy First', 'خصوصيتك أولاً'), body: t('Your images are processed securely and never shared with third parties.', 'صورك تُعالج بأمان ولا تُشارك مع أطراف خارجية أبداً.'), source: '' },
     { Icon: IconBrain, title: t('AI Models', 'نماذج الذكاء الاصطناعي'), body: t('Accurate and reliable AI algorithms specialized for Chest CT and X-Ray analysis.', 'خوارزميات ذكاء اصطناعي دقيقة ومخصصة لتحليل صور الصدر.'), source: '' },
-    { Icon: IconZap, title: t('Fast Batch Processing', 'معالجة سريعة للدفعات'), body: t('Upload multiple scans at once. Analysis completes in a very short time depending on batch size.', 'ارفع صوراً متعددة دفعة واحدة. التحليل يكتمل في وقت قصير جداً حسب حجم الدفعة.'), source: t('Powered by GPU-accelerated inference', 'مدعوم بمعالجة GPU السريعة') },
+    { Icon: IconZap, title: t('Fast Batch Processing', 'معالجة سريعة للدفعات'), body: t('Upload multiple scans at once. Results are processed quickly and shown one by one.', 'ارفع عدة صور دفعة واحدة. تتم المعالجة بسرعة وتظهر النتائج بشكل منظم.'), source: '' },
   ];
 
   return (
@@ -289,12 +289,12 @@ export default function UploadPage({ lang }: UploadPageProps) {
             </div>
 
             {/* Warning */}
-            <div style={{ background: 'var(--warning-bg)', borderRadius: 12, padding: '14px', border: '1.5px solid var(--warning-border)', display: 'flex', gap: 9, alignItems: 'flex-start' }}>
-              <div style={{ color: 'var(--warning-text)', marginTop: 1, flexShrink: 0 }}><IconAlertTriangle /></div>
+            <div style={{ background: 'rgba(220,38,38,0.09)', borderRadius: 12, padding: '14px', border: '2px solid #ef4444', display: 'flex', gap: 9, alignItems: 'flex-start', boxShadow: '0 6px 16px rgba(239,68,68,0.16)' }}>
+              <div style={{ color: '#b91c1c', marginTop: 1, flexShrink: 0 }}><IconAlertTriangle /></div>
               <div>
-                <div style={{ fontWeight: 800, color: 'var(--warning-text)', fontSize: 12.5, marginBottom: 4 }}>{t('Medical Notice', 'تنبيه طبي')}</div>
-                <div style={{ color: 'var(--warning-body)', fontSize: 11.5, lineHeight: 1.65 }}>
-                  {t('This is an AI screening tool. Always consult a qualified physician before making medical decisions.', 'هذه أداة فحص بالذكاء الاصطناعي. استشر دائماً طبيباً متخصصاً قبل أي قرار طبي.')}
+                <div style={{ fontWeight: 900, color: '#b91c1c', fontSize: 12.5, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.35 }}>{t('Medical Warning', 'تحذير طبي')}</div>
+                <div style={{ color: '#7f1d1d', fontSize: 11.8, lineHeight: 1.65, fontWeight: 600 }}>
+                  {t('AI screening support only. Do not make treatment decisions without consulting a qualified physician.', 'هذه أداة مساعدة للفحص فقط. لا تتخذ أي قرار علاجي قبل مراجعة طبيب مؤهل.')}
                 </div>
               </div>
             </div>
