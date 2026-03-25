@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { chatApi } from '../utils/api';
+import { getLocalResponse } from '../utils/medicalKnowledge';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -31,6 +31,29 @@ export default function ChatBot({ lang }: ChatBotProps) {
   const ar = lang === 'ar';
 
   const t = (en: string, arText: string) => ar ? arText : en;
+  const openRouterKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+
+  const systemPrompt = ar
+    ? [
+      'أنت وكيل طبي ذكي داخل منصة Morgan\'s Hope.',
+      'قدّم مساعدة معلوماتية عملية ومطمئنة في مجال صحة الرئة دون إعطاء تشخيص نهائي.',
+      'ركّز على: شرح النتائج، تلخيص الحالة، اقتراح الخطوة التالية، وفرز الأعراض الخطيرة.',
+      'قواعد صارمة:',
+      '- لا تعطي تشخيصًا نهائيًا أو جرعات أدوية.',
+      '- إذا ظهرت أعراض إنذارية خطيرة، وضّح الحاجة إلى مراجعة عاجلة أو طوارئ.',
+      '- هذا نظام فحص أولي بالذكاء الاصطناعي ولا يغني عن الطبيب.',
+      'أسلوب الرد: عربي واضح، قصير نسبيًا، عملي ومنظم.',
+    ].join('\n')
+    : [
+      'You are the Morgan\'s Hope smart medical agent.',
+      'Provide practical and calm informational guidance focused on lung health without giving a final diagnosis.',
+      'Focus on: result explanation, case summarization, next-step guidance, and triage for risky symptoms.',
+      'Hard rules:',
+      '- Never provide a final diagnosis or medication dosing.',
+      '- If red-flag symptoms are present, clearly advise urgent review or emergency care.',
+      '- This is an AI screening tool and does not replace a physician.',
+      'Response style: warm, concise, practical, and structured.',
+    ].join('\n');
 
   const quickPrompts = ar
     ? [
@@ -74,20 +97,56 @@ export default function ChatBot({ lang }: ChatBotProps) {
     setIsLoading(true);
 
     try {
-      const response = await chatApi.send({
-        message: messageText,
-        history: messages.slice(-8),
+      const localReply = getLocalResponse(messageText);
+      if (localReply) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: localReply }]);
+        return;
+      }
+
+      if (!openRouterKey) {
+        throw new Error(
+          t(
+            'OpenRouter API key is missing. Please set VITE_OPENROUTER_API_KEY.',
+            'مفتاح OpenRouter غير موجود. من فضلك أضف VITE_OPENROUTER_API_KEY.'
+          )
+        );
+      }
+
+      const apiMessages = [
+        { role: 'system', content: systemPrompt },
+        ...nextHistory.slice(-10).map((item) => ({ role: item.role, content: item.content })),
+      ];
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${openRouterKey}`,
+          'HTTP-Referer': 'https://morgans-hope.vercel.app',
+          'X-Title': "Morgan's Hope",
+        },
+        body: JSON.stringify({
+          model: 'meta-llama/llama-3.3-70b-instruct:free',
+          messages: apiMessages,
+          temperature: 0.35,
+        }),
       });
 
-      const reply = response.data.data?.reply || t('Sorry, I could not generate a reply right now.', 'عذرًا، لم أستطع توليد رد الآن.');
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const apiError = data?.error?.message || data?.message || t('OpenRouter request failed.', 'فشل الاتصال بـ OpenRouter.');
+        throw new Error(apiError);
+      }
+
+      const reply = data?.choices?.[0]?.message?.content?.trim() || t('Sorry, I could not generate a reply right now.', 'عذرًا، لم أستطع توليد رد الآن.');
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (error: any) {
-      const apiMessage = error?.response?.data?.message;
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: apiMessage || t('Sorry, something went wrong while contacting the assistant.', 'عذرًا، حدث خطأ أثناء التواصل مع المساعد.'),
+          content:
+            `${t('Error:', 'خطأ:')} ${error?.message || t('Unable to reach AI service right now. Please try again in a moment.', 'تعذر الوصول لخدمة الذكاء الاصطناعي الآن. حاول مرة أخرى بعد قليل.')}`,
         },
       ]);
     } finally {
