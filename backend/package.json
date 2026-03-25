@@ -8,7 +8,8 @@
     "dev:watch": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "migrate": "ts-node src/utils/migrate.ts",
+    "migrate": "node dist/utils/migrate.js",
+    "migrate:dev": "ts-node src/utils/migrate.ts",
     "seed": "ts-node src/utils/seed.ts"
   },
   "dependencies": {
