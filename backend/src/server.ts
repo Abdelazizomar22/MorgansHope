@@ -41,7 +41,7 @@ const configuredOrigins = (
   'https://morgans-hope.vercel.app,http://localhost:3001'
 )
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/^['"]|['"]$/g, ''))
   .filter(Boolean);
 
 const vercelPreviewPattern = /^https:\/\/morgans-hope-[a-z0-9-]+-abdelazizomar22-projects\.vercel\.app$/i;
