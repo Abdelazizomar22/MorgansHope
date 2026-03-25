@@ -23,6 +23,9 @@ interface TriageResult {
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://morgans-hope.vercel.app';
 
 const detectArabic = (text: string) => /[\u0600-\u06FF]/.test(text);
 
@@ -457,6 +460,34 @@ async function callGemini(systemPrompt: string, history: ChatTurn[], message: st
   return response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
 }
 
+async function callOpenRouter(systemPrompt: string, history: ChatTurn[], message: string) {
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.slice(-10).map((item) => ({ role: item.role, content: item.content })),
+    { role: 'user', content: message },
+  ];
+
+  const response = await axios.post(
+    'https://openrouter.ai/api/v1/chat/completions',
+    {
+      model: OPENROUTER_MODEL,
+      messages,
+      temperature: 0.35,
+    },
+    {
+      timeout: 20000,
+      headers: {
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': FRONTEND_URL,
+        'X-Title': "Morgan's Hope",
+      },
+    },
+  );
+
+  return response.data?.choices?.[0]?.message?.content?.trim() || '';
+}
+
 export async function generateChatReply({
   message,
   history,
@@ -471,19 +502,25 @@ export async function generateChatReply({
   const memorySummary = inferConversationMemory(history, ar);
   const heuristic = getHeuristicReply(message, ar, user, latestAnalysis, history);
 
-  if (!GEMINI_API_KEY) {
-    return heuristic;
+  const systemPrompt = buildSystemPrompt(ar, userSummary, analysisSummary, memorySummary, triage, intent);
+
+  if (OPENROUTER_API_KEY) {
+    try {
+      const reply = await callOpenRouter(systemPrompt, history, message);
+      if (reply) return reply;
+    } catch (error) {
+      console.error('OpenRouter chat fallback triggered:', error);
+    }
   }
 
-  try {
-    const reply = await callGemini(
-      buildSystemPrompt(ar, userSummary, analysisSummary, memorySummary, triage, intent),
-      history,
-      message,
-    );
-    return reply || heuristic;
-  } catch (error) {
-    console.error('Chat agent fallback triggered:', error);
-    return heuristic;
+  if (GEMINI_API_KEY) {
+    try {
+      const reply = await callGemini(systemPrompt, history, message);
+      if (reply) return reply;
+    } catch (error) {
+      console.error('Gemini chat fallback triggered:', error);
+    }
   }
+
+  return heuristic;
 }

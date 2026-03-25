@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest, JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
@@ -271,10 +273,20 @@ export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response)
     return;
   }
 
-  if (user.profilePicture) {
+  if (req.file.size > 2 * 1024 * 1024) {
     try {
-      const fs = await import('fs');
-      const path = await import('path');
+      fs.unlinkSync(req.file.path);
+    } catch { }
+    res.status(413).json({ success: false, message: 'Avatar image must be 2MB or smaller' });
+    return;
+  }
+
+  const imageBuffer = fs.readFileSync(req.file.path);
+  const mimeType = req.file.mimetype || 'image/png';
+  const dataUri = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
+
+  if (user.profilePicture && !/^https?:\/\//i.test(user.profilePicture) && !user.profilePicture.startsWith('data:')) {
+    try {
       const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
       const uploadPath = path.isAbsolute(uploadsRoot)
         ? uploadsRoot
@@ -284,8 +296,12 @@ export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response)
     } catch { }
   }
 
-  user.profilePicture = req.file.filename;
+  user.profilePicture = dataUri;
   await user.save();
+
+  try {
+    fs.unlinkSync(req.file.path);
+  } catch { }
 
   res.json({ success: true, message: 'Profile picture updated', data: user.toSafeJSON() });
 });
