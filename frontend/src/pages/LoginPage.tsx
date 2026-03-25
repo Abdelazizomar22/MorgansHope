@@ -64,6 +64,24 @@ export default function LoginPage() {
     const socialToken = params.get('token');
     const googleAuth = params.get('googleAuth');
     const socialError = params.get('message');
+    const authError = params.get('authError');
+
+    if (authError) {
+      const decodedAuthError = decodeURIComponent(authError).toLowerCase();
+      if (decodedAuthError.includes('redirect_uri_mismatch')) {
+        setError(t(
+          'Google sign-in configuration mismatch (redirect URI). Please contact support to update OAuth redirect URLs.',
+          'إعداد Google Sign-In غير متطابق (redirect URI). برجاء التواصل مع الدعم لتحديث إعدادات OAuth.'
+        ));
+      } else {
+        setError(t(
+          'Google sign-in failed due to OAuth configuration. Please try again later.',
+          'فشل تسجيل الدخول عبر Google بسبب إعدادات OAuth. حاول مرة أخرى لاحقًا.'
+        ));
+      }
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
 
     if (googleAuth === 'error' && socialError) {
       setError(socialError);
