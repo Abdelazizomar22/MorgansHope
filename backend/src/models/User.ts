@@ -56,7 +56,7 @@ User.init(
     gender: { type: DataTypes.ENUM('male', 'female', 'other'), allowNull: true },
     smokingHistory: { type: DataTypes.ENUM('never', 'former', 'current'), allowNull: true },
     medicalHistory: { type: DataTypes.TEXT, allowNull: true },
-    profilePicture: { type: DataTypes.STRING(500), allowNull: true },
+    profilePicture: { type: DataTypes.TEXT, allowNull: true },
     role: { type: DataTypes.ENUM('user', 'admin'), defaultValue: 'user' },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
   },
