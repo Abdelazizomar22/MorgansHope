@@ -24,7 +24,7 @@ interface TriageResult {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free';
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'qwen/qwen-2.5-72b-instruct:free';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://morgans-hope.vercel.app';
 
 const detectArabic = (text: string) => /[\u0600-\u06FF]/.test(text);
