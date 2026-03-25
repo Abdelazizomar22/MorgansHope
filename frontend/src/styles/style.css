@@ -589,14 +589,15 @@ body {
 
 @media (max-width: 720px) {
     .auth-brand-panel {
-        min-height: auto;
-        padding: 34px 18px 42px;
+        min-height: 420px;
+        padding: 24px 16px 28px;
     }
 
     .auth-brand-logo-shell {
-        width: 184px;
-        height: 184px;
-        margin-bottom: 18px;
+        width: min(240px, 72vw) !important;
+        height: min(240px, 72vw) !important;
+        margin-bottom: 8px !important;
+        transform: translateY(0) !important;
     }
 
     .auth-brand-logo-image {
@@ -604,9 +605,22 @@ body {
         height: 156px;
     }
 
+    .auth-brand-inner {
+        transform: translateY(-18px) !important;
+    }
+
     .auth-brand-title {
-        flex-direction: column;
-        gap: 2px;
+        flex-direction: row !important;
+        gap: 8px !important;
+        font-size: clamp(2.5rem, 11.5vw, 3.3rem) !important;
+        transform: translateY(-46px) !important;
+        white-space: nowrap;
+    }
+
+    .auth-brand-slogan {
+        margin-top: -8px !important;
+        font-size: 0.96rem !important;
+        transform: translateY(-36px) !important;
     }
 
     .auth-brand-highlights,
@@ -618,6 +632,7 @@ body {
         width: 100%;
         justify-content: center;
         letter-spacing: 0.12em;
+        transform: translateY(-4px) !important;
     }
 
     .auth-form-panel {
