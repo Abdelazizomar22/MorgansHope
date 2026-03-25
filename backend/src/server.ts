@@ -106,7 +106,11 @@ if (!isDev) {
 // ── Static: serve uploaded images ────────────────────────────────────────────
 app.use(
   '/api/uploads',
-  express.static(path.join(process.cwd(), 'uploads'))
+  express.static(
+    path.isAbsolute(process.env.UPLOAD_DIR || 'uploads')
+      ? (process.env.UPLOAD_DIR as string)
+      : path.join(process.cwd(), process.env.UPLOAD_DIR || 'uploads')
+  )
 );
 
 // ── Routes ────────────────────────────────────────────────────────────────────

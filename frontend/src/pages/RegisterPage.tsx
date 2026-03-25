@@ -382,7 +382,7 @@ export default function RegisterPage() {
                 {...bind('password')}
                 type={showPass ? 'text' : 'password'}
                 placeholder={t('Password', 'كلمة المرور')}
-                style={{ ...inputStyle('password', '12px 44px 12px 44px'), letterSpacing: '0.18em' }}
+                style={{ ...inputStyle('password', '12px 44px 12px 44px'), letterSpacing: showPass ? 'normal' : '0.18em' }}
               />
               <button
                 type="button"
@@ -424,7 +424,7 @@ export default function RegisterPage() {
                 placeholder={t('Confirm password', 'تأكيد كلمة المرور')}
                 style={{
                   ...inputStyle('confirmPassword', '12px 14px'),
-                  letterSpacing: '0.18em',
+                  letterSpacing: showPass ? 'normal' : '0.18em',
                   border: form.confirmPassword
                     ? (passwordsMatch ? '1.5px solid #22c55e' : '1.5px solid #ef4444')
                     : (focused === 'confirmPassword' ? '1.5px solid var(--primary)' : '1.5px solid var(--card-border)'),
@@ -511,6 +511,10 @@ export default function RegisterPage() {
           appearance: none;
           -webkit-appearance: none;
           font-family: inherit;
+        }
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+          display: none;
         }
       `}</style>
     </>

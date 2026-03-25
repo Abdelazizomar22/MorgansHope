@@ -141,12 +141,28 @@ export default function ChatBot({ lang }: ChatBotProps) {
       const reply = data?.choices?.[0]?.message?.content?.trim() || t('Sorry, I could not generate a reply right now.', 'عذرًا، لم أستطع توليد رد الآن.');
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (error: any) {
+      const normalizedInput = messageText.toLowerCase();
+      const greetingFallback =
+        /hello|hi|hey|how are you|ازيك|كيف حالك|مرحبا|اهلا|أهلا/.test(normalizedInput)
+          ? t(
+            "Hello! I'm here to help with your results, symptoms, and next medical steps. Ask me anything and I'll guide you clearly.",
+            'أهلًا! أنا هنا لمساعدتك في النتائج والأعراض والخطوة الطبية التالية. اسألني أي شيء وسأرشدك بشكل واضح.'
+          )
+          : null;
+      const rawMessage = String(error?.message || '');
+      const friendlyError =
+        rawMessage.includes('Provider returned error') || rawMessage.includes('OpenRouter')
+          ? t(
+            'The AI provider is temporarily unavailable. Please try again in a moment.',
+            'مزود الذكاء الاصطناعي غير متاح مؤقتًا. حاول مرة أخرى بعد قليل.'
+          )
+          : t('Unable to reach AI service right now. Please try again in a moment.', 'تعذر الوصول لخدمة الذكاء الاصطناعي الآن. حاول مرة أخرى بعد قليل.');
+
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content:
-            `${t('Error:', 'خطأ:')} ${error?.message || t('Unable to reach AI service right now. Please try again in a moment.', 'تعذر الوصول لخدمة الذكاء الاصطناعي الآن. حاول مرة أخرى بعد قليل.')}`,
+          content: greetingFallback || friendlyError,
         },
       ]);
     } finally {
