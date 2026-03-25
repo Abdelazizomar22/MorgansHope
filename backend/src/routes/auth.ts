@@ -24,13 +24,22 @@ const FRONTEND_URL = (
 ).trim().replace(/^['"]|['"]$/g, '');
 const GOOGLE_CONFIGURED = Boolean(
   process.env.GOOGLE_CLIENT_ID &&
-  process.env.GOOGLE_CLIENT_SECRET &&
-  process.env.GOOGLE_CALLBACK_URL,
+  process.env.GOOGLE_CLIENT_SECRET,
 );
 
 const googleRedirect = (status: 'success' | 'error', params: Record<string, string>) => {
   const search = new URLSearchParams({ googleAuth: status, ...params });
   return `${FRONTEND_URL}/login?${search.toString()}`;
+};
+
+const getGoogleCallbackUrl = (req: Request) => {
+  const configured = (process.env.GOOGLE_CALLBACK_URL || '').trim().replace(/^['"]|['"]$/g, '');
+  if (configured) return configured;
+
+  const forwardedProto = (req.headers['x-forwarded-proto'] as string | undefined)?.split(',')[0]?.trim();
+  const proto = forwardedProto || req.protocol;
+  const host = req.get('host');
+  return `${proto}://${host}/api/auth/google/callback`;
 };
 
 router.get('/debug', async (req: Request, res: Response) => {
@@ -97,7 +106,8 @@ router.get('/google', (req, res, next) => {
     session: false,
     scope: ['profile', 'email'],
     prompt: 'select_account',
-  })(req, res, next);
+    callbackURL: getGoogleCallbackUrl(req),
+  } as any)(req, res, next);
 });
 
 router.get('/google/callback', (req, res, next) => {
@@ -105,7 +115,7 @@ router.get('/google/callback', (req, res, next) => {
     return res.redirect(googleRedirect('error', { message: 'Google sign-in is not configured yet.' }));
   }
 
-  return passport.authenticate('google', { session: false }, async (error: unknown, user?: InstanceType<typeof User>) => {
+  return passport.authenticate('google', { session: false, callbackURL: getGoogleCallbackUrl(req) } as any, async (error: unknown, user?: InstanceType<typeof User>) => {
     if (error || !user) {
       const message = error instanceof Error ? error.message : 'Google sign-in failed.';
       return res.redirect(googleRedirect('error', { message }));
