@@ -35,11 +35,32 @@ const isDev = process.env.NODE_ENV !== 'production';
 app.use(helmet());
 
 // ── CORS (allow credentials for HttpOnly cookie) ──────────────────────────────
+const configuredOrigins = (
+  process.env.FRONTEND_URLS ||
+  process.env.FRONTEND_URL ||
+  'https://morgans-hope.vercel.app,http://localhost:3001'
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const vercelPreviewPattern = /^https:\/\/morgans-hope-[a-z0-9-]+-abdelazizomar22-projects\.vercel\.app$/i;
+
 app.use(
   cors({
-    origin: isDev
-      ? true
-      : process.env.FRONTEND_URL || 'http://localhost:3001',
+    origin: (origin, callback) => {
+      if (isDev || !origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (configuredOrigins.includes(origin) || vercelPreviewPattern.test(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
