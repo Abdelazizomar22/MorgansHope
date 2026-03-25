@@ -190,12 +190,11 @@ const getCaseSummary = (
       'هذا ملخص حالتك الحالي:',
       `- بياناتك: ${base}`,
       `- آخر تحليل: ${analysisSummary}`,
-      `- مستوى المتابعة الحالي: ${
-        triage?.level === 'emergency'
-          ? 'حالة تستدعي الطوارئ'
-          : triage?.level === 'urgent'
-            ? 'تحتاج مراجعة طبية قريبة'
-            : 'لا توجد علامة طارئة واضحة من الرسالة الحالية'
+      `- مستوى المتابعة الحالي: ${triage?.level === 'emergency'
+        ? 'حالة تستدعي الطوارئ'
+        : triage?.level === 'urgent'
+          ? 'تحتاج مراجعة طبية قريبة'
+          : 'لا توجد علامة طارئة واضحة من الرسالة الحالية'
       }`,
     ].join('\n');
   }
@@ -204,12 +203,11 @@ const getCaseSummary = (
     'Here is your current case summary:',
     `- Profile: ${base}`,
     `- Latest analysis: ${analysisSummary}`,
-    `- Current urgency: ${
-      triage?.level === 'emergency'
-        ? 'seek emergency care'
-        : triage?.level === 'urgent'
-          ? 'arrange prompt medical review'
-          : 'no clear emergency signal from the current message'
+    `- Current urgency: ${triage?.level === 'emergency'
+      ? 'seek emergency care'
+      : triage?.level === 'urgent'
+        ? 'arrange prompt medical review'
+        : 'no clear emergency signal from the current message'
     }`,
   ].join('\n');
 };
@@ -229,12 +227,11 @@ const getExplainResultReply = (ar: boolean, analysis?: InstanceType<typeof Analy
       `- نوع الفحص: ${analysis.imageType || 'غير محدد'}`,
       `- التصنيف: ${analysis.classification || 'غير متاح'}`,
       `- درجة الثقة: ${confidence}`,
-      `- ماذا يعني هذا؟ ${
-        analysis.isMalignant
-          ? 'النتيجة تبدو مقلقة وتحتاج مراجعة سريعة مع طبيب مختص لتأكيدها.'
-          : analysis.hasFindings
-            ? 'هناك ملاحظات تحتاج متابعة طبية، لكنها ليست تشخيصًا نهائيًا وحدها.'
-            : 'لا توجد إشارة عالية الخطورة واضحة في آخر تحليل، مع بقاء المتابعة الطبية حسب الأعراض.'
+      `- ماذا يعني هذا؟ ${analysis.isMalignant
+        ? 'النتيجة تبدو مقلقة وتحتاج مراجعة سريعة مع طبيب مختص لتأكيدها.'
+        : analysis.hasFindings
+          ? 'هناك ملاحظات تحتاج متابعة طبية، لكنها ليست تشخيصًا نهائيًا وحدها.'
+          : 'لا توجد إشارة عالية الخطورة واضحة في آخر تحليل، مع بقاء المتابعة الطبية حسب الأعراض.'
       }`,
       '- مهم: هذه أداة مساعدة ولا تغني عن تقييم الطبيب أو التقرير الرسمي.',
     ].join('\n');
@@ -245,12 +242,11 @@ const getExplainResultReply = (ar: boolean, analysis?: InstanceType<typeof Analy
     `- Scan type: ${analysis.imageType || 'unspecified'}`,
     `- Classification: ${analysis.classification || 'unavailable'}`,
     `- Confidence: ${confidence}`,
-    `- What it likely means: ${
-      analysis.isMalignant
-        ? 'the result looks concerning and deserves prompt specialist review for confirmation.'
-        : analysis.hasFindings
-          ? 'there are findings worth medical follow-up, but this is not a final diagnosis by itself.'
-          : 'there is no clearly high-risk signal in the latest analysis, while symptoms still matter.'
+    `- What it likely means: ${analysis.isMalignant
+      ? 'the result looks concerning and deserves prompt specialist review for confirmation.'
+      : analysis.hasFindings
+        ? 'there are findings worth medical follow-up, but this is not a final diagnosis by itself.'
+        : 'there is no clearly high-risk signal in the latest analysis, while symptoms still matter.'
     }`,
     '- Important: this tool is supportive only and does not replace a physician or an official report.',
   ].join('\n');
@@ -270,50 +266,50 @@ const getNextStepReply = (
   if (triage?.level === 'urgent' || analysis?.isMalignant) {
     return ar
       ? [
-          'الخطوة التالية الأنسب غالبًا:',
-          '- احجز مراجعة قريبة مع طبيب صدرية أو أورام.',
-          '- احتفظ بالتقرير أو صورة الفحص الأخيرة لعرضها على الطبيب.',
-          '- اكتب الأعراض ومدة كل عرض وأي تاريخ تدخين أو مرض مزمن.',
-          '- إذا ساء التنفس أو ظهر دم مع السعال، تحرك للطوارئ فورًا.',
-        ].join('\n')
+        'الخطوة التالية الأنسب غالبًا:',
+        '- احجز مراجعة قريبة مع طبيب صدرية أو أورام.',
+        '- احتفظ بالتقرير أو صورة الفحص الأخيرة لعرضها على الطبيب.',
+        '- اكتب الأعراض ومدة كل عرض وأي تاريخ تدخين أو مرض مزمن.',
+        '- إذا ساء التنفس أو ظهر دم مع السعال، تحرك للطوارئ فورًا.',
+      ].join('\n')
       : [
-          'The most appropriate next step is usually:',
-          '- Arrange a prompt visit with a pulmonologist or relevant specialist.',
-          '- Keep your latest scan/report available for review.',
-          '- Write down your symptoms, duration, smoking history, and chronic conditions.',
-          '- If breathing worsens or blood appears with coughing, seek emergency care immediately.',
-        ].join('\n');
+        'The most appropriate next step is usually:',
+        '- Arrange a prompt visit with a pulmonologist or relevant specialist.',
+        '- Keep your latest scan/report available for review.',
+        '- Write down your symptoms, duration, smoking history, and chronic conditions.',
+        '- If breathing worsens or blood appears with coughing, seek emergency care immediately.',
+      ].join('\n');
   }
 
   if (analysis?.hasFindings) {
     return ar
       ? [
-          'الخطوة التالية المقترحة:',
-          '- راجع طبيبك خلال وقت قريب لقراءة النتيجة في سياق الأعراض.',
-          '- تابع أي أعراض مستمرة مثل الكحة أو ضيق النفس أو نقص الوزن.',
-          '- لو تحب، أقدر ألخص لك النتيجة بشكل أبسط قبل الزيارة.',
-        ].join('\n')
+        'الخطوة التالية المقترحة:',
+        '- راجع طبيبك خلال وقت قريب لقراءة النتيجة في سياق الأعراض.',
+        '- تابع أي أعراض مستمرة مثل الكحة أو ضيق النفس أو نقص الوزن.',
+        '- لو تحب، أقدر ألخص لك النتيجة بشكل أبسط قبل الزيارة.',
+      ].join('\n')
       : [
-          'Suggested next step:',
-          '- Review the result with your doctor soon so it can be interpreted with your symptoms.',
-          '- Monitor persistent symptoms such as cough, breathlessness, or weight loss.',
-          '- If you want, I can simplify the result further before your visit.',
-        ].join('\n');
+        'Suggested next step:',
+        '- Review the result with your doctor soon so it can be interpreted with your symptoms.',
+        '- Monitor persistent symptoms such as cough, breathlessness, or weight loss.',
+        '- If you want, I can simplify the result further before your visit.',
+      ].join('\n');
   }
 
   return ar
     ? [
-        'الخطوة التالية المقترحة:',
-        '- استمر في المتابعة حسب الأعراض وتوصيات طبيبك.',
-        '- إذا ظهر سعال مستمر أو ضيق نفس أو فقدان وزن غير مبرر، احجز مراجعة طبية.',
-        '- أقدر أيضًا أشرح لك متى تصبح الأعراض مقلقة أكثر.',
-      ].join('\n')
+      'الخطوة التالية المقترحة:',
+      '- استمر في المتابعة حسب الأعراض وتوصيات طبيبك.',
+      '- إذا ظهر سعال مستمر أو ضيق نفس أو فقدان وزن غير مبرر، احجز مراجعة طبية.',
+      '- أقدر أيضًا أشرح لك متى تصبح الأعراض مقلقة أكثر.',
+    ].join('\n')
     : [
-        'Suggested next step:',
-        '- Continue routine follow-up based on your symptoms and your doctor’s advice.',
-        '- If you develop persistent cough, shortness of breath, or unexplained weight loss, book a medical review.',
-        '- I can also explain which warning signs should raise more concern.',
-      ].join('\n');
+      'Suggested next step:',
+      '- Continue routine follow-up based on your symptoms and your doctor’s advice.',
+      '- If you develop persistent cough, shortness of breath, or unexplained weight loss, book a medical review.',
+      '- I can also explain which warning signs should raise more concern.',
+    ].join('\n');
 };
 
 const getUrgentCareReply = (ar: boolean, triage: TriageResult) => {
@@ -507,7 +503,7 @@ export async function generateChatReply({
   if (OPENROUTER_API_KEY) {
     try {
       const reply = await callOpenRouter(systemPrompt, history, message);
-      if (reply) return reply;
+      if (reply) return reply + '\n\n_[OpenRouter]_';
     } catch (error) {
       console.error('OpenRouter chat fallback triggered:', error);
     }
@@ -516,11 +512,11 @@ export async function generateChatReply({
   if (GEMINI_API_KEY) {
     try {
       const reply = await callGemini(systemPrompt, history, message);
-      if (reply) return reply;
+      if (reply) return reply + '\n\n_[Gemini]_';
     } catch (error) {
       console.error('Gemini chat fallback triggered:', error);
     }
   }
 
-  return heuristic;
+  return heuristic + '\n\n_[Local]_';
 }
