@@ -17,7 +17,11 @@ import upload from '../middleware/upload';
 
 const router = Router();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
+const FRONTEND_URL = (
+  process.env.FRONTEND_URL ||
+  process.env.FRONTEND_URLS?.split(',')[0] ||
+  'http://localhost:3001'
+).trim().replace(/^['"]|['"]$/g, '');
 const GOOGLE_CONFIGURED = Boolean(
   process.env.GOOGLE_CLIENT_ID &&
   process.env.GOOGLE_CLIENT_SECRET &&
