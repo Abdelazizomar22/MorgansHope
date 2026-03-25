@@ -2,7 +2,6 @@ import { useState, type ChangeEvent, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout, AuthSection } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 
 const IconShield = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -70,26 +69,6 @@ const IconAlert = () => (
   </svg>
 );
 
-const IconSun = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-);
-
-const IconMoon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
-
 const strength = (password: string) => {
   let score = 0;
   if (password.length >= 8) score++;
@@ -101,14 +80,12 @@ const strength = (password: string) => {
 
 const STRENGTH_LABELS_EN = ['', 'Weak', 'Fair', 'Good', 'Strong'];
 const STRENGTH_LABELS_AR = ['', 'ضعيفة', 'مقبولة', 'جيدة', 'قوية'];
-const getStrengthColors = (theme: 'light' | 'dark') => theme === 'dark'
-  ? ['', '#f87171', '#fb923c', '#facc15', '#34d399']
-  : ['', '#ef4444', '#f97316', '#ca8a04', '#166534'];
+const STRENGTH_COLORS = ['', '#ef4444', '#f97316', '#ca8a04', '#166534'];
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const toggleTheme = () => {};
   const [lang, setLang] = useState<'en' | 'ar'>('en');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -133,10 +110,8 @@ export default function RegisterPage() {
 
   const passStrength = strength(form.password);
   const passwordsMatch = Boolean(form.password && form.confirmPassword && form.password === form.confirmPassword);
-  const strengthColors = getStrengthColors(theme);
-  const successTone = theme === 'dark'
-    ? { border: 'rgba(52,211,153,0.34)', bg: 'rgba(16,185,129,0.16)', text: '#6ee7b7' }
-    : { border: 'rgba(22,101,52,0.22)', bg: 'rgba(22,101,52,0.08)', text: '#166534' };
+  const strengthColors = STRENGTH_COLORS;
+  const successTone = { border: 'rgba(22,101,52,0.22)', bg: 'rgba(22,101,52,0.08)', text: '#166534' };
 
   const handleSubmit = async () => {
     if (!form.firstName || !form.lastName || !form.email || !form.password || !form.confirmPassword) {
@@ -258,7 +233,7 @@ export default function RegisterPage() {
         langToggleLabel={ar ? 'EN' : 'عربي'}
         onToggleLang={() => setLang(ar ? 'en' : 'ar')}
         onToggleTheme={toggleTheme}
-        themeToggleIcon={theme === 'light' ? <IconMoon /> : <IconSun />}
+        themeToggleIcon={null}
         brandSlogan={t('"A Second Chance for Every Breath"', '"فرصة ثانية لكل نفس"')}
         formBadge={t('Create Account', 'إنشاء حساب')}
         formTitle={t('Set up your account', 'أنشئ حسابك')}

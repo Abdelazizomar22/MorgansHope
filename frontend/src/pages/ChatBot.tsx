@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useTheme } from '../context/ThemeContext';
 import { getLocalResponse } from '../utils/medicalKnowledge';
 
 interface Message {
@@ -27,7 +26,6 @@ export default function ChatBot({ lang }: ChatBotProps) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
   const ar = lang === 'ar';
 
   const t = (en: string, arText: string) => ar ? arText : en;
