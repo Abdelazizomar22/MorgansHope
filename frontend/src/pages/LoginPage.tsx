@@ -222,7 +222,7 @@ export default function LoginPage() {
                   placeholder={t('Password', 'كلمة المرور')}
                   onFocus={() => setFocused('pass')}
                   onBlur={() => setFocused('')}
-                  style={{ ...inputStyle('pass', '12px 44px 12px 44px'), letterSpacing: '0.18em' }}
+                  style={{ ...inputStyle('pass', '12px 44px 12px 44px'), letterSpacing: showPass ? 'normal' : '0.18em' }}
                 />
                 <button
                   type="button"
@@ -316,6 +316,10 @@ export default function LoginPage() {
           appearance: none;
           -webkit-appearance: none;
           font-family: inherit;
+        }
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+          display: none;
         }
       `}</style>
     </>

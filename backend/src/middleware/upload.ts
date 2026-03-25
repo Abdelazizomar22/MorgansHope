@@ -3,7 +3,10 @@ import path from 'path';
 import fs from 'fs';
 
 // Always relative to project root (cwd) — works on Windows with ts-node
-const uploadDir = path.join(process.cwd(), 'uploads');
+const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
+const uploadDir = path.isAbsolute(uploadsRoot)
+  ? uploadsRoot
+  : path.join(process.cwd(), uploadsRoot);
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({

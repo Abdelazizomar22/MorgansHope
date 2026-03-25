@@ -93,7 +93,11 @@ router.get('/google', (req, res, next) => {
     return res.redirect(googleRedirect('error', { message: 'Google sign-in is not configured yet.' }));
   }
 
-  return passport.authenticate('google', { session: false, scope: ['profile', 'email'] })(req, res, next);
+  return passport.authenticate('google', {
+    session: false,
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+  })(req, res, next);
 });
 
 router.get('/google/callback', (req, res, next) => {

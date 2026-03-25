@@ -274,7 +274,11 @@ export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response)
     try {
       const fs = await import('fs');
       const path = await import('path');
-      const oldPath = path.join(process.cwd(), 'uploads', user.profilePicture);
+      const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
+      const uploadPath = path.isAbsolute(uploadsRoot)
+        ? uploadsRoot
+        : path.join(process.cwd(), uploadsRoot);
+      const oldPath = path.join(uploadPath, user.profilePicture);
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
     } catch { }
   }

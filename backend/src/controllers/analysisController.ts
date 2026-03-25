@@ -205,7 +205,11 @@ export async function deleteAnalysis(req: AuthRequest, res: Response): Promise<v
 
   // Delete stored file (Windows-safe)
   try {
-    const filePath = path.join(process.cwd(), 'uploads', result.imagePath);
+    const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
+    const uploadPath = path.isAbsolute(uploadsRoot)
+      ? uploadsRoot
+      : path.join(process.cwd(), uploadsRoot);
+    const filePath = path.join(uploadPath, result.imagePath);
     fs.unlinkSync(filePath);
   } catch { }
 
