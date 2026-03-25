@@ -91,29 +91,24 @@ export default function ChatBot({ lang }: ChatBotProps) {
 
     const userMessage: Message = { role: 'user', content: messageText };
     const nextHistory = [...messages, userMessage];
+    const localReply = getLocalResponse(messageText);
 
     setMessages(nextHistory);
     setInput('');
     setIsLoading(true);
 
     try {
-      const localReply = getLocalResponse(messageText);
-      if (localReply) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: localReply }]);
-        return;
-      }
-
       if (!openRouterKey) {
-        throw new Error(
-          t(
-            'OpenRouter API key is missing. Please set VITE_OPENROUTER_API_KEY.',
-            'مفتاح OpenRouter غير موجود. من فضلك أضف VITE_OPENROUTER_API_KEY.'
-          )
-        );
+        if (localReply) {
+          setMessages((prev) => [...prev, { role: 'assistant', content: localReply }]);
+          return;
+        }
+        throw new Error(t('OpenRouter API key is missing. Please set VITE_OPENROUTER_API_KEY.', 'مفتاح OpenRouter غير موجود. من فضلك أضف VITE_OPENROUTER_API_KEY.'));
       }
 
       const apiMessages = [
         { role: 'system', content: systemPrompt },
+        ...(localReply ? [{ role: 'system' as const, content: `Local medical context:\n${localReply}` }] : []),
         ...nextHistory.slice(-10).map((item) => ({ role: item.role, content: item.content })),
       ];
 
@@ -138,7 +133,7 @@ export default function ChatBot({ lang }: ChatBotProps) {
         throw new Error(apiError);
       }
 
-      const reply = data?.choices?.[0]?.message?.content?.trim() || t('Sorry, I could not generate a reply right now.', 'عذرًا، لم أستطع توليد رد الآن.');
+      const reply = data?.choices?.[0]?.message?.content?.trim() || localReply || t('Sorry, I could not generate a reply right now.', 'عذرًا، لم أستطع توليد رد الآن.');
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (error: any) {
       const normalizedInput = messageText.toLowerCase();
@@ -162,7 +157,7 @@ export default function ChatBot({ lang }: ChatBotProps) {
         ...prev,
         {
           role: 'assistant',
-          content: greetingFallback || friendlyError,
+          content: localReply || greetingFallback || friendlyError,
         },
       ]);
     } finally {

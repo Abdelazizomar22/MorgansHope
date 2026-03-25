@@ -18,10 +18,11 @@ export function makeGoogleRefreshToken(id: number) {
 }
 
 export function authCookieOptions(maxAgeMs: number) {
+  const isProd = process.env.NODE_ENV === 'production';
   return {
     httpOnly: true,
-    sameSite: 'strict' as const,
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
+    secure: isProd,
     maxAge: maxAgeMs,
     path: '/',
   };
