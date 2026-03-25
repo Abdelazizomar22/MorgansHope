@@ -207,7 +207,7 @@ export default function HomePage({ lang }: HomePageProps) {
       <div dir={ar ? 'rtl' : 'ltr'} style={{ fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", background: 'var(--bg-main)', minHeight: '100vh', color: 'var(--text-main)' }}>
 
         {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-        <section style={{ background: 'var(--bg-main)', color: 'var(--text-main)', padding: isMobile ? '42px 20px' : '76px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden'}}>
+        <section style={{ background: 'var(--bg-main)', color: 'var(--text-main)', padding: isMobile ? '34px 16px 30px' : '76px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden'}}>
           
           {/* Grid */}
           <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--card-border) 1px, transparent 1px), linear-gradient(90deg, var(--card-border) 1px, transparent 1px)', backgroundSize: '44px 44px', opacity: 0.5 }} />
@@ -218,25 +218,25 @@ export default function HomePage({ lang }: HomePageProps) {
             <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: s, height: s, borderRadius: '50%', border: '1px solid var(--card-border)', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
           ))}
 
-          <div style={{ position: 'relative', maxWidth: 700, margin: '0 auto', zIndex: 10 }}>
+          <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto', zIndex: 10 }}>
             <MotionFade direction="up" delay={0.1}>
-              <div style={{ transform: 'translateY(12px)' }}>
-              <h1 style={{ fontSize: isMobile ? 37 : 48, fontWeight: 900, margin: '0 0 10px', lineHeight: 1.13, letterSpacing: -1.5 }}>
+              <div style={{ transform: isMobile ? 'translateY(4px)' : 'translateY(12px)' }}>
+              <h1 style={{ fontSize: 'clamp(2.15rem, 7vw, 3rem)', fontWeight: 900, margin: '0 0 12px', lineHeight: 1.12, letterSpacing: -1 }}>
                 <span style={{ color: 'var(--hero-text-1)' }}>{t('Early Detection', 'الكشف المبكر')}</span>{' '}
                 <span style={{ color: 'var(--hero-text-2)' }}>{t('Saves Lives', 'ينقذ الأرواح')}</span>
               </h1>
-              <p style={{ fontSize: 14.5, color: 'var(--text-muted)', fontStyle: 'italic', margin: '-2px 0 18px', letterSpacing: 0.2 }}>
+              <p style={{ fontSize: isMobile ? 13 : 14, color: 'var(--text-muted)', fontStyle: 'italic', margin: '4px 0 14px', letterSpacing: 0.1 }}>
                 {t('"Morgan\'s Hope: A Second Chance for Every Breath." — Inspired by a legend, built for reality.', '"مورجان هوب: فرصة ثانية لكل نَفَس." — مستوحى من أسطورة، ومبني للواقع.')}
               </p>
-              <div style={{ marginTop: 28, marginBottom: 24 }}>
-                <p style={{ fontSize: 16, color: 'var(--text-main)', margin: 0, lineHeight: 1.86, maxWidth: 600, marginLeft: 'auto', marginRight: 'auto', transform: 'translateY(0px)' }}>
+              <div style={{ marginTop: isMobile ? 22 : 28, marginBottom: isMobile ? 16 : 24 }}>
+                <p style={{ fontSize: isMobile ? 15 : 16, color: 'var(--text-main)', margin: 0, lineHeight: 1.84, maxWidth: 620, marginLeft: 'auto', marginRight: 'auto', transform: 'translateY(0px)' }}>
                   {t('Like Arthur Morgan facing an invisible enemy, lung disease can be a quiet battle. Morgan’s Hope shifts the odds through earlier detection. Upload your CT scan or X-Ray and get an AI-powered analysis in minutes.', 'مثلما واجه آرثر مورجان عدوًا خفيًا، قد يكون مرض الرئة معركة صامتة. Morgan’s Hope يرجّح الكفة عبر الكشف المبكر. ارفع صورة CT أو X-Ray واحصل على تحليل مدعوم بالذكاء الاصطناعي خلال دقائق.')}
                 </p>
               </div>
               </div>
             </MotionFade>
             <MotionFade direction="up" delay={0.2}>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 44 }}>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: isMobile ? 30 : 44 }}>
                 <MotionHoverScale style={{ display: 'inline-flex' }}>
                   <Link to={user ? '/upload' : '/register'} style={{ padding: '14px 34px', background: 'var(--primary)', color: 'white', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 15.5, boxShadow: '0 4px 20px var(--shadow-main)', letterSpacing: 0.2, display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'transform 0.2s, background 0.2s' }}
                     onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = 'var(--primary-dark)'; }}
@@ -414,7 +414,7 @@ export default function HomePage({ lang }: HomePageProps) {
               </div>
             </div>
             
-            <div style={{ flex: 1, minWidth: 300, position: 'relative' }}>
+            <div style={{ flex: 1, minWidth: isMobile ? 'auto' : 300, position: 'relative' }}>
               <h3 style={{ fontSize: 22, fontWeight: 900, margin: '0 0 12px', letterSpacing: -0.4 }}>{t('Why Early Detection Matters', 'لماذا الكشف المبكر مهم؟')}</h3>
               <p style={{ fontSize: 14.5, opacity: 0.85, lineHeight: 1.8, margin: 0, fontWeight: 500 }}>
                 {t("75% of cases in Egypt are late-stage. AI screening identifies abnormalities before symptoms appear, shifting survival rates from 5% (Stage IV) to over 68% (Stage I). Time is the most valuable variable.", '75% من الحالات في مصر تُكتشف متأخراً. الفحص بالذكاء الاصطناعي يكتشف الشذوذات قبل الأعراض، ويحول معدلات البقاء من 5% (المرحلة 4) إلى أكثر من 68% (المرحلة 1). الوقت هو المتغير الأغلى.')}

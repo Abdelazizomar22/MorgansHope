@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthLayout, AuthSection } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 
 const IconShield = ({ size = 18 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -44,29 +43,9 @@ const IconAlert = () => (
   </svg>
 );
 
-const IconSun = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="5" />
-    <line x1="12" y1="1" x2="12" y2="3" />
-    <line x1="12" y1="21" x2="12" y2="23" />
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-    <line x1="1" y1="12" x2="3" y2="12" />
-    <line x1="21" y1="12" x2="23" y2="12" />
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-  </svg>
-);
-
-const IconMoon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
-
 export default function LoginPage() {
   const { login, completeSocialLogin } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const toggleTheme = () => {};
   const [lang, setLang] = useState<'en' | 'ar'>('en');
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
@@ -169,7 +148,7 @@ export default function LoginPage() {
         langToggleLabel={ar ? 'EN' : 'عربي'}
         onToggleLang={() => setLang(ar ? 'en' : 'ar')}
         onToggleTheme={toggleTheme}
-        themeToggleIcon={theme === 'light' ? <IconMoon /> : <IconSun />}
+        themeToggleIcon={null}
         brandSlogan={t('"A Second Chance for Every Breath"', '"فرصة ثانية لكل نفس"')}
         formBadge={t('Sign In', 'تسجيل الدخول')}
         formTitle={t('Access your account', 'ادخل إلى حسابك')}
