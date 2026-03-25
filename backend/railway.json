@@ -1,10 +1,10 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm install && npm run build"
+    "buildCommand": "npm ci && npm run build"
   },
   "deploy": {
-    "startCommand": "npm run migrate && npm run start",
+    "startCommand": "node dist/server.js",
     "healthcheckPath": "/api/health"
   }
 }
