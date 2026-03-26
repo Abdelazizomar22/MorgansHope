@@ -22,6 +22,8 @@ interface TriageResult {
   matchedSignals: string[];
 }
 
+const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
@@ -457,6 +459,34 @@ async function callGemini(systemPrompt: string, history: ChatTurn[], message: st
   return response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
 }
 
+async function callGroq(systemPrompt: string, history: ChatTurn[], message: string) {
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.slice(-10).map((item) => ({ role: item.role, content: item.content })),
+    { role: 'user', content: message },
+  ];
+
+  const response = await retryWithBackoff(() =>
+    axios.post(
+      'https://api.groq.com/openai/v1/chat/completions',
+      {
+        model: GROQ_MODEL,
+        messages,
+        temperature: 0.35,
+      },
+      {
+        timeout: 20000,
+        headers: {
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      },
+    )
+  );
+
+  return response.data?.choices?.[0]?.message?.content?.trim() || '';
+}
+
 async function callOpenRouter(systemPrompt: string, history: ChatTurn[], message: string) {
   const messages = [
     { role: 'system', content: systemPrompt },
@@ -502,6 +532,15 @@ export async function generateChatReply({
   const heuristic = getHeuristicReply(message, ar, user, latestAnalysis, history);
 
   const systemPrompt = buildSystemPrompt(ar, userSummary, analysisSummary, memorySummary, triage, intent);
+
+  if (GROQ_API_KEY) {
+    try {
+      const reply = await callGroq(systemPrompt, history, message);
+      if (reply) return reply + '\n\n_[Groq]_';
+    } catch (error) {
+      console.error('Groq chat fallback triggered:', error);
+    }
+  }
 
   if (OPENROUTER_API_KEY) {
     try {
