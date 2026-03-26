@@ -5,6 +5,7 @@ import { chatApi } from '../utils/api';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  createdAt?: string;
 }
 
 interface ChatBotProps {
@@ -12,18 +13,41 @@ interface ChatBotProps {
 }
 
 const formatMessage = (text: string) => {
-  let formatted = text.replace(/^### (.*$)/gim, '<h3 style="color:var(--primary);margin:10px 0 5px 0;font-size:18px;">$1</h3>');
-  formatted = formatted.replace(/^#### (.*$)/gim, '<h4 style="color:var(--primary);margin:8px 0 4px 0;font-size:16px;">$1</h4>');
-  formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  formatted = formatted.replace(/^\* (.*$)/gim, '<li style="margin-left:20px;margin-bottom:4px;">$1</li>');
-  formatted = formatted.replace(/\n/g, '<br/>');
-  return formatted;
+  let f = text.replace(/^### (.*$)/gim, '<h3 style="color:var(--primary);margin:10px 0 5px 0;font-size:17px;">$1</h3>');
+  f = f.replace(/^#### (.*$)/gim, '<h4 style="color:var(--primary);margin:8px 0 4px 0;font-size:15px;">$1</h4>');
+  f = f.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  f = f.replace(/^\* (.*$)/gim, '<li style="margin-left:18px;margin-bottom:3px;">$1</li>');
+  f = f.replace(/\n/g, '<br/>');
+  return f;
+};
+
+const formatTime = (dateStr?: string) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const formatDateLabel = (dateStr: string, prevDateStr?: string) => {
+  const d = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  const sameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  if (prevDateStr && sameDay(d, new Date(prevDateStr))) return null;
+
+  if (sameDay(d, today)) return 'Today';
+  if (sameDay(d, yesterday)) return 'Yesterday';
+  return d.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 export default function ChatBot({ lang }: ChatBotProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const containerRef = useRef<HTMLDivElement>(null);
   const ar = lang === 'ar';
@@ -40,12 +64,28 @@ export default function ChatBot({ lang }: ChatBotProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Load chat history on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await chatApi.getHistory();
+        const history: Message[] = (res?.data?.data || []).map((m: any) => ({
+          role: m.role,
+          content: m.content,
+          createdAt: m.createdAt,
+        }));
+        setMessages(history);
+      } catch {
+        // silently ignore — user may not be logged in yet
+      } finally {
+        setHistoryLoaded(true);
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     if (containerRef.current) {
-      containerRef.current.scrollTo({
-        top: containerRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
+      containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [messages, isLoading]);
 
@@ -54,24 +94,26 @@ export default function ChatBot({ lang }: ChatBotProps) {
     const messageText = (preset ?? input).trim();
     if (!messageText || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: messageText };
-    const nextHistory = [...messages, userMessage];
+    const now = new Date().toISOString();
+    const userMessage: Message = { role: 'user', content: messageText, createdAt: now };
+    const nextMessages = [...messages, userMessage];
     const localReply = getLocalResponse(messageText);
 
-    setMessages(nextHistory);
+    setMessages(nextMessages);
     setInput('');
     setIsLoading(true);
 
     try {
       const response = await chatApi.send({
         message: messageText,
-        history: nextHistory.slice(-10).map((item) => ({ role: item.role, content: item.content })),
+        history: nextMessages.slice(-10).map((item) => ({ role: item.role, content: item.content })),
       });
-      const reply =
+      const replyText =
         response?.data?.data?.reply?.trim()
         || localReply
         || t('Sorry, I could not generate a reply right now.', 'عذرًا، لم أستطع توليد رد الآن.');
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: replyText, createdAt: new Date().toISOString() }]);
     } catch (error: any) {
       const normalizedInput = messageText.toLowerCase();
       const greetingFallback =
@@ -87,15 +129,11 @@ export default function ChatBot({ lang }: ChatBotProps) {
       const friendlyError =
         status === 401
           ? t('Please sign in again to continue chatting.', 'من فضلك سجل الدخول مرة أخرى علشان تكمل المحادثة.')
-          : backendMessage
-            || t('Unable to reach AI service right now. Please try again in a moment.', 'تعذر الوصول لخدمة الذكاء الاصطناعي الآن. حاول مرة أخرى بعد قليل.');
+          : backendMessage || t('Unable to reach AI service right now.', 'تعذر الوصول للخدمة الآن، حاول مرة أخرى.');
 
       setMessages((prev) => [
         ...prev,
-        {
-          role: 'assistant',
-          content: localReply || greetingFallback || friendlyError,
-        },
+        { role: 'assistant', content: localReply || greetingFallback || friendlyError, createdAt: new Date().toISOString() },
       ]);
     } finally {
       setIsLoading(false);
@@ -121,8 +159,8 @@ export default function ChatBot({ lang }: ChatBotProps) {
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 620, margin: '0 auto' }}>
           {t(
-            'A smarter agent for result explanation, case summaries, next-step guidance, and urgent-symptom triage.',
-            'وكيل أذكى لشرح النتائج، تلخيص الحالة، اقتراح الخطوة التالية، وفرز الأعراض العاجلة.'
+            'Ask about your latest analysis, case summary, next steps, or warning signs.',
+            'اسأل عن آخر تحليل، ملخص الحالة، الخطوة التالية، أو علامات الخطر.'
           )}
         </p>
       </div>
@@ -138,12 +176,12 @@ export default function ChatBot({ lang }: ChatBotProps) {
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: 20,
+          gap: 4,
           boxShadow: '0 10px 30px var(--shadow-main)',
           scrollBehavior: 'smooth',
         }}
       >
-        {messages.length === 0 && (
+        {messages.length === 0 && historyLoaded && (
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', margin: 'auto', maxWidth: 560 }}>
             <p style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-main)', marginBottom: 10 }}>
               {t('How can I help you today?', 'كيف يمكنني مساعدتك اليوم؟')}
@@ -154,7 +192,6 @@ export default function ChatBot({ lang }: ChatBotProps) {
                 'اسأل عن آخر تحليل، ملخص الحالة، الخطوة التالية، أو علامات الخطر.'
               )}
             </p>
-
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10 }}>
               {quickPrompts.map((prompt) => (
                 <button
@@ -180,35 +217,77 @@ export default function ChatBot({ lang }: ChatBotProps) {
           </div>
         )}
 
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            style={{
-              alignSelf: msg.role === 'user' ? (ar ? 'flex-start' : 'flex-end') : (ar ? 'flex-end' : 'flex-start'),
-              background: msg.role === 'user' ? 'var(--primary)' : 'var(--card-border)',
-              color: msg.role === 'user' ? 'white' : 'var(--text-main)',
-              padding: '15px 20px',
-              borderRadius: msg.role === 'user' ? '20px 20px 0 20px' : '20px 20px 20px 0',
-              maxWidth: '85%',
-              lineHeight: 1.6,
-              fontSize: 15,
-            }}
-          >
-            <div dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
-          </div>
-        ))}
+        {messages.map((msg, idx) => {
+          const dateLabel = msg.createdAt
+            ? formatDateLabel(msg.createdAt, messages[idx - 1]?.createdAt)
+            : null;
+          const isUser = msg.role === 'user';
+
+          return (
+            <React.Fragment key={idx}>
+              {dateLabel && (
+                <div style={{ textAlign: 'center', margin: '14px 0 6px' }}>
+                  <span
+                    style={{
+                      background: 'var(--card-border)',
+                      color: 'var(--text-muted)',
+                      fontSize: 12,
+                      padding: '3px 12px',
+                      borderRadius: 999,
+                    }}
+                  >
+                    {dateLabel}
+                  </span>
+                </div>
+              )}
+
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: isUser ? (ar ? 'flex-start' : 'flex-end') : (ar ? 'flex-end' : 'flex-start'),
+                  marginBottom: 6,
+                }}
+              >
+                <div
+                  style={{
+                    background: isUser ? 'var(--primary)' : 'var(--card-border)',
+                    color: isUser ? 'white' : 'var(--text-main)',
+                    padding: '12px 16px',
+                    borderRadius: isUser ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+                    maxWidth: '80%',
+                    lineHeight: 1.65,
+                    fontSize: 15,
+                  }}
+                >
+                  <div dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }} />
+                </div>
+                {msg.createdAt && (
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3, paddingInline: 4 }}>
+                    {formatTime(msg.createdAt)}
+                  </span>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        })}
 
         {isLoading && (
           <div
             style={{
               alignSelf: ar ? 'flex-end' : 'flex-start',
               background: 'var(--card-border)',
-              padding: '15px 25px',
-              borderRadius: '20px 20px 20px 0',
+              padding: '12px 20px',
+              borderRadius: '20px 20px 20px 4px',
               color: 'var(--text-muted)',
+              fontSize: 14,
             }}
           >
-            {t('Thinking...', 'جاري التفكير...')}
+            <span style={{ display: 'inline-flex', gap: 4 }}>
+              <span style={{ animation: 'bounce 1s infinite 0s' }}>●</span>
+              <span style={{ animation: 'bounce 1s infinite 0.2s' }}>●</span>
+              <span style={{ animation: 'bounce 1s infinite 0.4s' }}>●</span>
+            </span>
           </div>
         )}
       </div>
@@ -216,9 +295,9 @@ export default function ChatBot({ lang }: ChatBotProps) {
       <form
         onSubmit={sendMessage}
         style={{
-          marginTop: 20,
+          marginTop: 16,
           display: 'flex',
-          gap: 12,
+          gap: 10,
           background: 'var(--card-bg)',
           padding: '8px',
           borderRadius: 20,
@@ -230,11 +309,11 @@ export default function ChatBot({ lang }: ChatBotProps) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={t('Ask your question...', 'اكتب سؤالك...')}
+          placeholder={t('Type a message…', 'اكتب رسالتك…')}
           style={{
             flex: 1,
-            padding: '12px 20px',
-            borderRadius: 15,
+            padding: '12px 18px',
+            borderRadius: 14,
             border: 'none',
             background: 'transparent',
             color: 'var(--text-main)',
@@ -245,22 +324,30 @@ export default function ChatBot({ lang }: ChatBotProps) {
         />
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !input.trim()}
           style={{
-            padding: '0 30px',
-            background: isLoading ? 'var(--text-muted)' : 'var(--primary)',
+            padding: '0 28px',
+            background: isLoading || !input.trim() ? 'var(--text-muted)' : 'var(--primary)',
             color: 'white',
             border: 'none',
-            borderRadius: 15,
-            cursor: isLoading ? 'not-allowed' : 'pointer',
+            borderRadius: 14,
+            cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
             fontWeight: 700,
             fontSize: 15,
             fontFamily: 'inherit',
+            transition: 'background 0.2s',
           }}
         >
           {t('Send', 'إرسال')}
         </button>
       </form>
+
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); opacity: 0.4; }
+          50% { transform: translateY(-4px); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

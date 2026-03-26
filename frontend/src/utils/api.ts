@@ -154,8 +154,11 @@ export const healthApi = {
 };
 
 export const chatApi = {
-    send: (data: { message: string; history: Array<{ role: 'user' | 'assistant'; content: string }> }) =>
-      api.post<ApiResponse<{ reply: string; usedLatestAnalysis: boolean; memoryTurnsUsed: number }>>('/chat', data),
+  send: (data: { message: string; history: Array<{ role: 'user' | 'assistant'; content: string }> }) =>
+    api.post<ApiResponse<{ reply: string; usedLatestAnalysis: boolean; memoryTurnsUsed: number }>>('/chat', data),
+
+  getHistory: () =>
+    api.get<ApiResponse<Array<{ role: 'user' | 'assistant'; content: string; createdAt: string }>>>('/chat/history'),
 };
 
 export default api;

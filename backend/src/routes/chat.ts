@@ -105,4 +105,26 @@ router.post(
   },
 );
 
+router.get('/history', authenticate, async (req: AuthRequest, res) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Not authenticated' });
+  }
+
+  const messages = await ChatMessage.findAll({
+    where: { userId: req.user.id },
+    order: [['createdAt', 'ASC']],
+    limit: 100,
+    attributes: ['id', 'role', 'content', 'createdAt'],
+  });
+
+  return res.json({
+    success: true,
+    data: messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+      createdAt: m.createdAt,
+    })),
+  });
+});
+
 export default router;

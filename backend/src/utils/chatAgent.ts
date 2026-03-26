@@ -552,7 +552,7 @@ export async function generateChatReply({
   if (GROQ_API_KEY) {
     try {
       const reply = await callGroq(systemPrompt, history, message);
-      if (reply) return reply + '\n\n_[Groq]_';
+      if (reply) return reply;
     } catch (error) {
       console.error('Groq chat fallback triggered:', error);
     }
@@ -561,7 +561,7 @@ export async function generateChatReply({
   if (OPENROUTER_API_KEY) {
     try {
       const reply = await callOpenRouter(systemPrompt, history, message);
-      if (reply) return reply + '\n\n_[OpenRouter]_';
+      if (reply) return reply;
     } catch (error) {
       console.error('OpenRouter chat fallback triggered:', error);
     }
@@ -570,11 +570,11 @@ export async function generateChatReply({
   if (GEMINI_API_KEY) {
     try {
       const reply = await callGemini(systemPrompt, history, message);
-      if (reply) return reply + '\n\n_[Gemini]_';
+      if (reply) return reply;
     } catch (error) {
       console.error('Gemini chat fallback triggered:', error);
     }
   }
 
-  return heuristic + '\n\n_[Local]_';
+  return heuristic;
 }
