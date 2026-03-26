@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type User from '../models/User';
 import type AnalysisResult from '../models/AnalysisResult';
+import { retryWithBackoff } from './retryWithBackoff';
 
 export interface ChatTurn {
   role: 'user' | 'assistant';
@@ -463,22 +464,24 @@ async function callOpenRouter(systemPrompt: string, history: ChatTurn[], message
     { role: 'user', content: message },
   ];
 
-  const response = await axios.post(
-    'https://openrouter.ai/api/v1/chat/completions',
-    {
-      model: OPENROUTER_MODEL,
-      messages,
-      temperature: 0.35,
-    },
-    {
-      timeout: 20000,
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': FRONTEND_URL,
-        'X-Title': "Morgan's Hope",
+  const response = await retryWithBackoff(() =>
+    axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: OPENROUTER_MODEL,
+        messages,
+        temperature: 0.35,
       },
-    },
+      {
+        timeout: 20000,
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': FRONTEND_URL,
+          'X-Title': "Morgan's Hope",
+        },
+      },
+    )
   );
 
   return response.data?.choices?.[0]?.message?.content?.trim() || '';
