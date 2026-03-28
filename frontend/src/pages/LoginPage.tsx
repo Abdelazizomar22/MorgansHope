@@ -55,6 +55,7 @@ const IconX = () => (
 // ─── Consent Modal ────────────────────────────────────────────────────────────
 
 function ConsentModal({ onAccept, onDecline, lang }: { onAccept: () => void; onDecline: () => void; lang: 'en' | 'ar' }) {
+  const [agreed, setAgreed] = useState(false);
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
 
@@ -84,6 +85,9 @@ function ConsentModal({ onAccept, onDecline, lang }: { onAccept: () => void; onD
         </div>
 
         <div className="auth-consent-scroll">
+          <div style={{ textAlign: 'center', marginBottom: 16, fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 700 }}>
+            {t('↓ Scroll to read all', '↓ قم بالتمرير لقراءة الكل')}
+          </div>
           <p>{t(
             "Morgan's Hope is an AI-assisted lung cancer research and support platform. By signing in, you acknowledge and agree to the following:",
             "مورغان هوب هي منصة بحثية وداعمة للكشف المبكر عن سرطان الرئة بمساعدة الذكاء الاصطناعي. بتسجيل دخولك، فإنك تقر وتوافق على ما يلي:"
@@ -112,20 +116,37 @@ function ConsentModal({ onAccept, onDecline, lang }: { onAccept: () => void; onD
             )}</li>
           </ul>
 
-          <div className="auth-consent-warning">
+          <div className="auth-consent-warning" style={{ marginBottom: 20 }}>
             <IconAlert />
             <span>{t(
               "This tool is not a substitute for professional medical care.",
               "هذه الأداة ليست بديلاً عن الرعاية الطبية المتخصصة."
             )}</span>
           </div>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '12px 14px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 12 }}>
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              style={{ width: 18, height: 18, accentColor: 'var(--primary)', cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', userSelect: 'none' }}>
+              {t("I have read and understood the disclaimer.", "لقد قرأت إخلاء المسؤولية وأفهمه جيدًا.")}
+            </span>
+          </label>
         </div>
 
         <div className="auth-modal-actions">
           <button className="auth-modal-decline" onClick={onDecline}>
             {t('Decline', 'رفض')}
           </button>
-          <button className="auth-modal-accept" onClick={onAccept}>
+          <button
+            className="auth-modal-accept"
+            onClick={agreed ? onAccept : undefined}
+            disabled={!agreed}
+            style={{ opacity: agreed ? 1 : 0.5, cursor: agreed ? 'pointer' : 'not-allowed' }}
+          >
             {t('I Agree & Continue', 'أوافق وأتابع')}
           </button>
         </div>
@@ -279,8 +300,8 @@ export default function LoginPage() {
         formBadge=""
         hideFormBadge
         formTitle={t('Welcome back', 'أهلاً بك مجدداً')}
-        formDescription={t('Sign in to access your dashboard and AI-powered medical tools.', 'سجل الدخول للوصول إلى لوحة التحكم والأدوات المدعومة بالذكاء الاصطناعي.')}
-        formMaxWidth={440}
+        formDescription={t('Secure, AI-powered medical platform.', 'منصة طبية آمنة ومدعومة بالذكاء الاصطناعي.')}
+        formMaxWidth={450}
       >
         {/* Error */}
         {error && (
