@@ -27,6 +27,7 @@ import { ContactPage } from './pages/ContactPage';
 import ChatBot from './pages/ChatBot';
 import { FAQsPage } from './pages/FAQsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import OnboardingPage from './pages/OnboardingPage';
 
 function Layout({ lang, onLangToggle, children }: {
   lang: 'en' | 'ar'; onLangToggle: () => void; children: React.ReactNode;
@@ -46,11 +47,11 @@ function AnimatedRoutes({ lang, toggleLang }: { lang: 'en' | 'ar', toggleLang: (
   return (
     <AnimatePresence mode="wait">
       <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0.3 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}>
+        key={location.pathname}
+        initial={{ opacity: 0.3 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}>
         <Routes location={location} key={location.pathname}>
           {/* ── Guest-only pages (redirect to / if already logged in) ── */}
           <Route path="/login" element={<GuestGuard><LoginPage /></GuestGuard>} />
@@ -92,6 +93,9 @@ function AnimatedRoutes({ lang, toggleLang }: { lang: 'en' | 'ar', toggleLang: (
             <Layout lang={lang} onLangToggle={toggleLang}>
               <AuthGuard><ProfilePage lang={lang} /></AuthGuard>
             </Layout>
+          } />
+          <Route path="/onboarding" element={
+            <AuthGuard><OnboardingPage /></AuthGuard>
           } />
 
           {/* ── Admin-only example (AdminGuard drops in wherever needed) ── */}

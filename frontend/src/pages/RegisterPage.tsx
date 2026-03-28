@@ -1,18 +1,14 @@
 import { useState, type ChangeEvent, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthLayout, AuthSection } from '../components/auth/AuthLayout';
+import { AuthLayout } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 
-const IconShield = ({ size = 18 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
+// ─── Icons ────────────────────────────────────────────────────────────────────
 
-const IconLock = () => (
+const IconUser = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
   </svg>
 );
 
@@ -23,16 +19,10 @@ const IconMail = () => (
   </svg>
 );
 
-const IconPhone = () => (
+const IconLock = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.88a16 16 0 0 0 6.16 6.16l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-  </svg>
-);
-
-const IconUser = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
+    <rect x="3" y="11" width="18" height="11" rx="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 );
 
@@ -54,7 +44,7 @@ const IconCheck = () => (
   </svg>
 );
 
-const IconX = () => (
+const IconXSm = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
@@ -69,6 +59,15 @@ const IconAlert = () => (
   </svg>
 );
 
+const IconXClose = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+// ─── Password strength ────────────────────────────────────────────────────────
+
 const strength = (password: string) => {
   let score = 0;
   if (password.length >= 8) score++;
@@ -82,27 +81,130 @@ const STRENGTH_LABELS_EN = ['', 'Weak', 'Fair', 'Good', 'Strong'];
 const STRENGTH_LABELS_AR = ['', 'ضعيفة', 'مقبولة', 'جيدة', 'قوية'];
 const STRENGTH_COLORS = ['', '#ef4444', '#f97316', '#ca8a04', '#166534'];
 
+// ─── Consent Modal ────────────────────────────────────────────────────────────
+
+function ConsentModal({ onAccept, onDecline, lang }: { onAccept: () => void; onDecline: () => void; lang: 'en' | 'ar' }) {
+  const ar = lang === 'ar';
+  const t = (en: string, arText: string) => ar ? arText : en;
+
+  return (
+    <div className="auth-modal-overlay" dir={ar ? 'rtl' : 'ltr'}>
+      <div className="auth-modal-card">
+        <button onClick={onDecline} className="auth-modal-close" aria-label={t('Close', 'إغلاق')}>
+          <IconXClose />
+        </button>
+
+        <div className="auth-modal-header">
+          <div className="auth-modal-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h2 className="auth-modal-title">
+            {t('Medical Research Disclaimer', 'إخلاء المسؤولية الطبية')}
+          </h2>
+          <p className="auth-modal-subtitle">
+            {t('Step 2 of 3 — Read carefully before proceeding', 'الخطوة 2 من 3 — اقرأ بعناية قبل المتابعة')}
+          </p>
+        </div>
+
+        <div className="auth-consent-scroll">
+          <p>{t(
+            "Morgan's Hope is an AI-assisted lung cancer research and support platform. By creating an account, you acknowledge and agree to the following:",
+            "مورغان هوب هي منصة بحثية وداعمة للكشف المبكر عن سرطان الرئة بمساعدة الذكاء الاصطناعي. بإنشاء حساب، فإنك تقر وتوافق على ما يلي:"
+          )}</p>
+          <ul>
+            <li>{t(
+              "This platform provides AI-powered preliminary analysis only and does not constitute medical advice.",
+              "تقدم هذه المنصة تحليلات أولية بمساعدة الذكاء الاصطناعي فقط ولا تشكل نصيحة طبية."
+            )}</li>
+            <li>{t(
+              "Results and insights from this tool must not replace consultation with a licensed physician or specialist.",
+              "يجب ألا تحل نتائج هذه الأداة محل استشارة الطبيب المرخص أو الاختصاصي."
+            )}</li>
+            <li>{t(
+              "Your medical data will be used exclusively for research purposes within this platform and kept strictly confidential.",
+              "ستُستخدم بياناتك الطبية حصريًا لأغراض البحث داخل هذه المنصة وتُحفظ سرية تامة."
+            )}</li>
+            <li>{t(
+              "In case of a medical emergency, please contact your local emergency services immediately.",
+              "في حالة الطوارئ الطبية، يرجى الاتصال بخدمات الطوارئ المحلية فورًا."
+            )}</li>
+            <li>{t(
+              "By proceeding, you consent to our Terms of Service and Privacy Policy.",
+              "بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية."
+            )}</li>
+          </ul>
+          <div className="auth-consent-warning">
+            <IconAlert />
+            <span>{t(
+              "This tool is not a substitute for professional medical care.",
+              "هذه الأداة ليست بديلاً عن الرعاية الطبية المتخصصة."
+            )}</span>
+          </div>
+        </div>
+
+        <div className="auth-modal-actions">
+          <button className="auth-modal-decline" onClick={onDecline}>
+            {t('Back', 'رجوع')}
+          </button>
+          <button className="auth-modal-accept" onClick={onAccept}>
+            {t('I Agree — Create Account', 'أوافق — إنشاء الحساب')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step Indicator ───────────────────────────────────────────────────────────
+
+function StepIndicator({ step, lang }: { step: 1 | 2 | 3; lang: 'en' | 'ar' }) {
+  const ar = lang === 'ar';
+  const t = (en: string, arText: string) => ar ? arText : en;
+  const steps = [
+    t('Account Info', 'معلومات الحساب'),
+    t('Consent', 'الموافقة'),
+    t('Done', 'تم'),
+  ];
+  return (
+    <div className="auth-step-indicator" dir={ar ? 'rtl' : 'ltr'}>
+      {steps.map((label, i) => {
+        const n = i + 1;
+        const active = step === n;
+        const done = step > n;
+        return (
+          <div key={n} className={`auth-step-item ${active ? 'active' : ''} ${done ? 'done' : ''}`}>
+            <div className="auth-step-dot">
+              {done ? <IconCheck /> : <span>{n}</span>}
+            </div>
+            <span className="auth-step-label">{label}</span>
+            {i < steps.length - 1 && <div className={`auth-step-line ${done ? 'done' : ''}`} />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const toggleTheme = () => {};
   const [lang, setLang] = useState<'en' | 'ar'>('en');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [agreed, setAgreed] = useState(false);
   const [focused, setFocused] = useState('');
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
     password: '',
     confirmPassword: '',
-    age: '',
-    gender: '',
-    smokingHistory: '',
-    medicalHistory: '',
   });
 
   const ar = lang === 'ar';
@@ -110,33 +212,30 @@ export default function RegisterPage() {
 
   const passStrength = strength(form.password);
   const passwordsMatch = Boolean(form.password && form.confirmPassword && form.password === form.confirmPassword);
-  const strengthColors = STRENGTH_COLORS;
   const successTone = { border: 'rgba(22,101,52,0.22)', bg: 'rgba(22,101,52,0.08)', text: '#166534' };
 
-  const handleSubmit = async () => {
+  const handleContinue = () => {
     if (!form.firstName || !form.lastName || !form.email || !form.password || !form.confirmPassword) {
       setError(t('Please fill in all required fields.', 'يرجى ملء جميع الحقول المطلوبة.'));
       return;
     }
-
     if (form.password !== form.confirmPassword) {
       setError(t('Passwords do not match.', 'كلمتا المرور غير متطابقتين.'));
       return;
     }
-
     if (passStrength < 3) {
       setError(t('Password is too weak. Use uppercase, lowercase, and numbers.', 'كلمة المرور ضعيفة. استخدم أحرفًا كبيرة وصغيرة وأرقامًا.'));
       return;
     }
+    setError('');
+    setShowConsentModal(true);
+  };
 
-    if (!agreed) {
-      setError(t('You must accept the medical notice to continue.', 'يجب الموافقة على الملاحظة الطبية للمتابعة.'));
-      return;
-    }
-
+  const handleConsentAccept = async () => {
+    setShowConsentModal(false);
+    setStep(2);
     setLoading(true);
     setError('');
-
     try {
       await register({
         firstName: form.firstName,
@@ -144,21 +243,18 @@ export default function RegisterPage() {
         email: form.email,
         password: form.password,
         confirmPassword: form.confirmPassword,
-        acceptedDisclaimer: agreed,
-        phone: form.phone || undefined,
-        age: form.age ? parseInt(form.age, 10) : undefined,
-        gender: (form.gender || undefined) as 'male' | 'female' | 'other' | undefined,
-        smokingHistory: (form.smokingHistory || undefined) as 'never' | 'former' | 'current' | undefined,
-        medicalHistory: form.medicalHistory || undefined,
+        acceptedDisclaimer: true,
         role: (window as any).isAdminDev ? 'admin' : 'user',
       });
-      navigate('/');
+      setStep(3);
+      // Redirect to onboarding after brief delay for UX
+      setTimeout(() => navigate('/onboarding'), 800);
     } catch (err: any) {
+      setStep(1);
       if (!err?.response) {
-        setError(t('Cannot connect to server. Is the backend running on port 3000?', 'لا يمكن الاتصال بالخادم. هل الـ backend يعمل على المنفذ 3000؟'));
+        setError(t('Cannot connect to server. Is the backend running on port 3000?', 'لا يمكن الاتصال بالخادم.'));
         return;
       }
-
       const msg = err.response?.data?.message;
       const details = err.response?.data?.errors;
       setError(details?.length ? details.map((item: { message: string }) => item.message).join('. ') : (msg || t('Registration failed. Please try again.', 'فشل التسجيل. يرجى المحاولة مرة أخرى.')));
@@ -169,22 +265,23 @@ export default function RegisterPage() {
 
   const bind = (key: string) => ({
     value: (form as Record<string, string>)[key],
-    onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm({ ...form, [key]: e.target.value }),
+    onChange: (e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, [key]: e.target.value }),
     onFocus: () => setFocused(key),
     onBlur: () => setFocused(''),
   });
 
   const inputStyle = (field: string, customPadding?: string): CSSProperties => ({
     width: '100%',
-    padding: customPadding || (ar ? '12px 44px 12px 16px' : '12px 16px 12px 44px'),
-    borderRadius: 16,
+    padding: customPadding || (ar ? '13px 44px 13px 16px' : '13px 16px 13px 44px'),
+    borderRadius: 14,
     border: `1.5px solid ${focused === field ? 'var(--primary)' : 'var(--card-border)'}`,
-    fontSize: 14,
+    fontSize: 14.5,
     outline: 'none',
     background: 'var(--card-bg)',
     color: 'var(--text-main)',
     boxShadow: focused === field ? '0 0 0 4px rgba(var(--primary-rgb),0.1)' : 'none',
     transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    fontFamily: 'inherit',
   });
 
   const iconPos = (field: string): CSSProperties => ({
@@ -195,28 +292,9 @@ export default function RegisterPage() {
     color: focused === field ? 'var(--primary)' : 'var(--text-muted)',
     pointerEvents: 'none',
     transition: 'color 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
   });
-
-  const requirementChip = (ok: boolean, text: string) => (
-    <div
-      key={text}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 7,
-        padding: '10px 12px',
-        borderRadius: 14,
-        border: `1px solid ${ok ? successTone.border : 'var(--card-border)'}`,
-        background: ok ? successTone.bg : 'var(--card-bg)',
-        color: ok ? successTone.text : 'var(--text-muted)',
-        fontSize: 12,
-        fontWeight: ok ? 700 : 600,
-      }}
-    >
-      {ok ? <IconCheck /> : <IconX />}
-      <span>{text}</span>
-    </div>
-  );
 
   const requirements = [
     { ok: form.password.length >= 8, text: t('8+ characters', '8 أحرف على الأقل') },
@@ -225,272 +303,213 @@ export default function RegisterPage() {
     { ok: /\d/.test(form.password), text: t('Number', 'رقم') },
   ];
 
+  const requirementChip = (ok: boolean, text: string) => (
+    <div
+      key={text}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 7,
+        padding: '10px 12px', borderRadius: 14,
+        border: `1px solid ${ok ? successTone.border : 'var(--card-border)'}`,
+        background: ok ? successTone.bg : 'var(--card-bg)',
+        color: ok ? successTone.text : 'var(--text-muted)',
+        fontSize: 12, fontWeight: ok ? 700 : 600,
+      }}
+    >
+      {ok ? <IconCheck /> : <IconXSm />}
+      <span>{text}</span>
+    </div>
+  );
+
   return (
     <>
+      {showConsentModal && (
+        <ConsentModal
+          lang={lang}
+          onAccept={handleConsentAccept}
+          onDecline={() => setShowConsentModal(false)}
+        />
+      )}
+
       <AuthLayout
         dir={ar ? 'rtl' : 'ltr'}
         fontFamily={ar ? "'Cairo', sans-serif" : "'Sora', sans-serif"}
         langToggleLabel={ar ? 'EN' : 'عربي'}
         onToggleLang={() => setLang(ar ? 'en' : 'ar')}
-        onToggleTheme={toggleTheme}
+        onToggleTheme={() => { }}
         themeToggleIcon={null}
         brandSlogan={t('"A Second Chance for Every Breath"', '"فرصة ثانية لكل نفس"')}
-        formBadge={t('Create Account', 'إنشاء حساب')}
-        formTitle={t('Set up your account', 'أنشئ حسابك')}
-        formDescription={t('Add your basic details, optional profile information, and a secure password.', 'أدخل بياناتك الأساسية وبعض المعلومات الاختيارية ثم أنشئ كلمة مرور آمنة.')}
-        formMaxWidth={560}
+        formBadge=""
+        hideFormBadge
+        formTitle={t('Create your account', 'أنشئ حسابك')}
+        formDescription={t('Join thousands of patients and researchers on a mission to fight lung cancer.', 'انضم إلى آلاف المرضى والباحثين في مهمة محاربة سرطان الرئة.')}
+        formMaxWidth={500}
       >
+        {/* Error */}
         {error && (
-          <div style={{ background: 'rgba(239,68,68,0.06)', border: '1.5px solid #fca5a5', borderRadius: 16, padding: '12px 14px', color: '#dc2626', fontSize: 13, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: 'rgba(239,68,68,0.06)', border: '1.5px solid #fca5a5', borderRadius: 14, padding: '12px 14px', color: '#dc2626', fontSize: 13, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
             <IconAlert />
             <span>{error}</span>
           </div>
         )}
 
-        <AuthSection
-          badge={t('Basic info', 'البيانات الأساسية')}
-          title={t('Account details', 'بيانات الحساب')}
-          description={t('Enter the required details to create your account.', 'أدخل البيانات المطلوبة لإنشاء الحساب.')}
-        >
-          <div className="auth-grid-two" style={{ marginBottom: 12 }}>
-            {[
-              { key: 'firstName', label: t('First name', 'الاسم الأول'), placeholder: ar ? 'أحمد' : 'John' },
-              { key: 'lastName', label: t('Last name', 'اسم العائلة'), placeholder: ar ? 'حسن' : 'Doe' },
-            ].map((field) => (
-              <div key={field.key}>
-                <label className="auth-field-label">{field.label}</label>
-                <div className="auth-input-shell">
-                  <div style={iconPos(field.key)}>
-                    <IconUser />
+        {/* Step Indicator */}
+        <StepIndicator step={step} lang={lang} />
+
+        {/* Step 3 — Success state */}
+        {step === 3 && (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.1)', border: '2px solid rgba(22,163,74,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 style={{ margin: '0 0 8px', color: 'var(--text-main)', fontSize: 20, fontWeight: 800 }}>
+              {t('Account created!', 'تم إنشاء الحساب!')}
+            </h3>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 14 }}>
+              {t('Redirecting you to complete your profile…', 'جارٍ تحويلك لإكمال ملفك الشخصي…')}
+            </p>
+          </div>
+        )}
+
+        {/* Step 1 — Form */}
+        {step === 1 && (
+          <>
+            {/* Name fields */}
+            <div className="auth-grid-two" style={{ marginBottom: 14 }}>
+              {[
+                { key: 'firstName', label: t('First name', 'الاسم الأول'), placeholder: ar ? 'أحمد' : 'John' },
+                { key: 'lastName', label: t('Last name', 'اسم العائلة'), placeholder: ar ? 'حسن' : 'Doe' },
+              ].map((field) => (
+                <div key={field.key}>
+                  <label className="auth-field-label">{field.label}</label>
+                  <div className="auth-input-shell">
+                    <div style={iconPos(field.key)}><IconUser /></div>
+                    <input {...bind(field.key)} placeholder={field.placeholder} style={inputStyle(field.key)} />
                   </div>
-                  <input {...bind(field.key)} placeholder={field.placeholder} style={inputStyle(field.key)} />
+                </div>
+              ))}
+            </div>
+
+            {/* Email */}
+            <div style={{ marginBottom: 14 }}>
+              <label className="auth-field-label">{t('Email address', 'البريد الإلكتروني')}</label>
+              <div className="auth-input-shell">
+                <div style={iconPos('email')}><IconMail /></div>
+                <input {...bind('email')} type="email" placeholder="example@email.com" style={inputStyle('email')} />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div style={{ marginBottom: 10 }}>
+              <label className="auth-field-label">{t('Password', 'كلمة المرور')}</label>
+              <div className="auth-input-shell">
+                <div style={iconPos('password')}><IconLock /></div>
+                <input
+                  {...bind('password')}
+                  type={showPass ? 'text' : 'password'}
+                  placeholder={t('Create a password', 'أنشئ كلمة مرور')}
+                  style={{ ...inputStyle('password', '13px 44px 13px 44px'), letterSpacing: showPass ? 'normal' : '0.18em' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  style={{ position: 'absolute', [ar ? 'left' : 'right']: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex', alignItems: 'center' }}
+                  aria-label={showPass ? t('Hide password', 'إخفاء كلمة المرور') : t('Show password', 'إظهار كلمة المرور')}
+                >
+                  <IconEye open={showPass} />
+                </button>
+              </div>
+            </div>
+
+            {/* Password strength */}
+            {!!form.password && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+                  {[1, 2, 3, 4].map((item) => (
+                    <div key={item} style={{ flex: 1, height: 5, borderRadius: 999, background: item <= passStrength ? STRENGTH_COLORS[passStrength] : 'var(--card-border)', transition: 'background 0.25s ease' }} />
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ color: STRENGTH_COLORS[passStrength], fontSize: 12, fontWeight: 800 }}>
+                    {ar ? STRENGTH_LABELS_AR[passStrength] : STRENGTH_LABELS_EN[passStrength]}
+                  </span>
+                </div>
+                <div className="auth-grid-two">
+                  {requirements.map((item) => requirementChip(item.ok, item.text))}
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div>
-            <label className="auth-field-label">{t('Email', 'البريد الإلكتروني')}</label>
-            <div className="auth-input-shell">
-              <div style={iconPos('email')}>
-                <IconMail />
-              </div>
-              <input {...bind('email')} type="email" placeholder="example@email.com" style={inputStyle('email')} />
-            </div>
-          </div>
-        </AuthSection>
-
-        <AuthSection
-          badge={t('Profile', 'الملف الشخصي')}
-          title={t('Additional information', 'معلومات إضافية')}
-          description={t('You can add these optional details now or update them later from your profile.', 'يمكنك إضافة هذه البيانات الاختيارية الآن أو تعديلها لاحقًا من الملف الشخصي.')}
-        >
-          <div style={{ marginBottom: 12 }}>
-            <label className="auth-field-label">
-              {t('Phone', 'الهاتف')} <span className="auth-label-meta">({t('optional', 'اختياري')})</span>
-            </label>
-            <div className="auth-input-shell">
-              <div style={iconPos('phone')}>
-                <IconPhone />
-              </div>
-              <input {...bind('phone')} type="tel" placeholder="+20 1XX XXX XXXX" style={inputStyle('phone')} />
-            </div>
-          </div>
-
-          <div className="auth-grid-two" style={{ marginBottom: 12 }}>
-            <div>
-              <label className="auth-field-label">
-                {t('Age', 'العمر')} <span className="auth-label-meta">({t('optional', 'اختياري')})</span>
-              </label>
-              <input {...bind('age')} type="number" min="0" max="150" placeholder={t('e.g. 45', 'مثال: 45')} style={inputStyle('age', '12px 14px')} />
-            </div>
-
-            <div>
-              <label className="auth-field-label">
-                {t('Gender', 'النوع')} <span className="auth-label-meta">({t('optional', 'اختياري')})</span>
-              </label>
-              <select {...bind('gender')} style={inputStyle('gender', '12px 14px')}>
-                <option value="">{t('Select', 'اختر')}</option>
-                <option value="male">{t('Male', 'ذكر')}</option>
-                <option value="female">{t('Female', 'أنثى')}</option>
-                <option value="other">{t('Other', 'أخرى')}</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: 12 }}>
-            <label className="auth-field-label">
-              {t('Smoking history', 'تاريخ التدخين')} <span className="auth-label-meta">({t('optional', 'اختياري')})</span>
-            </label>
-            <select {...bind('smokingHistory')} style={inputStyle('smokingHistory', '12px 14px')}>
-              <option value="">{t('Select', 'اختر')}</option>
-              <option value="never">{t('Never smoked', 'لم أدخن')}</option>
-              <option value="former">{t('Former smoker', 'مدخن سابق')}</option>
-              <option value="current">{t('Current smoker', 'مدخن حالي')}</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="auth-field-label">
-              {t('Medical history', 'التاريخ المرضي')} <span className="auth-label-meta">({t('optional', 'اختياري')})</span>
-            </label>
-            <textarea
-              {...bind('medicalHistory')}
-              placeholder={t('e.g. previous surgeries, chronic diseases...', 'مثل: عمليات سابقة أو أمراض مزمنة...')}
-              style={{ ...inputStyle('medicalHistory', '12px 14px'), minHeight: 96, resize: 'vertical' }}
-            />
-          </div>
-        </AuthSection>
-
-        <AuthSection
-          badge={t('Security', 'الأمان')}
-          title={t('Set your password', 'أنشئ كلمة المرور')}
-          description={t('Choose a password, confirm it, and review the medical notice before creating the account.', 'اختر كلمة مرور مناسبة وأكدها ثم راجع الملاحظة الطبية قبل إنشاء الحساب.')}
-        >
-          <div style={{ marginBottom: 12 }}>
-            <label className="auth-field-label">{t('Password', 'كلمة المرور')}</label>
-            <div className="auth-input-shell">
-              <div style={iconPos('password')}>
-                <IconLock />
-              </div>
-              <input
-                {...bind('password')}
-                type={showPass ? 'text' : 'password'}
-                placeholder={t('Password', 'كلمة المرور')}
-                style={{ ...inputStyle('password', '12px 44px 12px 44px'), letterSpacing: showPass ? 'normal' : '0.18em' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass(!showPass)}
-                style={{ position: 'absolute', [ar ? 'left' : 'right']: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex', alignItems: 'center' }}
-                aria-label={showPass ? t('Hide password', 'إخفاء كلمة المرور') : t('Show password', 'إظهار كلمة المرور')}
-              >
-                <IconEye open={showPass} />
-              </button>
-            </div>
-          </div>
-
-          {!!form.password && (
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
-                {[1, 2, 3, 4].map((item) => (
-                  <div key={item} style={{ flex: 1, height: 6, borderRadius: 999, background: item <= passStrength ? strengthColors[passStrength] : 'var(--card-border)', transition: 'background 0.25s ease' }} />
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <span style={{ color: strengthColors[passStrength], fontSize: 12, fontWeight: 800 }}>
-                  {ar ? STRENGTH_LABELS_AR[passStrength] : STRENGTH_LABELS_EN[passStrength]}
-                </span>
-              </div>
-
-              <div className="auth-grid-two">
-                {requirements.map((item) => requirementChip(item.ok, item.text))}
-              </div>
-            </div>
-          )}
-
-          <div style={{ marginBottom: 14 }}>
-            <label className="auth-field-label">{t('Confirm password', 'تأكيد كلمة المرور')}</label>
-            <div className="auth-input-shell">
-              <input
-                {...bind('confirmPassword')}
-                type={showPass ? 'text' : 'password'}
-                placeholder={t('Confirm password', 'تأكيد كلمة المرور')}
-                style={{
-                  ...inputStyle('confirmPassword', '12px 14px'),
-                  letterSpacing: showPass ? 'normal' : '0.18em',
-                  border: form.confirmPassword
-                    ? (passwordsMatch ? '1.5px solid #22c55e' : '1.5px solid #ef4444')
-                    : (focused === 'confirmPassword' ? '1.5px solid var(--primary)' : '1.5px solid var(--card-border)'),
-                }}
-              />
-            </div>
-
-            {!!form.confirmPassword && (
-              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: passwordsMatch ? '#16a34a' : '#ef4444' }}>
-                {passwordsMatch ? <IconCheck /> : <IconX />}
-                <span>{passwordsMatch ? t('Passwords match', 'كلمتا المرور متطابقتان') : t('Passwords do not match', 'كلمتا المرور غير متطابقتين')}</span>
-              </div>
             )}
-          </div>
 
-          <div style={{ display: 'flex', gap: 12, padding: '14px', borderRadius: 18, border: '1px solid var(--card-border)', background: 'rgba(var(--primary-rgb),0.04)' }}>
-            <button
-              type="button"
-              onClick={() => setAgreed(!agreed)}
-              style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${agreed ? 'var(--primary)' : 'var(--text-muted)'}`, background: agreed ? 'var(--primary)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginTop: 2 }}
-              aria-label={t('Toggle medical notice agreement', 'تبديل الموافقة على الملاحظة الطبية')}
-            >
-              {agreed && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              )}
-            </button>
-
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, color: '#d97706', fontWeight: 800, fontSize: 12 }}>
-                <IconAlert />
-                <span>{t('Medical notice', 'ملاحظة طبية')}</span>
+            {/* Confirm password */}
+            <div style={{ marginBottom: 22 }}>
+              <label className="auth-field-label">{t('Confirm password', 'تأكيد كلمة المرور')}</label>
+              <div className="auth-input-shell">
+                <input
+                  {...bind('confirmPassword')}
+                  type={showPass ? 'text' : 'password'}
+                  placeholder={t('Confirm your password', 'أكد كلمة المرور')}
+                  style={{
+                    ...inputStyle('confirmPassword', '13px 14px'),
+                    letterSpacing: showPass ? 'normal' : '0.18em',
+                    border: form.confirmPassword
+                      ? (passwordsMatch ? '1.5px solid #22c55e' : '1.5px solid #ef4444')
+                      : (focused === 'confirmPassword' ? '1.5px solid var(--primary)' : '1.5px solid var(--card-border)'),
+                  }}
+                />
               </div>
-              <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.7, color: 'var(--text-main)' }}>
-                {t(
-                  'I understand that this tool offers preliminary support only and does not replace a doctor.',
-                  'أفهم أن هذه الأداة تقدم مساعدة أولية فقط ولا تغني عن مراجعة الطبيب.'
-                )}
-              </p>
+              {!!form.confirmPassword && (
+                <div style={{ marginTop: 7, display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: passwordsMatch ? '#16a34a' : '#ef4444' }}>
+                  {passwordsMatch ? <IconCheck /> : <IconXSm />}
+                  <span>{passwordsMatch ? t('Passwords match', 'كلمتا المرور متطابقتان') : t('Passwords do not match', 'كلمتا المرور غير متطابقتين')}</span>
+                </div>
+              )}
             </div>
-          </div>
-        </AuthSection>
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={loading}
-          className="auth-primary-button"
-          style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: loading ? 'default' : 'pointer' }}
-        >
-          {loading ? (
-            <>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M21 12a9 9 0 11-6.219-8.56">
-                  <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" />
-                </path>
+            {/* Continue Button */}
+            <button
+              id="register-continue-btn"
+              type="button"
+              onClick={handleContinue}
+              className="auth-primary-button"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}
+            >
+              {t('Continue', 'متابعة')}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                {ar ? <polyline points="15 18 9 12 15 6" /> : <polyline points="9 18 15 12 9 6" />}
               </svg>
-              {t('Creating account...', 'جارٍ إنشاء الحساب...')}
-            </>
-          ) : (
-            t('Create account', 'إنشاء الحساب')
-          )}
-        </button>
+            </button>
+          </>
+        )}
 
-        <div className="auth-note-card" style={{ marginTop: 16 }}>
-          <div style={{ color: 'var(--primary)', flexShrink: 0 }}>
-            <IconShield size={15} />
+        {/* Step 2 — Loading state while registering */}
+        {step === 2 && loading && (
+          <div style={{ textAlign: 'center', padding: '48px 0' }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round">
+              <path d="M21 12a9 9 0 11-6.219-8.56">
+                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" />
+              </path>
+            </svg>
+            <p style={{ marginTop: 16, color: 'var(--text-muted)', fontSize: 14 }}>
+              {t('Creating your account…', 'جارٍ إنشاء حسابك…')}
+            </p>
           </div>
-          <p>{t('Your profile information stays encrypted and protected.', 'بيانات ملفك تبقى مشفرة ومحمية.')}</p>
-        </div>
+        )}
 
-        <p className="auth-footer-text">
-          {t('Already have an account?', 'لديك حساب بالفعل؟')}{' '}
-          <Link to="/login">{t('Sign in', 'تسجيل الدخول')}</Link>
-        </p>
+        {/* Footer link */}
+        {step === 1 && (
+          <p className="auth-footer-text">
+            {t('Already have an account?', 'لديك حساب بالفعل؟')}{' '}
+            <Link to="/login">{t('Sign in', 'تسجيل الدخول')}</Link>
+          </p>
+        )}
       </AuthLayout>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap');
-        input::placeholder,
-        textarea::placeholder { color: #94a3b8; letter-spacing: 0; }
-        input[type="password"] {
-          appearance: none;
-          -webkit-appearance: none;
-          font-family: inherit;
-        }
-        input[type="password"]::-ms-reveal,
-        input[type="password"]::-ms-clear {
-          display: none;
-        }
+        input::placeholder { color: #94a3b8; letter-spacing: 0; }
+        input[type="password"] { appearance: none; -webkit-appearance: none; font-family: inherit; }
+        input[type="password"]::-ms-reveal, input[type="password"]::-ms-clear { display: none; }
       `}</style>
     </>
   );
