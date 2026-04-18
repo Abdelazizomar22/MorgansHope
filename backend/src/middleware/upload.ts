@@ -1,13 +1,19 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
-// Always relative to project root (cwd) — works on Windows with ts-node
+const isVercel = Boolean(process.env.VERCEL);
 const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
-const uploadDir = path.isAbsolute(uploadsRoot)
-  ? uploadsRoot
-  : path.join(process.cwd(), uploadsRoot);
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = isVercel
+  ? path.join(os.tmpdir(), 'morgans-hope-uploads')
+  : path.isAbsolute(uploadsRoot)
+    ? uploadsRoot
+    : path.join(process.cwd(), uploadsRoot);
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),
@@ -20,7 +26,7 @@ const storage = multer.diskStorage({
 const fileFilter = (
   _req: Express.Request,
   file: Express.Multer.File,
-  cb: multer.FileFilterCallback
+  cb: multer.FileFilterCallback,
 ) => {
   const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   if (allowed.includes(file.mimetype)) {
@@ -33,7 +39,7 @@ const fileFilter = (
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 export default upload;
