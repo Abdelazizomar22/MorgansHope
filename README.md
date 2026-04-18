@@ -1,101 +1,54 @@
-# Morgan's Hope - Lung Cancer AI Detection
+# Morgan's Hope
 
-> Graduation Project 2025/2026 - Higher Institute of Computer Science & Information Systems
+An AI-assisted platform for early lung cancer screening using chest CT scans and X-ray images. Morgan's Hope supports scan analysis, result review, hospital guidance, and a patient-facing assistant experience designed to make follow-up decisions clearer and more accessible.
 
-AI-powered lung cancer detection from chest X-rays and CT scans. Full-stack application for local development and deployment.
+## Project Overview
 
----
+Morgan's Hope was developed as a graduation project focused on medical AI decision support. The platform combines a modern web interface, a backend API, and dedicated AI services to help users upload scans, receive structured screening results, and understand the next recommended step.
+
+The project is intended as a supportive screening tool and does not replace clinical judgment or formal diagnosis by a qualified physician.
 
 ## Repository Structure
 
 ```text
 MorgansHope/
-|-- frontend/          React 18 + Vite + TypeScript (port 3001)
-|-- backend/           Node.js + Express + Sequelize API (port 3000)
-|-- ai/                Python FastAPI AI services
-|   |-- ct_service/    CT scan classification (port 8000)
-|   `-- xray_service/  X-ray classification (port 8001)
-|-- README.md
-|-- start-local.ps1
-`-- stop-local.ps1
+├── ai/
+├── backend/
+├── frontend/
+└── README.md
 ```
 
-- `frontend` - Web UI for auth, upload, results, profile, hospitals, and chatbot.
-- `backend` - REST API, auth, chat agent, database, and AI-service integration.
-- `ai` - CT and X-ray ML services.
+- `frontend/` contains the user-facing web application.
+- `backend/` contains the API, authentication, chat orchestration, and data layer.
+- `ai/` contains the AI services used for CT and X-ray analysis.
 
----
+## Core Features
 
-## Quick Start
+- User authentication with email/password and Google sign-in
+- AI-assisted CT and X-ray scan analysis
+- Result history and downloadable reporting workflows
+- Hospital recommendation support for critical cases
+- Contact and communication flows for user support
+- Smart assistant for explanation, summaries, and next-step guidance
 
-Prerequisites: Node.js 18+, npm, Python 3.x. Local development uses SQLite by default.
+## Contributing to Morgan's Hope
 
-From the project root:
+Welcome to the Morgan's Hope repository. If you would like to contribute, please follow a clean and safe workflow:
 
-```powershell
-.\start-local.ps1
-```
+1. Fork or clone the repository.
+2. Create a dedicated branch for your task.
+3. Keep each change focused and clearly documented.
+4. Open a Pull Request with a concise description of the work.
+5. Wait for review before merging into `main`.
 
-This starts:
-- frontend on `http://localhost:3001`
-- backend on `http://localhost:3000`
-- optional AI services unless `-SkipAI` is used
+## Contribution Guidelines
 
-Useful commands:
+- Do not push directly to `main`.
+- Keep changes limited to the area you are working on.
+- Use clear commit messages.
+- Avoid exposing secrets, private environment values, or internal deployment details.
+- Make sure the code you submit is reviewed and production-appropriate.
 
-| Command | Description |
-|---|---|
-| `.\start-local.ps1 -SkipAI` | Start frontend and backend only |
-| `.\stop-local.ps1` | Stop local services |
+## Questions
 
-Default admin:
-- Email: `admin@medtech.com`
-- Password: `Admin@123456`
-
----
-
-## Notes
-
-- Backend chat now uses `GEMINI_API_KEY` from `backend/.env`, not the frontend.
-- Chat memory is persisted in the backend database.
-- Generated runtime files and logs should not be committed.
-- Main project docs live in this file plus the service-specific READMEs in `frontend/` and `backend/`.
-
----
-
-## Pre-Launch QA (Required)
-
-Run this quick checklist before production deployment:
-
-- Authentication
-  - Email/password login works with valid and invalid credentials.
-  - `Keep me signed in` tested both checked and unchecked.
-  - Google login tested for:
-    - new user creation,
-    - existing user login,
-    - cancel/deny flow from Google,
-    - account without a usable photo (fallback initial must appear).
-
-- Registration safety
-  - Registration fails with a clear message when medical disclaimer is not accepted.
-  - Registration succeeds only after disclaimer acceptance.
-
-- Contact flow
-  - Contact form submission succeeds in UI.
-  - Inbox email includes sender name, sender email, phone, message, and submitted time.
-
-- Chatbot behavior
-  - General greeting (for example: "Hi" / "ازيك") gets a normal conversational reply.
-  - Medical questions still trigger triage-aware guidance.
-  - Commands like "explain my latest result" and "suggest next step" return focused responses.
-
-- Production configuration
-  - Production OAuth callback/origin values are set in Google Cloud Console.
-  - Production `FRONTEND_URL`, `VITE_API_URL`, and backend env values are set correctly.
-  - All exposed/previously shared keys are rotated before launch.
-
----
-
-## Disclaimer
-
-This system is a diagnostic support tool only and does not replace a physician's judgment. All results should be reviewed by a qualified medical professional.
+For questions about the project, please reach out to **Abdelaziz**.
