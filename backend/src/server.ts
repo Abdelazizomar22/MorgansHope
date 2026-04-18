@@ -42,6 +42,12 @@ async function initializeApp() {
   }
 
   initPromise = (async () => {
+    if (isVercel) {
+      await sequelize.authenticate();
+      console.log('Database connection verified for Vercel runtime.');
+      return;
+    }
+
     await sequelize.sync();
     console.log('Database tables synced.');
 
@@ -141,6 +147,38 @@ app.use(
   ),
 );
 
+app.get('/api/health', async (_req, res) => {
+  const check = async (url: string): Promise<string> => {
+    try {
+      await axios.get(`${url}/health`, { timeout: 3000 });
+      return 'online';
+    } catch {
+      return 'offline';
+    }
+  };
+
+  const checkDb = async (): Promise<string> => {
+    try {
+      await sequelize.authenticate();
+      return 'online';
+    } catch {
+      return 'offline';
+    }
+  };
+
+  const [ctStatus, xrayStatus, dbStatus] = await Promise.all([check(CT_URL), check(XRAY_URL), checkDb()]);
+
+  res.json({
+    success: true,
+    data: {
+      server: 'online',
+      database: dbStatus,
+      ai: { ctService: ctStatus, xrayService: xrayStatus },
+      timestamp: new Date().toISOString(),
+    },
+  });
+});
+
 app.use(async (_req, _res, next) => {
   try {
     await initializeApp();
@@ -154,28 +192,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/analysis', analysisRoutes);
 app.use('/api/hospitals', hospitalRoutes);
 app.use('/api/chat', chatRoutes);
-
-app.get('/api/health', async (_req, res) => {
-  const check = async (url: string): Promise<string> => {
-    try {
-      await axios.get(`${url}/health`, { timeout: 3000 });
-      return 'online';
-    } catch {
-      return 'offline';
-    }
-  };
-
-  const [ctStatus, xrayStatus] = await Promise.all([check(CT_URL), check(XRAY_URL)]);
-
-  res.json({
-    success: true,
-    data: {
-      server: 'online',
-      ai: { ctService: ctStatus, xrayService: xrayStatus },
-      timestamp: new Date().toISOString(),
-    },
-  });
-});
 
 app.use((_req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
