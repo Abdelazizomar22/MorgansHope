@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import pg from 'pg';
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -38,6 +39,7 @@ if (useSqlite) {
         process.env.NODE_ENV === 'production'
           ? { ssl: { require: true, rejectUnauthorized: false } }
           : {},
+      dialectModule: pg,
       logging: false,
       pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
       define: { underscored: true, timestamps: true },
