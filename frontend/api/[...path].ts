@@ -11,7 +11,11 @@ const HOP_BY_HOP_HEADERS = new Set([
 ]);
 
 function buildTargetUrl(pathParam: string | string[] | undefined, query: Record<string, unknown>) {
-  const parts = Array.isArray(pathParam) ? pathParam : pathParam ? [pathParam] : [];
+  const parts = Array.isArray(pathParam)
+    ? pathParam.flatMap((segment) => String(segment).split('/').filter(Boolean))
+    : pathParam
+      ? String(pathParam).split('/').filter(Boolean)
+      : [];
   const search = new URLSearchParams();
 
   Object.entries(query).forEach(([key, value]) => {
