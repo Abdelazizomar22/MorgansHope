@@ -147,7 +147,7 @@ app.use(
   ),
 );
 
-app.get('/api/health', async (_req, res) => {
+const healthHandler = async (_req: express.Request, res: express.Response) => {
   const check = async (url: string): Promise<string> => {
     try {
       await axios.get(`${url}/health`, { timeout: 3000 });
@@ -177,7 +177,10 @@ app.get('/api/health', async (_req, res) => {
       timestamp: new Date().toISOString(),
     },
   });
-});
+};
+
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 app.use(async (_req, _res, next) => {
   try {
@@ -188,9 +191,13 @@ app.use(async (_req, _res, next) => {
   }
 });
 
+app.use('/auth', authRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/analysis', analysisRoutes);
 app.use('/api/analysis', analysisRoutes);
+app.use('/hospitals', hospitalRoutes);
 app.use('/api/hospitals', hospitalRoutes);
+app.use('/chat', chatRoutes);
 app.use('/api/chat', chatRoutes);
 
 app.use((_req, res) => {
