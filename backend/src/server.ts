@@ -73,20 +73,29 @@ async function initializeApp() {
 
 app.use(helmet());
 
-const configuredOrigins = (
-  process.env.FRONTEND_URLS ||
-  process.env.FRONTEND_URL ||
-  'https://morgans-hope.vercel.app,http://localhost:3001'
-)
-  .split(',')
-  .map((origin) => origin.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, ''))
+const normalizeOrigin = (origin: string) => origin.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
+
+const envOrigins = [
+  process.env.FRONTEND_URLS || '',
+  process.env.FRONTEND_URL || '',
+]
+  .flatMap((value) => value.split(','))
+  .map((origin) => normalizeOrigin(origin))
   .filter(Boolean);
+
+const configuredOrigins = Array.from(
+  new Set([
+    'https://morgans-hope.vercel.app',
+    'http://localhost:3001',
+    ...envOrigins,
+  ]),
+);
 
 const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 
 const isAllowedOrigin = (origin?: string) => {
   if (!origin || isDev) return true;
-  const normalizedOrigin = origin.trim().replace(/\/+$/, '');
+  const normalizedOrigin = normalizeOrigin(origin);
   return configuredOrigins.includes(normalizedOrigin) || vercelPreviewPattern.test(normalizedOrigin);
 };
 
@@ -99,7 +108,7 @@ app.use((req, res, next) => {
   }
 
   if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin.trim().replace(/\/+$/, ''));
+    res.setHeader('Access-Control-Allow-Origin', normalizeOrigin(origin));
     res.setHeader('Vary', 'Origin');
   }
 
