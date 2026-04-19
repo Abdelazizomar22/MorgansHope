@@ -83,7 +83,7 @@ const configuredOrigins = (
   .map((origin) => origin.trim().replace(/^['"]|['"]$/g, ''))
   .filter(Boolean);
 
-const vercelPreviewPattern = /^https:\/\/morgans-hope-[a-z0-9-]+\.vercel\.app$/i;
+const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 
 app.use(
   cors({

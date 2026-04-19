@@ -291,7 +291,7 @@ export default function RegisterPage() {
     } catch (err: any) {
       setStep(1);
       if (!err?.response) {
-        setError(t('Cannot connect to server. Is the backend running on port 3000?', 'لا يمكن الاتصال بالخادم.'));
+        setError(t('Cannot connect to the backend right now. Please try again in a moment.', 'لا يمكن الاتصال بالخادم حاليًا. حاول مرة أخرى بعد لحظات.'));
         return;
       }
       const msg = err.response?.data?.message;
