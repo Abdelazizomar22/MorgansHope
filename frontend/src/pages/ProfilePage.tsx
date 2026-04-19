@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { analysisApi, authApi } from '../utils/api';
+import { API_BASE_URL } from '../utils/env';
 import type { AnalysisResult } from '../types';
 
 interface ProfilePageProps { lang: 'en' | 'ar'; }
@@ -83,7 +84,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const apiBase = import.meta.env.VITE_API_URL || '/api';
+  const apiBase = API_BASE_URL;
   const uploadsBase = apiBase.replace(/\/api\/?$/, '/api/uploads');
   const avatarSrc = user?.profilePicture
     ? (/^https?:\/\//i.test(user.profilePicture) || user.profilePicture.startsWith('data:')

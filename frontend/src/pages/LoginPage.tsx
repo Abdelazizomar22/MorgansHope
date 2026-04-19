@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
+import { GOOGLE_AUTH_URL } from '../utils/env';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -171,7 +172,7 @@ export default function LoginPage() {
 
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
-  const googleAuthUrl = import.meta.env.VITE_GOOGLE_AUTH_URL || `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/google`;
+  const googleAuthUrl = GOOGLE_AUTH_URL;
 
   // Handle Google OAuth callback
   useEffect(() => {

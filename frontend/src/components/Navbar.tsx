@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../utils/env';
 
 const IconHome = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>;
 const IconUpload = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>;
@@ -45,7 +46,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
   const t = (en: string, arText: string) => ar ? arText : en;
   const menuItemHover = 'color-mix(in srgb, var(--primary) 14%, var(--card-bg))';
   const menuItemHoverDanger = 'color-mix(in srgb, #ef4444 10%, var(--card-bg))';
-  const apiBase = import.meta.env.VITE_API_URL || '/api';
+  const apiBase = API_BASE_URL;
   const uploadsBase = apiBase.replace(/\/api\/?$/, '/api/uploads');
   const avatarSrc = user?.profilePicture
     ? (/^https?:\/\//i.test(user.profilePicture) || user.profilePicture.startsWith('data:')

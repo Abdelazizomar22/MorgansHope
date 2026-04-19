@@ -3,9 +3,10 @@
 // ─────────────────────────────────────────────────────────────
 import axios, { AxiosRequestConfig } from 'axios';
 import type { SafeUser, AnalysisResult, Hospital, City, UploadResponse, PaginatedResponse, ApiResponse } from '../types';
+import { API_BASE_URL } from './env';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: API_BASE_URL,
   timeout: 120_000,
   withCredentials: true, // send HttpOnly refresh cookie on every request
 });

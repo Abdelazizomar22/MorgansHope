@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { analysisApi } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../utils/env';
 import type { AnalysisResult, UrgencyLevel } from '../types';
 
 interface ResultsPageProps { lang: 'en' | 'ar'; }
@@ -144,7 +145,7 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
     setShowReportModal(true);
   };
 
-  const apiOrigin = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || window.location.origin;
+  const apiOrigin = API_BASE_URL.replace(/\/api\/?$/, '') || window.location.origin;
 
   const buildImageURL = (r: AnalysisResult) =>
     r.imagePath
