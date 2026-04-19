@@ -3,7 +3,6 @@ dotenv.config();
 
 import express from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
@@ -80,29 +79,41 @@ const configuredOrigins = (
   'https://morgans-hope.vercel.app,http://localhost:3001'
 )
   .split(',')
-  .map((origin) => origin.trim().replace(/^['"]|['"]$/g, ''))
+  .map((origin) => origin.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, ''))
   .filter(Boolean);
 
 const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (isDev || !origin) {
-        callback(null, true);
-        return;
-      }
+const isAllowedOrigin = (origin?: string) => {
+  if (!origin || isDev) return true;
+  const normalizedOrigin = origin.trim().replace(/\/+$/, '');
+  return configuredOrigins.includes(normalizedOrigin) || vercelPreviewPattern.test(normalizedOrigin);
+};
 
-      if (configuredOrigins.includes(origin) || vercelPreviewPattern.test(origin)) {
-        callback(null, true);
-        return;
-      }
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
 
-      callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
-    credentials: true,
-  }),
-);
+  if (!isAllowedOrigin(origin)) {
+    res.status(403).json({ success: false, message: `CORS blocked for origin: ${origin}` });
+    return;
+  }
+
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin.trim().replace(/\/+$/, ''));
+    res.setHeader('Vary', 'Origin');
+  }
+
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+
+  next();
+});
 
 app.use(compression());
 app.use(cookieParser());
