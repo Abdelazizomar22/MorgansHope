@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd frontend && npm install",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://morgans-hope-backend.vercel.app/api/:path*"
+    },
+    {
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

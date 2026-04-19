@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://morgans-hope-backend.vercel.app/api/:path*"
+    },
+    {
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
