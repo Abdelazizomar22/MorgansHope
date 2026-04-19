@@ -1,12 +1,17 @@
 {
   "version": 2,
-  "outputDirectory": ".",
-  "functions": {
-    "api/[[...all]].ts": {
-      "memory": 1024,
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "api/[[...all]].ts",
+      "use": "@vercel/node"
     }
-  },
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/[[...all]].ts"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
