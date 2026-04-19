@@ -179,6 +179,24 @@ const healthHandler = async (_req: express.Request, res: express.Response) => {
   });
 };
 
+const rootHandler = (_req: express.Request, res: express.Response) => {
+  res.json({
+    success: true,
+    message: "Morgan's Hope backend is running.",
+    data: {
+      endpoints: {
+        health: '/api/health',
+        auth: '/api/auth',
+        analysis: '/api/analysis',
+        hospitals: '/api/hospitals',
+        chat: '/api/chat',
+      },
+    },
+  });
+};
+
+app.get('/', rootHandler);
+app.get('/api', rootHandler);
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 
