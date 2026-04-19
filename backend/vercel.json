@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "outputDirectory": ".",
   "functions": {
     "api/[[...all]].ts": {
       "memory": 1024,
