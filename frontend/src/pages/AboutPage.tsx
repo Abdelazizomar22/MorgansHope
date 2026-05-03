@@ -37,7 +37,7 @@ export function AboutPage({ lang }: AboutPageProps) {
 
   return (
     <MotionPageTransition>
-      <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', backgroundImage: `url(/images/common/flowers-1.jpeg)`, color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", position: 'relative', overflow: 'hidden' }}>
+      <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', backgroundImage: `url(/images/about/about-full.jpeg)`, backgroundPosition: "center", backgroundSize: "cover", color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", position: 'relative', overflow: 'hidden' }}>
 
         {/* Watermark Logo */}
         <Watermark />
