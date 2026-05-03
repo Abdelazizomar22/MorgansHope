@@ -74,101 +74,102 @@ export default function HomePage({ lang }: HomePageProps) {
       <div dir={ar ? 'rtl' : 'ltr'} style={{ fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", background: 'var(--bg-main)', minHeight: '100vh', color: 'var(--text-main)' }}>
 
         {/* ══ HERO ══════════════════════════════════════════════════════════ */}
-        <section style={{ backgroundImage: `url('images/home/hero.jpeg')`, backgroundPosition: "center", backgroundSize: "cover", color: 'var(--text-main)', padding: isMobile ? '60px 16px' : '76px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden'}}>
-
-          {/* Grid */}
-          {/*<div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--card-border) 1px, transparent 1px), linear-gradient(90deg, var(--card-border) 1px, transparent 1px)', backgroundSize: '44px 44px', opacity: 0.5 }} />*/}
-
-          {/* Glow */}
-          {/*<div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, var(--shadow-main) 0%, transparent 70%)', top: '-10%', left: '30%', pointerEvents: 'none' }} />
-          {[300, 480, 660].map((s, i) => (
-            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: s, height: s, borderRadius: '50%', border: '1px solid var(--card-border)', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
-          ))}*/}
-
-          <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto', zIndex: 10 }}>
-            <MotionFade direction="up" delay={0.1}>
-              <div style={{ transform: isMobile ? 'translateY(4px)' : 'translateY(12px)' }}>
-              <h1 style={{ color: 'white', fontSize: 'clamp(2.15rem, 7vw, 3rem)', fontWeight: 900, margin: '0 0 12px', lineHeight: 1.12, letterSpacing: -1 }}>
-                <span style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{t('Early Detection', 'الكشف المبكر')}</span>{' '}
-                <span style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{t('Saves Lives', 'ينقذ الأرواح')}</span>
-              </h1>
-              <p style={{ fontSize: isMobile ? 13 : 14, color: 'var(--text-muted-alt)', fontStyle: 'italic', margin: '4px 0 14px', letterSpacing: 0.1 }}>
-                {t('"Morgan\'s Hope: A Second Chance for Every Breath." — Inspired by a legend, built for reality.', '"مورجان هوب: فرصة ثانية لكل نَفَس." — مستوحى من أسطورة، ومبني للواقع.')}
-              </p>
-              <div style={{ marginTop: isMobile ? 22 : 28, marginBottom: isMobile ? 16 : 24 }}>
-                <p style={{ fontSize: isMobile ? 15 : 16, color: 'var(--text-muted-alt)', margin: 0, lineHeight: 1.84, maxWidth: 620, marginLeft: 'auto', marginRight: 'auto', transform: 'translateY(0px)' }}>
-                  {t('Like Arthur Morgan facing an invisible enemy, lung disease can be a quiet battle. Morgan’s Hope shifts the odds through earlier detection. Upload your CT scan or X-Ray and get an AI-powered analysis in minutes.', 'مثلما واجه آرثر مورجان عدوًا خفيًا، قد يكون مرض الرئة معركة صامتة. Morgan’s Hope يرجّح الكفة عبر الكشف المبكر. ارفع صورة CT أو X-Ray واحصل على تحليل مدعوم بالذكاء الاصطناعي خلال دقائق.')}
-                </p>
-              </div>
-              </div>
-            </MotionFade>
-            <MotionFade direction="up" delay={0.2}>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: isMobile ? 30 : 44 }}>
-                <MotionHoverScale style={{ display: 'inline-flex' }}>
-                  <Link to={user ? '/upload' : '/register'} style={{ padding: '14px 34px', background: 'var(--primary)', color: 'white', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 15.5, boxShadow: '0 4px 20px var(--shadow-main)', letterSpacing: 0.2, display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'transform 0.2s, background 0.2s' }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = 'var(--primary-dark)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = 'var(--primary)'; }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
-                    {t('Start Free Analysis', 'ابدأ التحليل مجاناً')}
-                  </Link>
-                </MotionHoverScale>
-                <MotionHoverScale style={{ display: 'inline-flex' }}>
-                  <Link
-                    to="/about"
-                    style={{
-                      padding: '14px 26px',
-                      color: 'var(--text-main-alt)',
-                      borderRadius: 10,
-                      textDecoration: 'none',
-                      fontWeight: 700,
-                      fontSize: 14.5,
-                      border: '1.5px solid var(--card-border)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      transition: 'color 0.3s',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                    }}
-                    onMouseEnter={e => {
-                      (e.currentTarget.querySelector('.fill') as HTMLElement).style.transform = 'translateX(0)';
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget.querySelector('.fill') as HTMLElement).style.transform = 'translateX(-100%)';
-                    }}
-                  >
-                    <span className="fill" style={{ position: 'absolute', inset: 0, background: 'var(--primary)', transform: 'translateX(-100%)', transition: 'transform 0.3s ease', borderRadius: 10 }} />
-                    <span style={{ position: 'relative', zIndex: 1 }}>{t('About Us', 'من نحن')}</span>
-                  </Link>
-                </MotionHoverScale>
-              </div>
-            </MotionFade>
-          </div>
-        </section>
-
-        {/* ══ STATS BAR ═════════════════════════════════════════════════════ */}
-        <section ref={statsRef} style={{ background: 'var(--card-bg)', boxShadow: '0 2px 12px var(--shadow-main)', padding: isMobile ? '20px 16px' : '28px 40px', borderBottom: '1px solid var(--card-border)' }}>
-          <div className='group' style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: isMobile || isTablet ? 24 : 0 }}>
-            {[
-              { val: '99.86%', label: t('CT Scan Accuracy', 'دقة CT Scan') },
-              { val: '6', label: t('Cancer Types', 'أنواع السرطان') },
-              { val: '15K+', label: t('Training Images', 'صورة تدريب') },
-              { val: '1,200+', label: t('Scans Analyzed', 'فحص تم تحليله') },
-              { val: '<4s', label: t('Avg Analysis Time', 'متوسط وقت التحليل') },
-            ].map((s, i) => (
-              <div className='group-hover:scale-104 group-hover:-translate-y-[3px] transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', lineHeight: 1.1, letterSpacing: -0.5 }}>{s.val}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 5, fontWeight: 700 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
+        <div id='bla-bla' className='min-h-[calc(100vh-60px)] flex flex-col justify-between'>
+	        <section className='flex items-center justify-center flex-1' style={{ backgroundImage: `url('images/home/hero.jpeg')`, backgroundPosition: "center", backgroundSize: "cover", color: 'var(--text-main)', padding: isMobile ? '60px 16px' : '76px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden'}}>
+	
+	          {/* Grid */}
+	          {/*<div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--card-border) 1px, transparent 1px), linear-gradient(90deg, var(--card-border) 1px, transparent 1px)', backgroundSize: '44px 44px', opacity: 0.5 }} />*/}
+	
+	          {/* Glow */}
+	          {/*<div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, var(--shadow-main) 0%, transparent 70%)', top: '-10%', left: '30%', pointerEvents: 'none' }} />
+	          {[300, 480, 660].map((s, i) => (
+	            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: s, height: s, borderRadius: '50%', border: '1px solid var(--card-border)', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
+	          ))}*/}
+	
+	          <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto', zIndex: 10 }}>
+	            <MotionFade direction="up" delay={0.1}>
+	              <div style={{ transform: isMobile ? 'translateY(4px)' : 'translateY(12px)' }}>
+	              <h1 style={{ color: 'white', fontSize: 'clamp(2.15rem, 7vw, 3rem)', fontWeight: 900, margin: '0 0 12px', lineHeight: 1.12, letterSpacing: -1 }}>
+	                <span style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{t('Early Detection', 'الكشف المبكر')}</span>{' '}
+	                <span style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{t('Saves Lives', 'ينقذ الأرواح')}</span>
+	              </h1>
+	              <p style={{ fontSize: isMobile ? 13 : 14, color: 'var(--text-muted-alt)', fontStyle: 'italic', margin: '4px 0 14px', letterSpacing: 0.1 }}>
+	                {t('"Morgan\'s Hope: A Second Chance for Every Breath." — Inspired by a legend, built for reality.', '"مورجان هوب: فرصة ثانية لكل نَفَس." — مستوحى من أسطورة، ومبني للواقع.')}
+	              </p>
+	              <div style={{ marginTop: isMobile ? 22 : 28, marginBottom: isMobile ? 16 : 24 }}>
+	                <p style={{ fontSize: isMobile ? 15 : 16, color: 'var(--text-muted-alt)', margin: 0, lineHeight: 1.84, maxWidth: 620, marginLeft: 'auto', marginRight: 'auto', transform: 'translateY(0px)' }}>
+	                  {t('Like Arthur Morgan facing an invisible enemy, lung disease can be a quiet battle. Morgan’s Hope shifts the odds through earlier detection. Upload your CT scan or X-Ray and get an AI-powered analysis in minutes.', 'مثلما واجه آرثر مورجان عدوًا خفيًا، قد يكون مرض الرئة معركة صامتة. Morgan’s Hope يرجّح الكفة عبر الكشف المبكر. ارفع صورة CT أو X-Ray واحصل على تحليل مدعوم بالذكاء الاصطناعي خلال دقائق.')}
+	                </p>
+	              </div>
+	              </div>
+	            </MotionFade>
+	            <MotionFade direction="up" delay={0.2}>
+	              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: isMobile ? 30 : 44 }}>
+	                <MotionHoverScale style={{ display: 'inline-flex' }}>
+	                  <Link to={user ? '/upload' : '/register'} style={{ padding: '14px 34px', background: 'var(--primary)', color: 'white', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 15.5, boxShadow: '0 4px 20px var(--shadow-main)', letterSpacing: 0.2, display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'transform 0.2s, background 0.2s' }}
+	                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = 'var(--primary-dark)'; }}
+	                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = 'var(--primary)'; }}
+	                  >
+	                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
+	                    {t('Start Free Analysis', 'ابدأ التحليل مجاناً')}
+	                  </Link>
+	                </MotionHoverScale>
+	                <MotionHoverScale style={{ display: 'inline-flex' }}>
+	                  <Link
+	                    to="/about"
+	                    style={{
+	                      padding: '14px 26px',
+	                      color: 'var(--text-main-alt)',
+	                      borderRadius: 10,
+	                      textDecoration: 'none',
+	                      fontWeight: 700,
+	                      fontSize: 14.5,
+	                      border: '1.5px solid var(--card-border)',
+	                      position: 'relative',
+	                      overflow: 'hidden',
+	                      transition: 'color 0.3s',
+	                      display: 'inline-flex',
+	                      alignItems: 'center',
+	                    }}
+	                    onMouseEnter={e => {
+	                      (e.currentTarget.querySelector('.fill') as HTMLElement).style.transform = 'translateX(0)';
+	                    }}
+	                    onMouseLeave={e => {
+	                      (e.currentTarget.querySelector('.fill') as HTMLElement).style.transform = 'translateX(-100%)';
+	                    }}
+	                  >
+	                    <span className="fill" style={{ position: 'absolute', inset: 0, background: 'var(--primary)', transform: 'translateX(-100%)', transition: 'transform 0.3s ease', borderRadius: 10 }} />
+	                    <span style={{ position: 'relative', zIndex: 1 }}>{t('About Us', 'من نحن')}</span>
+	                  </Link>
+	                </MotionHoverScale>
+	              </div>
+	            </MotionFade>
+	          </div>
+	        </section>
+	
+	        {/* ══ STATS BAR ═════════════════════════════════════════════════════ */}
+	        <section ref={statsRef} style={{ background: 'var(--card-bg)', boxShadow: '0 2px 12px var(--shadow-main)', padding: isMobile ? '20px 16px' : '28px 40px', borderBottom: '1px solid var(--card-border)' }}>
+	          <div className='group' style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: isMobile || isTablet ? 24 : 0 }}>
+	            {[
+	              { val: '99.86%', label: t('CT Scan Accuracy', 'دقة CT Scan') },
+	              { val: '6', label: t('Cancer Types', 'أنواع السرطان') },
+	              { val: '15K+', label: t('Training Images', 'صورة تدريب') },
+	              { val: '1,200+', label: t('Scans Analyzed', 'فحص تم تحليله') },
+	              { val: '<4s', label: t('Avg Analysis Time', 'متوسط وقت التحليل') },
+	            ].map((s, i) => (
+	              <div className='group-hover:scale-104 group-hover:-translate-y-[3px] transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
+	                <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', lineHeight: 1.1, letterSpacing: -0.5 }}>{s.val}</div>
+	                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 5, fontWeight: 700 }}>{s.label}</div>
+	              </div>
+	            ))}
+	          </div>
+	        </section>
+		</div>
 		  {/* ══ EGYPT STATS & INSIGHTS ══════════════════════════════════════════ */}
 			  <section style={{
 				  position: 'relative', backgroundImage: 'url(images/home/stats-insights.jpeg)',
 				  backgroundRepeat: 'no-repeat', backgroundSize: isMobile ? 'cover' : 'contain',
-        backgroundPosition: 'top center' }}>
+        backgroundPosition: 'top center', marginTop: "30px" }}>
 						<div className='absolute inset-0 bg-white/40' />
 		    <div style={{position: 'relative', padding: isMobile ? '40px 20px 10px' : '80px 40px 10px', zIndex: 10, maxWidth: 1100, margin: '0 auto'}}>
 

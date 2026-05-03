@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { hospitalsApi } from '../utils/api';
+import { REAL_HOSPITALS } from '../data/hospitals';
 
 interface HospitalsPageProps { lang: 'en' | 'ar'; }
 
@@ -11,169 +12,6 @@ const IconPhone = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="no
 const IconGlobe = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, verticalAlign: 'text-bottom' }}><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>;
 const IconMap = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, verticalAlign: 'text-bottom' }}><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>;
 const IconAlert = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6, verticalAlign: 'text-bottom' }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>;
-
-const REAL_HOSPITALS = [
-  {
-    id: 1,
-    hospitalName: 'National Cancer Institute (NCI)',
-    hospitalNameAr: 'معهد الأورام القومي',
-    specialization: 'Oncology & Cancer Surgery',
-    specializationAr: 'الأورام وجراحة السرطان',
-    city: 'Cairo', cityAr: 'القاهرة',
-    address: 'Kasr El Aini St, Cairo University, Giza',
-    addressAr: 'شارع قصر العيني، جامعة القاهرة، الجيزة',
-    phone: '+20-2-25364300',
-    rating: 4.2, totalReviews: 1840,
-    about: 'The largest cancer treatment center in Egypt and the Middle East, affiliated with Cairo University. Provides comprehensive oncology services including lung cancer diagnosis, chemotherapy, radiation therapy, and surgical treatment.',
-    aboutAr: 'أكبر مركز لعلاج السرطان في مصر والشرق الأوسط، تابع لجامعة القاهرة. يقدم خدمات شاملة للأورام تشمل تشخيص سرطان الرئة والعلاج الكيميائي والإشعاعي والجراحي.',
-    website: 'https://nci.cu.edu.eg',
-    bookingUrl: 'https://nci.cu.edu.eg/ar/%D8%B5%D9%81%D8%AD%D8%A9-%D8%A7%D9%84%D8%A7%D8%AA%D8%B5%D8%A7%D9%84/',
-    googleMaps: 'https://maps.google.com/?q=National+Cancer+Institute+Cairo+University+Egypt',
-    beds: '750+', established: '1969', type: 'Government',
-    services: ['Lung Cancer', 'Chemotherapy', 'Radiation', 'Surgery', 'Bone Marrow'],
-    badge: 'Largest in Egypt', badgeColor: '#dc3545',
-  },
-  {
-    id: 2,
-    hospitalName: 'Ain Shams University Oncology Hospital',
-    hospitalNameAr: 'مستشفى أورام عين شمس الجامعي',
-    specialization: 'Oncology & Radiology',
-    specializationAr: 'الأورام والأشعة التشخيصية',
-    city: 'Cairo', cityAr: 'القاهرة',
-    address: 'Khalifa El Maamon St, Abbasyia, Cairo',
-    addressAr: 'شارع خليفة المأمون، العباسية، القاهرة',
-    phone: '+20-2-24823402',
-    rating: 4.0, totalReviews: 920,
-    about: 'Ain Shams University Hospital offers specialized oncology services including lung cancer screening, CT-guided biopsy, and integrated cancer care programs. One of the major teaching hospitals in Egypt with dedicated oncology wards.',
-    aboutAr: 'مستشفى عين شمس الجامعي يقدم خدمات أورام متخصصة تشمل فحص سرطان الرئة وخزعة موجهة بالـ CT وبرامج رعاية سرطانية متكاملة.',
-    website: 'https://www.medicine.asu.edu.eg',
-    bookingUrl: 'https://www.medicine.asu.edu.eg/contact',
-    googleMaps: 'https://maps.google.com/?q=Ain+Shams+University+Hospital+Abbasyia+Cairo',
-    beds: '500+', established: '1948', type: 'Government',
-    services: ['Lung Cancer', 'CT Biopsy', 'Chemotherapy', 'Radiation', 'Palliative Care'],
-    badge: 'University Hospital', badgeColor: '#0056b3',
-  },
-  {
-    id: 3,
-    hospitalName: 'Dar Al Fouad Hospital',
-    hospitalNameAr: 'مستشفى دار الفؤاد',
-    specialization: 'Oncology, Thoracic Surgery & Lung Cancer',
-    specializationAr: 'الأورام وجراحة الصدر وسرطان الرئة',
-    city: 'Cairo', cityAr: 'القاهرة',
-    address: '26 July Corridor, 6th of October City, Giza',
-    addressAr: 'محور 26 يوليو، مدينة 6 أكتوبر، الجيزة',
-    phone: '+20-2-38272222',
-    rating: 4.6, totalReviews: 2310,
-    about: 'A leading JCI-accredited private hospital with a dedicated oncology center. Offers advanced lung cancer treatment including VATS (Video-Assisted Thoracic Surgery), PET-CT, targeted therapy, and immunotherapy. Internationally accredited standards.',
-    aboutAr: 'مستشفى خاص رائد معتمد من JCI مع مركز أورام متخصص. يقدم علاج متقدم لسرطان الرئة يشمل جراحة الصدر بالمنظار وPET-CT والعلاج المستهدف والمناعي. معايير معتمدة دولياً.',
-    website: 'https://www.darelfouad.com',
-    bookingUrl: 'https://www.darelfouad.com/appointment',
-    googleMaps: 'https://maps.google.com/?q=Dar+Al+Fouad+Hospital+6th+October+City+Giza',
-    beds: '300+', established: '1999', type: 'Private',
-    services: ['VATS Surgery', 'PET-CT', 'Immunotherapy', 'Targeted Therapy', 'Palliative Care'],
-    badge: 'JCI Accredited', badgeColor: '#16a34a',
-  },
-  {
-    id: 4,
-    hospitalName: 'South Egypt Cancer Institute (SECI)',
-    hospitalNameAr: 'معهد جنوب مصر للأورام',
-    specialization: 'Cancer & Oncology Research',
-    specializationAr: 'الأورام وأبحاث السرطان',
-    city: 'Assiut', cityAr: 'أسيوط',
-    address: 'Assiut University Campus, Assiut',
-    addressAr: 'حرم جامعة أسيوط، أسيوط',
-    phone: '+20-88-2148088',
-    rating: 4.3, totalReviews: 1120,
-    about: 'South Egypt Cancer Institute (SECI) is a specialized cancer research and treatment center affiliated with Assiut University. The primary oncology referral center for Upper Egypt, providing full oncology services including lung cancer diagnosis, chemotherapy, and radiation therapy.',
-    aboutAr: 'معهد جنوب مصر للأورام مركز متخصص في أبحاث وعلاج السرطان تابع لجامعة أسيوط. المركز الرئيسي لإحالة الأورام في صعيد مصر، يقدم خدمات أورام كاملة تشمل تشخيص وعلاج سرطان الرئة.',
-    website: 'http://www.aun.edu.eg/seci',
-    bookingUrl: 'http://www.aun.edu.eg/seci/contact_us.php',
-    googleMaps: 'https://maps.google.com/?q=South+Egypt+Cancer+Institute+Assiut+University',
-    beds: '280+', established: '1997', type: 'Government',
-    services: ['Lung Cancer', 'Chemotherapy', 'Radiation', 'Nuclear Medicine', 'Surgery'],
-    badge: 'Serves Upper Egypt', badgeColor: '#6f42c1',
-  },
-  {
-    id: 5,
-    hospitalName: 'Mansoura University Oncology Center',
-    hospitalNameAr: 'مركز أورام جامعة المنصورة',
-    specialization: 'Oncology & Cancer Research',
-    specializationAr: 'الأورام وأبحاث السرطان',
-    city: 'Mansoura', cityAr: 'المنصورة',
-    address: 'El Gomhouria St, Mansoura, Dakahlia',
-    addressAr: 'شارع الجمهورية، المنصورة، الدقهلية',
-    phone: '+20-50-2371025',
-    rating: 4.4, totalReviews: 1450,
-    about: "One of the most advanced oncology centers in Egypt's Delta region. Affiliated with Mansoura University, offering comprehensive lung cancer care including bronchoscopy, CT-guided biopsy, and multimodal cancer treatment.",
-    aboutAr: 'من أكثر مراكز الأورام تطوراً في منطقة الدلتا. تابع لجامعة المنصورة، يقدم رعاية شاملة لسرطان الرئة تشمل تنظير القصبات والخزعة الموجهة بالـ CT والعلاج متعدد الأنماط.',
-    website: 'https://www.mans.edu.eg',
-    bookingUrl: 'https://www.mans.edu.eg/ar/contact',
-    googleMaps: 'https://maps.google.com/?q=Mansoura+University+Oncology+Center+Dakahlia',
-    beds: '320+', established: '1985', type: 'Government',
-    services: ['Bronchoscopy', 'CT Biopsy', 'Chemotherapy', 'Radiation', 'Surgery'],
-    badge: 'Delta Region Leader', badgeColor: '#2c7da0',
-  },
-  {
-    id: 6,
-    hospitalName: 'Alexandria University Hospital — Chest Dept.',
-    hospitalNameAr: 'مستشفى جامعة الإسكندرية — قسم الصدر',
-    specialization: 'Chest Medicine & Thoracic Oncology',
-    specializationAr: 'أمراض الصدر وأورام الصدر',
-    city: 'Alexandria', cityAr: 'الإسكندرية',
-    address: 'El Khartoum Square, El Azarita, Alexandria',
-    addressAr: 'ميدان الخرطوم، العزاريطة، الإسكندرية',
-    phone: '+20-3-4874741',
-    rating: 4.1, totalReviews: 860,
-    about: "Alexandria University Hospital's chest department is a key referral center for lung cancer in Northern Egypt. Provides thoracic surgery, oncology consultations, pulmonology, and radiation therapy serving Alexandria and the Mediterranean coast.",
-    aboutAr: 'قسم الصدر في مستشفى جامعة الإسكندرية مركز إحالة رئيسي لسرطان الرئة في شمال مصر. يقدم جراحة الصدر واستشارات الأورام وأمراض الرئة والعلاج الإشعاعي.',
-    website: 'https://www.alexu.edu.eg',
-    bookingUrl: 'https://www.alexu.edu.eg/index.php/en/contact-us',
-    googleMaps: 'https://maps.google.com/?q=Alexandria+University+Hospital+El+Azarita',
-    beds: '400+', established: '1942', type: 'Government',
-    services: ['Thoracic Surgery', 'Pulmonology', 'Chemotherapy', 'Radiation', 'Endoscopy'],
-    badge: 'North Egypt', badgeColor: '#0d3b2e',
-  },
-  {
-    id: 7,
-    hospitalName: 'El Salam International Hospital',
-    hospitalNameAr: 'مستشفى السلام الدولي',
-    specialization: 'Oncology & Multi-Specialty',
-    specializationAr: 'الأورام ومتعدد التخصصات',
-    city: 'Cairo', cityAr: 'القاهرة',
-    address: 'Corniche El Nile, Maadi, Cairo',
-    addressAr: 'كورنيش النيل، المعادي، القاهرة',
-    phone: '+20-2-25240250',
-    rating: 4.3, totalReviews: 1680,
-    about: 'El Salam International Hospital is a well-established private hospital in Cairo with a comprehensive oncology department. Offers lung cancer consultations, advanced imaging (PET-CT, MRI), and multidisciplinary tumor boards for treatment planning.',
-    aboutAr: 'مستشفى السلام الدولي مستشفى خاص راسخ في القاهرة مع قسم أورام شامل. يقدم استشارات سرطان الرئة وتصوير متقدم (PET-CT، MRI) ومجالس أورام متعددة التخصصات.',
-    website: 'https://www.elsalam.com',
-    bookingUrl: 'https://www.elsalam.com/contact-us',
-    googleMaps: 'https://maps.google.com/?q=El+Salam+International+Hospital+Maadi+Cairo',
-    beds: '380+', established: '1981', type: 'Private',
-    services: ['PET-CT', 'MRI', 'Tumor Board', 'Chemotherapy', 'Immunotherapy'],
-    badge: 'Private Excellence', badgeColor: '#fd7e14',
-  },
-  {
-    id: 8,
-    hospitalName: 'Kasr El Ainy Hospital — Chest Medicine',
-    hospitalNameAr: 'مستشفى قصر العيني — طب الصدر',
-    specialization: 'Chest Medicine & Pulmonary Oncology',
-    specializationAr: 'طب الصدر وأورام الرئة',
-    city: 'Cairo', cityAr: 'القاهرة',
-    address: 'Kasr El Aini St, Cairo',
-    addressAr: 'شارع قصر العيني، القاهرة',
-    phone: '+20-2-23628000',
-    rating: 3.9, totalReviews: 2100,
-    about: "Egypt's oldest and most prestigious teaching hospital, part of Cairo University Medical School. The chest department handles complex lung cancer cases with pulmonology, thoracic surgery, and oncology services — at heavily subsidized government costs.",
-    aboutAr: 'أقدم وأعرق المستشفيات التعليمية في مصر، جزء من كلية طب جامعة القاهرة. قسم الصدر يتعامل مع حالات سرطان الرئة المعقدة بأمراض الرئة والجراحة والأورام — بتكاليف حكومية مدعومة.',
-    website: 'https://kasralainy.cu.edu.eg',
-    bookingUrl: 'https://kasralainy.cu.edu.eg/ar/contact',
-    googleMaps: 'https://maps.google.com/?q=Kasr+El+Ainy+Hospital+Cairo+University',
-    beds: '1200+', established: '1837', type: 'Government',
-    services: ['Thoracic Surgery', 'Pulmonology', 'CT Scan', 'Biopsy', 'Chemotherapy'],
-    badge: 'Est. 1837', badgeColor: '#343a40',
-  },
-];
 
 const ALL_CITIES = ['All', 'Cairo', 'Alexandria', 'Mansoura', 'Assiut'];
 
@@ -211,15 +49,13 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo',sans-serif" : "'Sora',sans-serif" }}>
 
       {/* Header */}
-      <div style={{ background: 'linear-gradient(150deg, var(--primary-dark) 0%, var(--primary) 100%)', padding: isMobile ? '30px 20px' : '44px 40px 50px', color: 'white' }}>
-        <div style={{ maxWidth: 980, margin: '0 auto' }}>
-          <h1 style={{ fontSize: 30, fontWeight: 900, margin: '0 0 6px', color: 'white' }}>
-            {t('Oncology Centers in Egypt', 'مراكز الأورام في مصر')}
-          </h1>
-          <p style={{ fontSize: 15, opacity: .8, margin: 0 }}>
-            {t('8 real hospitals — verified contact info, websites & booking links', '8 مستشفيات حقيقية — بيانات اتصال موثقة ومواقع وروابط حجز')}
-          </p>
-        </div>
+      <div className={`section-bg-image page-header-padding ${isMobile ? "min-h-[160px]" : ""}`}>
+        <h1 style={{ fontSize: 30, fontWeight: 900, margin: '0 0 6px', color: 'white' }}>
+        	{t('Oncology Centers in Egypt', 'مراكز الأورام في مصر')}
+        </h1>
+        <p className='text-white' style={{ fontSize: 15, opacity: .8, margin: 0 }}>
+        	{t('8 real hospitals — verified contact info, websites & booking links', '8 مستشفيات حقيقية — بيانات اتصال موثقة ومواقع وروابط حجز')}
+        </p>
       </div>
 
       <div style={{ maxWidth: 980, margin: '0 auto', padding: isMobile ? '20px' : '28px 40px' }}>
