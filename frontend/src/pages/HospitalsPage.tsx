@@ -49,7 +49,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo',sans-serif" : "'Sora',sans-serif" }}>
 
       {/* Header */}
-      <div className={`section-bg-image page-header-padding ${isMobile ? "min-h-[160px]" : ""}`}>
+      <div className={`section-bg-image page-header-padding`}>
         <h1 style={{ fontSize: 30, fontWeight: 900, margin: '0 0 6px', color: 'white' }}>
         	{t('Oncology Centers in Egypt', 'مراكز الأورام في مصر')}
         </h1>
