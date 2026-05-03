@@ -7,7 +7,6 @@ import {
   Globe,
 } from 'lucide-react';
 
-const FEATURE_ICON_SIZE = 28;
 export const FEATURES = [
   { Icon: Cpu,      title: { en: 'Dual AI Models',     ar: 'نموذجان AI'          }, desc: { en: 'Specialized algorithms for CT and X-Ray scans',        ar: 'خوارزميات مخصصة لصور CT والأشعة السينية'     } },
   { Icon: Zap,      title: { en: 'Batch Scanning',     ar: 'رفع متعدد'           }, desc: { en: 'Fast deep learning inference on multiple scans at once', ar: 'تحليل سريع لأكثر من صورة في نفس الوقت'       } },
