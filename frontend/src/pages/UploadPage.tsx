@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analysisApi } from '../utils/api';
+import { MAX_WIDTH } from '../constants/layouts';
 
 interface UploadPageProps { lang: 'en' | 'ar'; }
 type ScanType = 'xray' | 'ct';
@@ -160,21 +161,21 @@ export default function UploadPage({ lang }: UploadPageProps) {
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
-      <div className='section-bg-image page-header-padding' style={{ color: 'white' }}>
-        <div style={{  margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div style={{ padding: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
-            </div>
-            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>{t('Upload & Analyze', 'رفع وتحليل')}</h1>
-          </div>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
-            {t('Upload your CT scan or X-Ray and get AI-powered analysis instantly.', 'ارفع صورة CT أو أشعة واحصل على تحليل فوري بالذكاء الاصطناعي.')}
-          </p>
-        </div>
+      <div className='section-bg-image page-header-padding'>
+	      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', color: 'white' }}>
+	          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+	            <div style={{ padding: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
+	              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
+	            </div>
+	            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>{t('Upload & Analyze', 'رفع وتحليل')}</h1>
+	          </div>
+	          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
+	            {t('Upload your CT scan or X-Ray and get AI-powered analysis instantly.', 'ارفع صورة CT أو أشعة واحصل على تحليل فوري بالذكاء الاصطناعي.')}
+	          </p>
+	      </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '20px' : '32px 40px' }}>
+      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: isMobile ? '20px' : '32px 0' }}>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: 24 }}>
 
           {/* LEFT: Upload area */}

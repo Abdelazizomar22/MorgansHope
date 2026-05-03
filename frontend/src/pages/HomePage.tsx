@@ -157,22 +157,21 @@ export default function HomePage({ lang }: HomePageProps) {
 	        </section>
 		</div>
 		  {/* ══ EGYPT STATS & INSIGHTS ══════════════════════════════════════════ */}
-			  <section style={{
-				  position: 'relative', backgroundImage: 'url(images/home/stats-insights.jpeg)',
-				  backgroundRepeat: 'no-repeat', backgroundSize: isMobile ? 'cover' : 'contain',
-        backgroundPosition: 'top center', marginTop: "30px" }}>
-						<div className='absolute inset-0 bg-white/40' />
-		    <div style={{position: 'relative', padding: isMobile ? '40px 20px 10px' : '80px 40px 10px', zIndex: 10, maxWidth: 1100, margin: '0 auto'}}>
+		  <section style={{
+			  position: 'relative', backgroundImage: 'url(images/home/stats-insights.jpeg)',
+			  backgroundRepeat: 'no-repeat', backgroundSize: isMobile ? 'cover' : 'contain',
+    		  backgroundPosition: 'top center', marginTop: "30px" }}>
+				<div className='absolute inset-0 bg-white/40' />
+		    	<div style={{position: 'relative', padding: isMobile ? '40px 20px 10px' : '80px 40px 10px', zIndex: 10, maxWidth: 1100, margin: '0 auto'}}>
 
-			  <div style={{ textAlign: 'center', marginBottom: 50 }}>
-<div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--card-bg)', border: '1px solid var(--card-border)', color: 'var(--primary)', borderRadius: 99, padding: '6px 18px', fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase' as const, marginBottom: 16, boxShadow: '0 2px 8px var(--shadow-main)' }}>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r=".5" fill="currentColor" /></svg>
-    {t('Local Context — Real Statistics', 'الواقع المحلي — إحصائيات حقيقية')}
-</div>
-<h2 style={{ fontSize: 32, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 10px', letterSpacing: -0.6 }}>{t('Lung Cancer in Egypt', 'سرطان الرئة في مصر')}</h2>
-<p style={{ color: 'var(--text-muted)', fontSize: 15, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>{t('The burden is significant. AI-powered early screening is the most effective tool to change these outcomes.', 'العبء كبير. الفحص المبكر بالذكاء الاصطناعي هو الأداة الأكثر فعالية لتغيير هذه النتائج.')}</p>
-	          </div>
-	
+				  <div style={{ textAlign: 'center', marginBottom: 50 }}>
+					<div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--card-bg)', border: '1px solid var(--card-border)', color: 'var(--primary)', borderRadius: 99, padding: '6px 18px', fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase' as const, marginBottom: 16, boxShadow: '0 2px 8px var(--shadow-main)' }}>
+					    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r=".5" fill="currentColor" /></svg>
+					    {t('Local Context — Real Statistics', 'الواقع المحلي — إحصائيات حقيقية')}
+					</div>
+					<h2 style={{ fontSize: 32, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 10px', letterSpacing: -0.6 }}>{t('Lung Cancer in Egypt', 'سرطان الرئة في مصر')}</h2>
+					<p style={{ color: 'var(--text-muted)', fontSize: 15, maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>{t('The burden is significant. AI-powered early screening is the most effective tool to change these outcomes.', 'العبء كبير. الفحص المبكر بالذكاء الاصطناعي هو الأداة الأكثر فعالية لتغيير هذه النتائج.')}</p>
+		          </div>
 					  
 	          {/* Unified High-Level Stats Panel - Refined Presentation */}
 	          <div style={{ background: 'var(--card-bg)', borderRadius: 28, border: '1px solid var(--card-border)', overflow: 'hidden', marginBottom: 48, boxShadow: '0 12px 48px var(--shadow-main)', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', position: 'relative' }}>
@@ -203,7 +202,6 @@ export default function HomePage({ lang }: HomePageProps) {
 		              );
 		            })}
 	          </div>
-	
 					  
 	          {/* Combined Insights: Survival + Distro */}
 	          <div ref={survivalRef} style={{ display: 'grid', gridTemplateColumns: isTablet ? '1fr' : '1.2fr 1fr', gap: 24, marginBottom: 32 }}>
@@ -275,7 +273,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	            </div>
 	          </div>
 				
-				  {/* Optimized Call-to-Action Banner */}
+		  {/* Optimized Call-to-Action Banner */}
           <div style={{ background: 'var(--primary-dark)', borderRadius: 24, padding: isMobile ? '30px 20px' : '40px 50px', color: 'white', display: 'flex', alignItems: 'center', gap: isMobile ? 24 : 40, flexWrap: 'wrap', marginBottom: 100, border: '1px solid var(--primary)', position: 'relative', overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row', textAlign: isMobile ? 'center' : ar ? 'right' : 'left' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.03) 100%)', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', bottom: '-45%', left: '-5%', width: 160, height: 160, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
@@ -290,7 +288,6 @@ export default function HomePage({ lang }: HomePageProps) {
               <p style={{ fontSize: 14.5, opacity: 0.85, lineHeight: 1.8, margin: 0, fontWeight: 500 }}>
                 {t("75% of cases in Egypt are late-stage. AI screening identifies abnormalities before symptoms appear, shifting survival rates from 5% (Stage IV) to over 68% (Stage I). Time is the most valuable variable.", '75% من الحالات في مصر تُكتشف متأخراً. الفحص بالذكاء الاصطناعي يكتشف الشذوذات قبل الأعراض، ويحول معدلات البقاء من 5% (المرحلة 4) إلى أكثر من 68% (المرحلة 1). الوقت هو المتغير الأغلى.')}
               </p>
-
             </div>
 
             <Link to={user ? '/upload' : '/register'} style={{ padding: '16px 36px', background: '#FFFFFF', color: 'var(--primary-dark)', borderRadius: 12, textDecoration: 'none', fontWeight: 800, fontSize: 15, whiteSpace: 'nowrap', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', border: 'none', position: 'relative', width: isMobile ? '100%' : 'auto', textAlign: 'center' }}
@@ -300,21 +297,20 @@ export default function HomePage({ lang }: HomePageProps) {
               {t('Get Screened Now', 'افحص الآن')}
             </Link>
           </div>
-        	</div>
+       	</div>
 
         </section >
-        <div className='*:border-b-[#A0B8A4] *:border-b-2' style={{
-		      backgroundImage: "url('images/common/flowers-2.jpeg')",
+        <div className='border-y-[#A0B8A4] border-y-4' style={{
+		      backgroundImage: "url('images/common/flowers-1.jpeg')",
 			  backgroundSize: 'contain',
         }}>
         {/* ══ HOW IT WORKS ══════════════════════════════════════════════════ */}
-		  < section style={{
+		  <section style={{
 			  padding: isMobile ? '0 20px 40px' : '0 40px 80px',
 		  }}>
-          <div style={{ maxWidth: 920, margin: '0 auto' }}>
+          <div style={{ maxWidth: 1040, margin: '0 auto' }}>
             <div style={{ paddingTop: 64, textAlign: 'center', marginBottom: 48 }}>
               <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t('How It Works', 'كيف يعمل النظام')}</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: 14.5, margin: 0 }}>{t('3 steps to your AI lung report', '3 خطوات للحصول على تقريرك الطبي')}</p>
             </div>
 
 	            <MotionStaggerList staggerDelay={0.15} style={{  display: 'grid', gridTemplateColumns: isTablet ? '1fr' : 'repeat(3,1fr)', gap: 22 }}>
@@ -340,7 +336,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	              })}
 	            </MotionStaggerList>
           </div>
-        </section >
+		</section >
 
         {/* ══ FEATURES ══════════════════════════════════════════════════════ */}
 		  <section style={{
@@ -349,7 +345,6 @@ export default function HomePage({ lang }: HomePageProps) {
           <div style={{ maxWidth: 1040, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 44 }}>
               <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t("Why Morgan's Hope?", 'لماذا مورجان هوب؟')}</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: 14.5, margin: 0 }}>{t('Cutting-edge AI meets compassionate medical guidance', 'ذكاء اصطناعي متطور مع إرشادات طبية رحيمة')}</p>
             </div>
             <MotionStaggerList staggerDelay={0.1} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 18 }}>
 			  {FEATURES.map(({ Icon, title, desc }, i) => {
@@ -381,6 +376,7 @@ export default function HomePage({ lang }: HomePageProps) {
             </MotionStaggerList>
           </div>
 		</section>
+        </div>
 
         {/* ══ FUTURE VISION ════════════════════════════════════════════════ */}
         <section className='min-h-[60vh] py-10 gap-10 md:gap-20 flex-col flex items-center justify-center'
@@ -389,7 +385,7 @@ export default function HomePage({ lang }: HomePageProps) {
 		  }}
 		>
 				  
-          <div style={{ maxWidth: 920, margin: '0 auto', backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: 'url(/images/home/future-vision.jpeg)', borderRadius: 20, padding: isMobile ? '24px' : '44px', border: '1.5px dashed var(--primary-dark)', position: 'relative', overflow: 'hidden', boxShadow: '0 2px 10px var(--shadow-main)' }}>
+          <div style={{ maxWidth: 1040, margin: '0 auto', backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: 'url(/images/home/future-vision.jpeg)', borderRadius: 20, padding: isMobile ? '24px' : '44px', border: '1.5px dashed var(--primary-dark)', position: 'relative', overflow: 'hidden', boxShadow: '0 2px 10px var(--shadow-main)' }}>
             <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, var(--shadow-main) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--card-bg)', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: 99, padding: '5px 14px', fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 16 }}>
@@ -419,8 +415,7 @@ export default function HomePage({ lang }: HomePageProps) {
               </div>
             </div>
           </div>
-				  </section>
-						</div>
+	  </section>
 				  
 
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap');`}</style>

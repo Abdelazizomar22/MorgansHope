@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { hospitalsApi } from '../utils/api';
 import { REAL_HOSPITALS } from '../data/hospitals';
+import { MAX_WIDTH } from '../constants/layouts';
 
 interface HospitalsPageProps { lang: 'en' | 'ar'; }
 
@@ -50,15 +51,17 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
 
       {/* Header */}
       <div className={`section-bg-image page-header-padding`}>
-        <h1 style={{ fontSize: 30, fontWeight: 900, margin: '0 0 6px', color: 'white' }}>
-        	{t('Oncology Centers in Egypt', 'مراكز الأورام في مصر')}
-        </h1>
-        <p className='text-white' style={{ fontSize: 15, opacity: .8, margin: 0 }}>
-        	{t('8 real hospitals — verified contact info, websites & booking links', '8 مستشفيات حقيقية — بيانات اتصال موثقة ومواقع وروابط حجز')}
-        </p>
+	      <div style={{maxWidth: MAX_WIDTH, margin: '0 auto'}}>
+	        <h1 style={{ fontSize: 30, fontWeight: 900, margin: '0 0 6px', color: 'white' }}>
+	        	{t('Oncology Centers in Egypt', 'مراكز الأورام في مصر')}
+	        </h1>
+	        <p className='text-white' style={{ fontSize: 15, opacity: .8, margin: 0 }}>
+	        	{t('8 real hospitals — verified contact info, websites & booking links', '8 مستشفيات حقيقية — بيانات اتصال موثقة ومواقع وروابط حجز')}
+	        </p>
+	      </div>
       </div>
 
-      <div style={{ maxWidth: 980, margin: '0 auto', padding: isMobile ? '20px' : '28px 40px' }}>
+      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: isMobile ? '20px' : '32px 0' }}>
 
         {/* Filters */}
         <div style={{ background: 'var(--card-bg)', borderRadius: 16, padding: '18px 20px', marginBottom: 24, border: '1px solid var(--card-border)', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
