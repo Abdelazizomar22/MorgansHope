@@ -160,8 +160,8 @@ export default function UploadPage({ lang }: UploadPageProps) {
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
-      <div style={{ background: 'var(--header-gradient)', padding: isMobile ? '30px 20px' : '36px 40px 44px', color: 'white' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+      <div className='section-bg-image page-header-padding' style={{ color: 'white' }}>
+        <div style={{  margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
             <div style={{ padding: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>

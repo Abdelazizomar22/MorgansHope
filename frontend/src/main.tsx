@@ -8,7 +8,9 @@ style.textContent = `
   :root {
     --bg-main: #F7FAFC; /* Bright Snow */
     --text-main: #0F172A;
+    --text-main-alt: #fff;
     --text-muted: #475569;
+    --text-muted-alt: #eee;
     --primary: #2E5C5A; /* Dark Slate Grey */
     --primary-light: #467E7C;
     --primary-dark: #1F403E;
