@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import type { AnalysisResult, UrgencyLevel } from '../types';
 import { analysisApi } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE_URL } from '../utils/env';
-import type { AnalysisResult, UrgencyLevel } from '../types';
 import { URGENCY_CONFIG } from '../data/urgency-config';
+import { MAX_WIDTH } from '../constants/layouts';
 
 interface ResultsPageProps { lang: 'en' | 'ar'; }
 
@@ -440,33 +441,33 @@ ${result.nextStep ? `
     <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
-      <div className='section-bg-image page-header-padding' style={{ color: 'white' }}>
-        <div style={{ margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div style={{ padding: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
-              <IconBarChart />
-            </div>
-            <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>{t('Analysis Results', 'نتائج التحليل')}</h1>
-
-            {tab === 'result' && result && (
-              <button
-                onClick={() => openReportModal([result])}
-                style={{ marginLeft: 'auto', padding: '10px 20px', borderRadius: 10, border: 'none', background: 'white', color: 'var(--primary-dark)', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', transition: 'all 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                {t('Download PDF', 'تحميل التقرير')}
-              </button>
-            )}
-          </div>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
-            {t('View your AI-powered diagnostic report and analysis history.', 'اطّلع على تقريرك التشخيصي بالذكاء الاصطناعي وسجل تحليلاتك.')}
-          </p>
-        </div>
+      <div className='section-bg-image page-header-padding'>
+	      <div style={{ maxWidth: MAX_WIDTH ,margin: '0 auto', color: 'white' }}>
+			<div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+	            <div style={{ padding: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
+	              <IconBarChart />
+	            </div>
+	            <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0, letterSpacing: -0.5 }}>{t('Analysis Results', 'نتائج التحليل')}</h1>
+	
+	            {tab === 'result' && result && (
+	              <button
+	                onClick={() => openReportModal([result])}
+	                style={{ marginLeft: 'auto', padding: '10px 20px', borderRadius: 10, border: 'none', background: 'white', color: 'var(--primary-dark)', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', transition: 'all 0.2s' }}
+	                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+	                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+	              >
+	                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+	                {t('Download PDF', 'تحميل التقرير')}
+	              </button>
+	            )}
+	          </div>
+	          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
+	            {t('View your AI-powered diagnostic report and analysis history.', 'اطّلع على تقريرك التشخيصي بالذكاء الاصطناعي وسجل تحليلاتك.')}
+	          </p>
+	      </div>
       </div>
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: isMobile ? '20px' : '32px 40px' }}>
+      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: isMobile ? '20px' : '32px 0' }}>
 
         {/* Tabs */}
         <div style={{ display: 'inline-flex', gap: 0, marginBottom: 28, background: 'var(--card-bg)', borderRadius: 10, padding: 4, boxShadow: '0 1px 6px var(--shadow-main)', border: '1px solid var(--card-border)' }}>

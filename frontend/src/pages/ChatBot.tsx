@@ -141,12 +141,17 @@ export default function ChatBot({ lang }: ChatBotProps) {
   };
 
   return (
+  <main style={{
+ 	backgroundImage: `url(/images/common/flowers-2.jpeg)`,
+ 	backgroundRepeat: "no-repeat",
+ 	backgroundSize: "cover"
+  }}>
     <div
       dir={ar ? 'rtl' : 'ltr'}
       style={{
         maxWidth: 920,
-        margin: isMobile ? '10px auto' : '20px auto',
-        padding: isMobile ? '0 10px' : '0 20px',
+        margin: isMobile ? '0 auto' : '0 auto',
+        padding: isMobile ? '40px' : '80px',
         fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
         height: isMobile ? 'calc(100vh - 100px)' : 'calc(100vh - 120px)',
         display: 'flex',
@@ -349,5 +354,6 @@ export default function ChatBot({ lang }: ChatBotProps) {
         }
       `}</style>
     </div>
+  </main>
   );
 }
