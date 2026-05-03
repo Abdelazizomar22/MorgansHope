@@ -77,15 +77,6 @@ export default function HomePage({ lang }: HomePageProps) {
         <div id='bla-bla' className='min-h-[calc(100vh-60px)] flex flex-col justify-between'>
 	        <section className='flex items-center justify-center flex-1' style={{ backgroundImage: `url('images/home/hero.jpeg')`, backgroundPosition: "center", backgroundSize: "cover", color: 'var(--text-main)', padding: isMobile ? '60px 16px' : '76px 40px', textAlign: 'center', position: 'relative', overflow: 'hidden'}}>
 	
-	          {/* Grid */}
-	          {/*<div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--card-border) 1px, transparent 1px), linear-gradient(90deg, var(--card-border) 1px, transparent 1px)', backgroundSize: '44px 44px', opacity: 0.5 }} />*/}
-	
-	          {/* Glow */}
-	          {/*<div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, var(--shadow-main) 0%, transparent 70%)', top: '-10%', left: '30%', pointerEvents: 'none' }} />
-	          {[300, 480, 660].map((s, i) => (
-	            <div key={i} style={{ position: 'absolute', top: '50%', left: '50%', width: s, height: s, borderRadius: '50%', border: '1px solid var(--card-border)', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
-	          ))}*/}
-	
 	          <div style={{ position: 'relative', maxWidth: 760, margin: '0 auto', zIndex: 10 }}>
 	            <MotionFade direction="up" delay={0.1}>
 	              <div style={{ transform: isMobile ? 'translateY(4px)' : 'translateY(12px)' }}>
@@ -312,17 +303,21 @@ export default function HomePage({ lang }: HomePageProps) {
         	</div>
 
         </section >
-
+        <div className='*:border-b-[#A0B8A4] *:border-b-2' style={{
+		      backgroundImage: "url('images/common/flowers-2.jpeg')",
+			  backgroundSize: 'contain',
+        }}>
         {/* ══ HOW IT WORKS ══════════════════════════════════════════════════ */}
-        < section style={{ padding: isMobile ? '0 20px 40px' : '0 40px 80px', background: 'var(--bg-main)' }
-        }>
+		  < section style={{
+			  padding: isMobile ? '0 20px 40px' : '0 40px 80px',
+		  }}>
           <div style={{ maxWidth: 920, margin: '0 auto' }}>
             <div style={{ paddingTop: 64, textAlign: 'center', marginBottom: 48 }}>
               <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t('How It Works', 'كيف يعمل النظام')}</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: 14.5, margin: 0 }}>{t('3 steps to your AI lung report', '3 خطوات للحصول على تقريرك الطبي')}</p>
             </div>
 
-	            <MotionStaggerList staggerDelay={0.15} style={{ display: 'grid', gridTemplateColumns: isTablet ? '1fr' : 'repeat(3,1fr)', gap: 22 }}>
+	            <MotionStaggerList staggerDelay={0.15} style={{  display: 'grid', gridTemplateColumns: isTablet ? '1fr' : 'repeat(3,1fr)', gap: 22 }}>
 	              {[
 	                { Icon: <CloudUpload size={30} />, title: t('Upload Scan', 'رفع الصورة'), desc: t('CT or X-Ray image (JPG/PNG/WebP, max 10MB)', 'صورة CT أو أشعة سينية (JPG/PNG/WebP، حتى 10MB)') },
 	                { Icon: <BrainCircuit size={30} />, title: t('AI Analysis', 'التحليل بالذكاء الاصطناعي'), desc: t('Advanced deep learning model analyzes your scans quickly', 'نموذج ذكاء اصطناعي متقدم يحلل الصور بسرعة') },
@@ -348,7 +343,9 @@ export default function HomePage({ lang }: HomePageProps) {
         </section >
 
         {/* ══ FEATURES ══════════════════════════════════════════════════════ */}
-        < section style={{ padding: isMobile ? '40px 20px 40px' : '60px 40px 80px' }}>
+		  <section style={{
+			  padding: isMobile ? '40px 20px 40px' : '60px 40px 80px',
+		  }}>
           <div style={{ maxWidth: 1040, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 44 }}>
               <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t("Why Morgan's Hope?", 'لماذا مورجان هوب؟')}</h2>
@@ -383,15 +380,11 @@ export default function HomePage({ lang }: HomePageProps) {
               })}
             </MotionStaggerList>
           </div>
-        </section >
+		</section>
 
         {/* ══ FUTURE VISION ════════════════════════════════════════════════ */}
-        <section className='min-h-screen py-10 gap-10 md:gap-20 flex-col flex items-center justify-center'
+        <section className='min-h-[60vh] py-10 gap-10 md:gap-20 flex-col flex items-center justify-center'
 		  style={{
-			  backgroundImage: "url('images/common/flowers-2.jpeg')",
-			  backgroundRepeat: 'no-repeat',
-			  backgroundSize: 'cover',
-			  backgroundPosition: 'cetner',
 			  padding: isMobile ? '30px 20px' : '0 40px'
 		  }}
 		>
@@ -400,7 +393,6 @@ export default function HomePage({ lang }: HomePageProps) {
             <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, var(--shadow-main) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--card-bg)', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: 99, padding: '5px 14px', fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 16 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                 {t('Future Vision', 'الرؤية المستقبلية')}
               </div>
               <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', margin: '0 0 12px', letterSpacing: -0.3 }}>
@@ -420,31 +412,16 @@ export default function HomePage({ lang }: HomePageProps) {
                 ].map((c, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, background: c.current ? 'var(--card-bg)' : 'transparent', borderRadius: 99, padding: '7px 14px', border: `1.5px solid ${c.current ? 'var(--primary)' : '#ddd'}`, fontSize: 12.5, fontWeight: c.current ? 800 : 500, color: c.current ? 'var(--text-main)' : '#ddd', boxShadow: c.current ? '0 2px 8px var(--shadow-main)' : 'none' }}>
                     {ar ? c.ar : c.en}
-                    {c.current
-                      ? <span style={{ fontSize: 10.5, background: 'var(--primary)', color: 'white', borderRadius: 99, padding: '2px 9px', fontWeight: 800 }}>Live</span>
-                      : <span style={{ fontSize: 10, background: 'transparent', color: 'white', borderRadius: 99, padding: '2px 9px', fontWeight: 600, border: '1px solid #e2e8f0' }}>{t('Soon', 'قريباً')}</span>}
+
+                    {i !== 0 && <span style={{ fontSize: 10, background: 'transparent', color: 'white', borderRadius: 99, padding: '2px 9px', fontWeight: 600, border: '1px solid #e2e8f0' }}>{t('Soon', 'قريباً')}</span>}
                   </div>
                 ))}
               </div>
             </div>
           </div>
-	        {/* ══ CTA ════════════════════════════════════════════════════════════ */}
-	        <div className='relative border-(--primary) bg-white rounded-2xl border-2 overflow-hidden' style={{ textAlign: 'center', color: 'var(--text-main)', padding: '20px 40px'}}>
-			  <div className='-left-[20%] -bottom-[40%] md:-left-[5%] md:-bottom-[45%]' style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 90%, transparent)', position: 'absolute', width: 160, height: 160, borderRadius: '50%' }} />
-			  <h2 style={{ fontSize: 34, fontWeight: 900, margin: '0 0 14px', letterSpacing: -0.5 }}>{t('Start Your Free Analysis Today', 'ابدأ تحليلك المجاني اليوم')}</h2>
-	          <p style={{ fontSize: 15.5, color: 'var(--text-muted)', margin: '0 0 14px', maxWidth: 480, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.8 }}>
-	            {t("Don't wait for symptoms. Early detection dramatically improves survival rates.", 'لا تنتظر الأعراض. الكشف المبكر يحسن فرص البقاء بشكل كبير.')}
-	          </p>
-	          <MotionHoverScale style={{ display: 'inline-block' }}>
-	            <Link to={user ? '/upload' : '/register'} style={{ padding: '15px 40px', background: 'var(--primary)', color: 'white', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 16, boxShadow: '0 4px 22px var(--shadow-main)', display: 'inline-block', letterSpacing: 0.2, transition: 'background 0.2s' }}
-	              onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-dark)'}
-	              onMouseLeave={e => e.currentTarget.style.background = 'var(--primary)'}
-	            >
-	              {user ? t('Upload a Scan', 'رفع صورة الآن') : t('Get Started Free', 'ابدأ مجاناً')}
-	            </Link>
-	          </MotionHoverScale>
-	        </div >
-        </section>
+				  </section>
+						</div>
+				  
 
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap');`}</style>
       </div>

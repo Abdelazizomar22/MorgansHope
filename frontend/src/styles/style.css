@@ -1005,6 +1005,7 @@ body {
 }
 .page-header-padding {
 	padding: 45px 20px;
+	max-width: 900px,
 }
 
 /* Animations */
