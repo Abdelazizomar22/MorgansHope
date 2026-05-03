@@ -347,48 +347,6 @@ export function ContactPage({ lang }: ContactPageProps) {
                       )}
                     </p>
 
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))',
-                        gap: 14,
-                        margin: '0 auto 26px',
-                        maxWidth: 620,
-                        textAlign: ar ? 'right' : 'left',
-                      }}
-                    >
-                      <div
-                        style={{
-                          background: 'var(--bg-main)',
-                          border: '1px solid var(--card-border)',
-                          borderRadius: 18,
-                          padding: '16px 18px',
-                        }}
-                      >
-                        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                          {t('Inbox', 'البريد المستلم')}
-                        </div>
-                        <div style={{ marginTop: 8, fontSize: 16, fontWeight: 800, color: 'var(--text-main)' }}>
-                          morganshope40@gmail.com
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          background: 'var(--bg-main)',
-                          border: '1px solid var(--card-border)',
-                          borderRadius: 18,
-                          padding: '16px 18px',
-                        }}
-                      >
-                        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                          {t('Next step', 'الخطوة التالية')}
-                        </div>
-                        <div style={{ marginTop: 8, fontSize: 15, fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.6 }}>
-                          {t('Send another message now, or return later for follow-up.', 'أرسل رسالة أخرى الآن، أو ارجع لاحقًا للمتابعة.')}
-                        </div>
-                      </div>
-                    </div>
-
                     <button
                       onClick={() => setSent(false)}
                       style={{

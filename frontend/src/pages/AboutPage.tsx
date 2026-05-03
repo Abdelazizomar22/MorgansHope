@@ -37,13 +37,14 @@ export function AboutPage({ lang }: AboutPageProps) {
 
   return (
     <MotionPageTransition>
-      <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", position: 'relative', overflow: 'hidden' }}>
+      <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', backgroundImage: `url(images/common/flowers-1.jpeg)`, color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", position: 'relative', overflow: 'hidden' }}>
 
         {/* Watermark Logo */}
         <Watermark />
 
         {/* Hero */}
-        <section style={{ background: 'linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%)', color: 'white', padding: isMobile ? '40px 20px' : '70px 40px', textAlign: 'center', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
+        {/*background: 'linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%)'*/}
+        <section className='border-b-4 border-(--primary) section-bg-image page-header-padding' style={{ backgroundPosition: 'center', color: 'white', padding: isMobile ? '40px 20px' : '70px 40px', textAlign: 'center', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
           <MotionFade direction="up" delay={0.1}>
             <h1 style={{ fontSize: isMobile ? 32 : 38, fontWeight: 900, margin: '0 0 14px', position: 'relative', zIndex: 2 }}>Morgan's <span style={{ opacity: 0.9 }}>Hope</span></h1>
             <p style={{ fontSize: isMobile ? 15 : 17, fontStyle: 'italic', opacity: 0.95, margin: '0 0 16px', position: 'relative', zIndex: 2 }}>
