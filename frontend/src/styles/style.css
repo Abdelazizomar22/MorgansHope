@@ -998,6 +998,16 @@ body {
     box-shadow: 0 16px 32px rgba(var(--primary-rgb), 0.35);
 }
 
+.section-bg-image {
+	background-image: url('images/common/upper-section.jpeg');
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+.page-header-padding {
+	padding: 45px 20px;
+}
+
+/* Animations */
 @keyframes modalFadeIn {
     from {
         opacity: 0;
