@@ -999,7 +999,7 @@ body {
 }
 
 .section-bg-image {
-	background-image: url('images/common/upper-section.jpeg');
+	background-image: url('/images/common/upper-section.jpeg');
 	background-size: cover;
 	background-repeat: no-repeat;
 }
