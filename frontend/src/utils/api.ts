@@ -13,7 +13,7 @@ const api = axios.create({
 
 // ── Request interceptor: attach access token ──────────────────────────────────
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('medtech_token');
+  const token = localStorage.getItem('medtech_token') || sessionStorage.getItem('medtech_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -60,7 +60,9 @@ api.interceptors.response.use(
       try {
         const { data } = await api.post<ApiResponse<{ token: string; user: SafeUser }>>('/auth/refresh');
         const newToken = data.data!.token;
-        localStorage.setItem('medtech_token', newToken);
+        const remember = localStorage.getItem('medtech_remember') === '1';
+        const storage = remember ? localStorage : sessionStorage;
+        storage.setItem('medtech_token', newToken);
         processQueue(null, newToken);
 
         original.headers = original.headers || {};
@@ -70,6 +72,8 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         // Refresh failed — truly expired, log out cleanly
         localStorage.removeItem('medtech_token');
+        sessionStorage.removeItem('medtech_token');
+        localStorage.removeItem('medtech_remember');
         window.dispatchEvent(new CustomEvent('auth:logout'));
         return Promise.reject(refreshError);
       } finally {
@@ -87,13 +91,14 @@ export const authApi = {
     firstName: string; lastName: string; email: string;
     password: string; confirmPassword: string;
     acceptedDisclaimer: boolean;
-    phone?: string; age?: number;
+    age?: number;
     gender?: 'male' | 'female' | 'other';
     smokingHistory?: 'never' | 'former' | 'current';
     medicalHistory?: string;
-  }) => api.post<ApiResponse<{ user: SafeUser; token: string }>>('/auth/register', data),
+    role?: 'user' | 'admin';
+  }) => api.post<ApiResponse<{ user: SafeUser; token: string; verification?: { required: boolean; channel: 'email' | 'phone'; devCode?: string } }>>('/auth/register', data),
 
-  login: (data: { email: string; password: string; rememberMe?: boolean }) =>
+  login: (data: { email?: string; identifier?: string; password: string; rememberMe?: boolean }) =>
     api.post<ApiResponse<{ user: SafeUser; token: string }>>('/auth/login', data),
 
   logout: () => api.post<ApiResponse>('/auth/logout'),
@@ -107,8 +112,15 @@ export const authApi = {
     age?: number; gender?: 'male' | 'female' | 'other';
     smokingHistory?: 'never' | 'former' | 'current';
     medicalHistory?: string;
+    onboardingCompleted?: boolean;
     currentPassword?: string; newPassword?: string;
   }) => api.put<ApiResponse<SafeUser>>('/auth/profile', data),
+
+  verifyContact: (code: string) =>
+    api.post<ApiResponse<SafeUser>>('/auth/verify-contact', { code }),
+
+  resendVerification: (channel?: 'email' | 'phone') =>
+    api.post<ApiResponse<{ channel: 'email' | 'phone'; devCode?: string }>>('/auth/resend-verification', { channel }),
 
   uploadAvatar: (file: File) => {
     const form = new FormData();

@@ -161,7 +161,7 @@ function ConsentModal({ onAccept, onDecline, lang }: { onAccept: () => void; onD
 export default function LoginPage() {
   const { login, completeSocialLogin } = useAuth();
   const [lang, setLang] = useState<'en' | 'ar'>('en');
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [pass, setPass] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -219,14 +219,14 @@ export default function LoginPage() {
   }, [completeSocialLogin]);
 
   const handleSubmit = async () => {
-    if (!email || !pass) {
+    if (!identifier || !pass) {
       setError(t('Please fill in all fields.', 'يرجى ملء جميع الحقول.'));
       return;
     }
     setLoading(true);
     setError('');
     try {
-      await login(email, pass, rememberMe);
+      await login(identifier, pass, rememberMe);
     } catch (err: any) {
       if (!err?.response) {
         setError(t('Cannot connect to the backend right now. Please try again in a moment.', 'لا يمكن الاتصال بالخادم حاليًا. حاول مرة أخرى بعد لحظات.'));
@@ -312,15 +312,15 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Email */}
+        {/* Email or phone */}
         <div style={{ marginBottom: 16 }}>
           <label className="auth-field-label">{t('Email address', 'البريد الإلكتروني')}</label>
           <div className="auth-input-shell">
             <div style={iconWrap('email')}><IconMail /></div>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               placeholder="example@email.com"
               onFocus={() => setFocused('email')}

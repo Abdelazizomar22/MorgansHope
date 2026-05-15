@@ -243,6 +243,10 @@ export default function RegisterPage() {
       setError(t('Please fill in all required fields.', 'يرجى ملء جميع الحقول المطلوبة.'));
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setError(t('Please enter a valid email address.', 'يرجى إدخال بريد إلكتروني صحيح.'));
+      return;
+    }
     if (form.password !== form.confirmPassword) {
       setError(t('Passwords do not match.', 'كلمتا المرور غير متطابقتين.'));
       return;
@@ -280,7 +284,7 @@ export default function RegisterPage() {
       await register({
         firstName: form.firstName,
         lastName: form.lastName,
-        email: form.email,
+        email: form.email.trim(),
         password: form.password,
         confirmPassword: form.confirmPassword,
         acceptedDisclaimer: true,

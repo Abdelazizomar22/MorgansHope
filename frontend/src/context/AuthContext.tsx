@@ -14,7 +14,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (identifier: string, password: string, rememberMe?: boolean) => Promise<void>;
   completeSocialLogin: (token: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
@@ -26,7 +26,7 @@ interface RegisterData {
   firstName: string; lastName: string; email: string;
   password: string; confirmPassword: string;
   acceptedDisclaimer: boolean;
-  phone?: string; age?: number;
+  age?: number;
   gender?: 'male' | 'female' | 'other';
   smokingHistory?: 'never' | 'former' | 'current';
   medicalHistory?: string;
@@ -37,10 +37,29 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 // Key used to remember where the user was trying to go before being redirected to login
 export const REDIRECT_KEY = 'medtech_redirect_after_login';
+const TOKEN_KEY = 'medtech_token';
+const REMEMBER_KEY = 'medtech_remember';
+
+const getStoredToken = () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+
+const storeToken = (nextToken: string, rememberMe: boolean) => {
+  const storage = rememberMe ? localStorage : sessionStorage;
+  const otherStorage = rememberMe ? sessionStorage : localStorage;
+  storage.setItem(TOKEN_KEY, nextToken);
+  otherStorage.removeItem(TOKEN_KEY);
+  if (rememberMe) localStorage.setItem(REMEMBER_KEY, '1');
+  else localStorage.removeItem(REMEMBER_KEY);
+};
+
+const clearStoredToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REMEMBER_KEY);
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('medtech_token'));
+  const [token, setToken] = useState<string | null>(getStoredToken());
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -51,13 +70,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Bootstrap: validate stored token on mount ─────────────────────────────
   useEffect(() => {
-    const stored = localStorage.getItem('medtech_token');
+    const stored = getStoredToken();
     if (stored) {
       authApi.me()
         .then((res) => setUser(res.data.data ?? null))
         .catch(() => {
           // Token invalid — clear and let silent refresh interceptor handle 401
-          localStorage.removeItem('medtech_token');
+          clearStoredToken();
           setToken(null);
         })
         .finally(() => setLoading(false));
@@ -71,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleForcedLogout = () => {
       setUser(null);
       setToken(null);
+      clearStoredToken();
       navigate('/login', { replace: true });
     };
     window.addEventListener('auth:logout', handleForcedLogout);
@@ -78,27 +98,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   // ── Login ─────────────────────────────────────────────────────────────────
-  const login = async (email: string, password: string, rememberMe = false) => {
-    const res = await authApi.login({ email, password, rememberMe });
+  const resolvePostLoginPath = (currentUser: SafeUser | null) => {
+    if (currentUser && !currentUser.onboardingCompleted) return '/onboarding';
+    return sessionStorage.getItem(REDIRECT_KEY) || '/';
+  };
+
+  const login = async (identifier: string, password: string, rememberMe = false) => {
+    const res = await authApi.login({ identifier, password, rememberMe });
     const { user: u, token: t } = res.data.data!;
-    localStorage.setItem('medtech_token', t);
+    storeToken(t, rememberMe);
     setToken(t);
     setUser(u);
 
     // Go to where the user originally wanted to go
-    const redirectTo = sessionStorage.getItem(REDIRECT_KEY) || '/';
+    const redirectTo = resolvePostLoginPath(u);
     sessionStorage.removeItem(REDIRECT_KEY);
     navigate(redirectTo, { replace: true });
   };
 
   const completeSocialLogin = async (incomingToken: string) => {
-    localStorage.setItem('medtech_token', incomingToken);
+    storeToken(incomingToken, true);
     setToken(incomingToken);
     const res = await authApi.me();
     const currentUser = res.data.data ?? null;
     setUser(currentUser);
 
-    const redirectTo = sessionStorage.getItem(REDIRECT_KEY) || '/';
+    const redirectTo = resolvePostLoginPath(currentUser);
     sessionStorage.removeItem(REDIRECT_KEY);
     navigate(redirectTo, { replace: true });
   };
@@ -107,16 +132,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterData) => {
     const res = await authApi.register(data);
     const { user: u, token: t } = res.data.data!;
-    localStorage.setItem('medtech_token', t);
+    storeToken(t, true);
     setToken(t);
     setUser(u);
-    navigate('/', { replace: true });
+    navigate('/onboarding', { replace: true });
   };
 
   // ── Logout ────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try { await authApi.logout(); } catch { /* ignore */ }
-    localStorage.removeItem('medtech_token');
+    clearStoredToken();
     setToken(null);
     setUser(null);
     navigate('/login', { replace: true });

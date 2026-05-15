@@ -10,8 +10,13 @@ export interface SafeUser {
   firstName: string;
   lastName: string;
   fullName: string;
-  email: string;
+  email?: string | null;
   phone?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
+  acceptedDisclaimer?: boolean;
+  onboardingCompleted?: boolean;
+  authProvider?: 'local' | 'google';
   age?: number;
   gender?: 'male' | 'female' | 'other';
   smokingHistory?: 'never' | 'former' | 'current';

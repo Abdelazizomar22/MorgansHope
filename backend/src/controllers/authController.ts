@@ -10,7 +10,9 @@ import { asyncHandler } from '../utils/asyncHandler';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '7d';
+const REFRESH_TOKEN_LONG_TTL = '30d';
 const REFRESH_COOKIE = 'medtech_refresh';
+const PHONE_EMAIL_DOMAIN = 'phone.morganshope.local';
 
 // ── Cookie options ────────────────────────────────────────────────────────────
 function cookieOptions(maxAgeMs: number) {
@@ -28,8 +30,31 @@ function makeAccessToken(id: number, ttl = ACCESS_TOKEN_TTL) {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: ttl as any });
 }
 
-function makeRefreshToken(id: number) {
-  return jwt.sign({ id }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL as any });
+function makeRefreshToken(id: number, rememberMe = false) {
+  return jwt.sign(
+    { id, rememberMe },
+    REFRESH_SECRET,
+    { expiresIn: (rememberMe ? REFRESH_TOKEN_LONG_TTL : REFRESH_TOKEN_TTL) as any },
+  );
+}
+
+const normalizeEmail = (value?: string) => value?.toLowerCase().trim() || '';
+const normalizePhone = (value?: string) => value?.replace(/[^\d+]/g, '').trim() || '';
+const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const generateVerificationCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+function queueVerification(user: User, channel: 'email' | 'phone') {
+  const code = generateVerificationCode();
+  user.verificationCode = code;
+  user.verificationChannel = channel;
+  user.verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  // Wire a real email/SMS provider here. For now we expose/log in non-production so the flow is testable.
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[Auth] Verification code for ${channel}: ${code}`);
+  }
+
+  return code;
 }
 
 // ── Validators ────────────────────────────────────────────────────────────────
@@ -51,14 +76,16 @@ export const registerValidators = [
   body('acceptedDisclaimer')
     .custom((value) => value === true)
     .withMessage('You must accept the medical disclaimer to continue'),
-  body('phone').optional().trim(),
 ];
 
 export const loginValidators = [
-  body('email')
-    .customSanitizer((v: string) => v?.toLowerCase().trim())
-    .isEmail().withMessage('Valid email is required'),
+  body('email').optional({ checkFalsy: true }).trim(),
+  body('identifier').optional({ checkFalsy: true }).trim(),
   body('password').notEmpty().withMessage('Password is required'),
+  body().custom((_value, { req }) => {
+    if (!req.body.email && !req.body.identifier) throw new Error('Email is required');
+    return true;
+  }),
 ];
 
 // ── Register ──────────────────────────────────────────────────────────────────
@@ -73,7 +100,8 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     return;
   }
 
-  const { firstName, lastName, email, password, phone, age, gender, smokingHistory } = req.body;
+  const email = normalizeEmail(req.body.email);
+  const { firstName, lastName, password, age, gender, smokingHistory } = req.body;
 
   const existing = await User.findOne({ where: { email } });
   if (existing) {
@@ -87,13 +115,16 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     lastName,
     email,
     password: hashed,
-    phone,
     age,
     gender,
     smokingHistory,
-    role: req.body.role || 'user'
+    role: req.body.role || 'user',
+    acceptedDisclaimer: req.body.acceptedDisclaimer === true,
+    onboardingCompleted: false,
+    authProvider: 'local',
+    emailVerified: true,
+    phoneVerified: false,
   });
-
   const accessToken = makeAccessToken(user.id);
   const refreshToken = makeRefreshToken(user.id);
 
@@ -118,24 +149,30 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     return;
   }
 
-  const email = (req.body.email || '').toLowerCase().trim();
-  const password = (req.body.password || '').toString().trim();
+  const identifier = (req.body.identifier || req.body.email || '').toString().trim();
+  const normalizedEmail = normalizeEmail(identifier);
+    const password = (req.body.password || '').toString().trim();
   const rememberMe = req.body.rememberMe;
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[Auth] Login attempt:', email);
+    console.log('[Auth] Login attempt:', identifier);
   }
 
-  let user = await User.findOne({ where: { email, isActive: true } });
+  let user = isEmail(normalizedEmail)
+    ? await User.findOne({ where: { email: normalizedEmail, isActive: true } })
+    : null;
 
-  if (!user && process.env.NODE_ENV !== 'production' && email === 'admin@medtech.com' && password === 'Admin@123456') {
+  if (!user && process.env.NODE_ENV !== 'production' && normalizedEmail === 'admin@medtech.com' && password === 'Admin@123456') {
     const hashed = await bcrypt.hash(password, 12);
     user = await User.create({
       firstName: 'Admin',
       lastName: 'MedTech',
-      email,
+      email: normalizedEmail,
       password: hashed,
       role: 'admin',
+      emailVerified: true,
+      acceptedDisclaimer: true,
+      onboardingCompleted: true,
     });
   }
 
@@ -146,7 +183,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   if (!user) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('[Auth] Login failed: no user with email', email);
+      console.warn('[Auth] Login failed: no user with identifier', identifier);
     }
     await bcrypt.compare(password, '$2b$12$invalidhashplaceholderxxxxxxxxxxxxxxx');
     res.status(401).json({
@@ -159,7 +196,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const match = await bcrypt.compare(password, user.password);
   if (!match) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('[Auth] Login failed: wrong password for', email);
+      console.warn('[Auth] Login failed: wrong password for', identifier);
     }
     res.status(401).json({
       success: false,
@@ -173,7 +210,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const cookieMaxMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
 
   const accessToken = makeAccessToken(user.id, accessTTL);
-  const refreshToken = makeRefreshToken(user.id);
+  const refreshToken = makeRefreshToken(user.id, Boolean(rememberMe));
 
   res.cookie(REFRESH_COOKIE, refreshToken, cookieOptions(cookieMaxMs));
 
@@ -198,9 +235,9 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
     return;
   }
 
-  let payload: { id: number };
+  let payload: { id: number; rememberMe?: boolean };
   try {
-    payload = jwt.verify(token, REFRESH_SECRET) as { id: number };
+    payload = jwt.verify(token, REFRESH_SECRET) as { id: number; rememberMe?: boolean };
   } catch {
     res.clearCookie(REFRESH_COOKIE, { path: '/' });
     res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
@@ -214,10 +251,12 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
     return;
   }
 
-  const newAccessToken = makeAccessToken(user.id);
-  const newRefreshToken = makeRefreshToken(user.id);
+  const rememberMe = payload.rememberMe === true;
+  const newAccessToken = makeAccessToken(user.id, rememberMe ? '7d' : ACCESS_TOKEN_TTL);
+  const newRefreshToken = makeRefreshToken(user.id, rememberMe);
+  const cookieMaxMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
 
-  res.cookie(REFRESH_COOKIE, newRefreshToken, cookieOptions(7 * 24 * 60 * 60 * 1000));
+  res.cookie(REFRESH_COOKIE, newRefreshToken, cookieOptions(cookieMaxMs));
 
   res.json({
     success: true,
@@ -255,14 +294,76 @@ export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response
 
   if (firstName) user.firstName = firstName.trim();
   if (lastName) user.lastName = lastName.trim();
-  if (phone !== undefined) user.phone = phone?.trim() || undefined;
+  if (phone !== undefined) {
+    const nextPhone = normalizePhone(phone);
+    if (nextPhone !== (user.phone || '')) {
+      user.phone = nextPhone || undefined;
+      user.phoneVerified = false;
+    }
+  }
   if (age !== undefined) user.age = age;
   if (gender !== undefined) user.gender = gender;
   if (smokingHistory !== undefined) user.smokingHistory = smokingHistory;
   if (medicalHistory !== undefined) user.medicalHistory = medicalHistory;
+  if (req.body.onboardingCompleted !== undefined) user.onboardingCompleted = req.body.onboardingCompleted === true;
 
   await user.save();
   res.json({ success: true, message: 'Profile updated', data: user.toSafeJSON() });
+});
+
+export const verifyContact = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = req.user!;
+  const code = (req.body.code || '').toString().trim();
+
+  if (!user.verificationCode || !user.verificationChannel || !user.verificationExpiresAt) {
+    res.status(400).json({ success: false, message: 'No verification is pending.' });
+    return;
+  }
+
+  if (user.verificationExpiresAt.getTime() < Date.now()) {
+    res.status(400).json({ success: false, message: 'Verification code expired.' });
+    return;
+  }
+
+  if (code !== user.verificationCode) {
+    res.status(400).json({ success: false, message: 'Invalid verification code.' });
+    return;
+  }
+
+  if (user.verificationChannel === 'email') user.emailVerified = true;
+  if (user.verificationChannel === 'phone') user.phoneVerified = true;
+  user.verificationCode = null;
+  user.verificationChannel = null;
+  user.verificationExpiresAt = null;
+  await user.save();
+
+  res.json({ success: true, message: 'Contact verified', data: user.toSafeJSON() });
+});
+
+export const resendVerification = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = req.user!;
+  const channel: 'email' | 'phone' = req.body.channel || (user.email && !user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`) ? 'email' : 'phone');
+
+  if (channel === 'email' && (!user.email || user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`))) {
+    res.status(400).json({ success: false, message: 'No email address is available for verification.' });
+    return;
+  }
+  if (channel === 'phone' && !user.phone) {
+    res.status(400).json({ success: false, message: 'No phone number is available for verification.' });
+    return;
+  }
+
+  const verificationCode = queueVerification(user, channel);
+  await user.save();
+
+  res.json({
+    success: true,
+    message: `Verification code sent to your ${channel}.`,
+    data: {
+      channel,
+      ...(process.env.NODE_ENV !== 'production' ? { devCode: verificationCode } : {}),
+    },
+  });
 });
 
 // ── Upload Avatar ────────────────────────────────────────────────────────────

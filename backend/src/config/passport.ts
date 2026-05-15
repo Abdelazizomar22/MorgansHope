@@ -7,14 +7,14 @@ import User from '../models/User';
 import { JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
 
 const ACCESS_TOKEN_TTL = '7d';
-const REFRESH_TOKEN_TTL = '7d';
+const REFRESH_TOKEN_TTL = '30d';
 
 export function makeGoogleAccessToken(id: number) {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL as any });
 }
 
 export function makeGoogleRefreshToken(id: number) {
-  return jwt.sign({ id }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL as any });
+  return jwt.sign({ id, rememberMe: true }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL as any });
 }
 
 export function authCookieOptions(maxAgeMs: number) {
@@ -63,10 +63,30 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_CALLBACK_URL) {
               profilePicture: profile.photos?.[0]?.value || undefined,
               role: 'user',
               isActive: true,
+              emailVerified: true,
+              acceptedDisclaimer: true,
+              onboardingCompleted: false,
+              authProvider: 'google',
             });
-          } else if (!user.profilePicture && profile.photos?.[0]?.value) {
-            user.profilePicture = profile.photos[0].value;
-            await user.save();
+          } else {
+            let changed = false;
+            if (!user.profilePicture && profile.photos?.[0]?.value) {
+              user.profilePicture = profile.photos[0].value;
+              changed = true;
+            }
+            if (!user.emailVerified) {
+              user.emailVerified = true;
+              changed = true;
+            }
+            if (!user.authProvider) {
+              user.authProvider = 'google';
+              changed = true;
+            }
+            if (!user.acceptedDisclaimer) {
+              user.acceptedDisclaimer = true;
+              changed = true;
+            }
+            if (changed) await user.save();
           }
 
           return done(null, user);
