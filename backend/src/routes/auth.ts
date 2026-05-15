@@ -10,6 +10,8 @@ import {
   refreshToken,
   me,
   updateProfile,
+  verifyContact,
+  resendVerification,
   uploadAvatar,
 } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
@@ -135,6 +137,8 @@ router.post('/logout', logout);
 router.post('/refresh', refreshToken);
 router.get('/me', authenticate, me);
 router.put('/profile', authenticate, updateProfile);
+router.post('/verify-contact', authenticate, verifyContact);
+router.post('/resend-verification', authenticate, resendVerification);
 router.post('/avatar', authenticate, upload.single('avatar'), uploadAvatar);
 
 export default router;

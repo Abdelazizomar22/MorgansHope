@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Lightbulb, Shield, Sparkles, Zap } from 'lucide-react';
 import { analysisApi } from '../utils/api';
 import { MAX_WIDTH } from '../constants/layouts';
 
@@ -23,22 +24,6 @@ const IconCT = () => (
     <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" />
     <line x1="12" y1="3" x2="12" y2="8" /><line x1="12" y1="16" x2="12" y2="21" />
     <line x1="3" y1="12" x2="8" y2="12" /><line x1="16" y1="12" x2="21" y2="12" />
-  </svg>
-);
-const IconShield = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-const IconBrain = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="5" r="1.5" /><circle cx="5" cy="12" r="1.5" /><circle cx="19" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /><circle cx="12" cy="12" r="2" />
-    <line x1="12" y1="6.5" x2="12" y2="10" /><line x1="6.5" y1="12" x2="10" y2="12" /><line x1="14" y1="12" x2="17.5" y2="12" /><line x1="12" y1="14" x2="12" y2="17.5" />
-  </svg>
-);
-const IconZap = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
   </svg>
 );
 const IconAlertTriangle = () => (
@@ -152,13 +137,13 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const STAGE_LABELS = ar ? STAGES.ar : STAGES.en;
 
   const sideCards = [
-    { Icon: IconShield, title: t('Privacy First', 'خصوصيتك أولاً'), body: t('Your images are processed securely and never shared with third parties.', 'صورك تُعالج بأمان ولا تُشارك مع أطراف خارجية أبداً.'), source: '' },
-    { Icon: IconBrain, title: t('AI Models', 'نماذج الذكاء الاصطناعي'), body: t('Accurate and reliable AI algorithms specialized for Chest CT and X-Ray analysis.', 'خوارزميات ذكاء اصطناعي دقيقة ومخصصة لتحليل صور الصدر.'), source: '' },
-    { Icon: IconZap, title: t('Fast Batch Processing', 'معالجة سريعة للدفعات'), body: t('Upload multiple scans at once. Results are processed quickly and shown one by one.', 'ارفع عدة صور دفعة واحدة. تتم المعالجة بسرعة وتظهر النتائج بشكل منظم.'), source: '' },
+    { Icon: Shield, title: t('Privacy First', 'خصوصيتك أولاً'), body: t('Your images are processed securely and never shared with third parties.', 'صورك تُعالج بأمان ولا تُشارك مع أطراف خارجية أبداً.'), source: '' },
+    { Icon: Sparkles, title: t('AI Models', 'نماذج الذكاء الاصطناعي'), body: t('Accurate and reliable AI algorithms specialized for Chest CT and X-Ray analysis.', 'خوارزميات ذكاء اصطناعي دقيقة ومخصصة لتحليل صور الصدر.'), source: '' },
+    { Icon: Zap, title: t('Fast Batch Processing', 'معالجة سريعة للدفعات'), body: t('Upload multiple scans at once. Results are processed quickly.', 'ارفع عدة صور دفعة واحدة. تتم المعالجة بسرعة وتظهر النتائج بشكل منظم.'), source: '' },
   ];
 
   return (
-    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
+    <div dir={ar ? 'rtl' : 'ltr'} className="overflow-x-hidden" style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
       <div className='section-bg-image page-header-padding'>
@@ -175,18 +160,18 @@ export default function UploadPage({ lang }: UploadPageProps) {
 	      </div>
       </div>
 
-      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: isMobile ? '20px' : '32px 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 300px', gap: 24 }}>
+      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: isMobile ? '20px' : '32px 24px' }}>
+        <div className="flex items-start gap-6" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
 
           {/* LEFT: Upload area */}
-          <div>
+          <div className="flex flex-col" style={{ flex: isMobile ? undefined : '1 1 0%' }}>
             {/* Scan type toggle */}
-            <div style={{ background: 'var(--card-bg)', borderRadius: 12, padding: 5, display: 'inline-flex', gap: 0, marginBottom: 20, boxShadow: '0 1px 6px var(--shadow-main)', border: '1px solid var(--card-border)' }}>
+            <div style={{ width: 264, maxWidth: '100%', height: 52, background: '#ffffff', borderRadius: 12, padding: 6, display: 'inline-flex', gap: 8, marginBottom: 20, boxShadow: '0 4px 14px rgba(15, 23, 42, 0.10)', border: '1px solid #dbe6e4' }}>
               {([
                 { type: 'xray' as ScanType, Icon: IconXray, label: t('X-Ray', 'أشعة سينية') },
                 { type: 'ct' as ScanType, Icon: IconCT, label: t('CT Scan', 'CT Scan') },
               ]).map(({ type, Icon, label }) => (
-                <button key={type} onClick={() => setScanType(type)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 24px', borderRadius: 9, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13.5, fontFamily: 'inherit', transition: 'all 0.2s', background: scanType === type ? 'var(--primary)' : 'transparent', color: scanType === type ? 'white' : 'var(--text-muted)' }}>
+                <button key={type} onClick={() => setScanType(type)} style={{ height: 40, flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '0 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 800, fontSize: 14, lineHeight: 1, whiteSpace: 'nowrap', fontFamily: 'inherit', transition: 'all 0.2s', background: scanType === type ? '#285f57' : 'transparent', color: scanType === type ? 'white' : '#34495e' }}>
                   <Icon />{label}
                 </button>
               ))}
@@ -257,49 +242,64 @@ export default function UploadPage({ lang }: UploadPageProps) {
           </div>
 
           {/* RIGHT: Info sidebar */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {sideCards.map(({ Icon, title, body, source }, i) => (
-              <div key={i} style={{ background: 'var(--card-bg)', borderRadius: 12, padding: '16px', border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <div style={{ padding: 8, background: 'rgba(var(--primary-rgb),0.06)', borderRadius: 8, color: 'var(--primary)', flexShrink: 0 }}><Icon /></div>
-                  <div>
-                    <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 13.5, marginBottom: 4 }}>{title}</div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.65 }}>{body}</div>
-                    {source && <div style={{ fontSize: 10.5, fontStyle: 'italic', color: 'var(--source-color)', marginTop: 6, fontWeight: 300, letterSpacing: 0.1, lineHeight: 1.5 }}>{source}</div>}
-                  </div>
+          <aside
+            className="relative h-auto max-w-sm overflow-hidden rounded-2xl border border-teal-100 shadow-sm"
+            style={{
+              width: isMobile ? '100%' : 320,
+              backgroundImage: "url('/upload card.png')",
+              backgroundPosition: 'center',
+              backgroundSize: '100% 100%',
+              backgroundRepeat: 'no-repeat',
+            }}
+          >
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white/5" />
+            <div className="relative z-10 p-6">
+              <div className="space-y-4">
+            {sideCards.map(({ Icon, title, body }, i) => (
+              <section key={i} className="border-b border-teal-200/40 pb-4">
+                <div className="flex items-center gap-3">
+                  <Icon className="h-5 w-5 shrink-0 text-teal-700 drop-shadow-sm" strokeWidth={2} />
+                  <div className="text-sm font-bold text-slate-900">{title}</div>
                 </div>
-              </div>
+                <div className="mt-2 pl-8 text-xs leading-relaxed text-slate-700">{body}</div>
+              </section>
             ))}
 
             {/* Tips card */}
-            <div style={{ background: 'var(--card-bg)', borderRadius: 12, padding: '16px', border: '1px solid var(--card-border)' }}>
-              <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r=".5" fill="var(--primary)" /></svg>
-                {t('Tips for Best Results', 'نصائح لأفضل نتائج')}
+            <section>
+              <div className="flex items-center gap-3">
+                <Lightbulb className="h-5 w-5 shrink-0 text-teal-700 drop-shadow-sm" />
+                <div className="text-sm font-bold text-slate-900">{t('Tips for Best Results', 'نصائح لأفضل نتائج')}</div>
               </div>
+              <div className="mt-2 space-y-2 pl-8">
               {[
                 t('Use high-quality, uncompressed scans', 'استخدم صوراً عالية الجودة وغير مضغوطة'),
                 t('Avoid filtered or edited images', 'تجنب الصور المعدّلة أو المفلترة'),
                 t('Ensure the scan is well-lit and clear', 'تأكد من وضوح وإضاءة الصورة'),
               ].map((tip, i) => (
-                <div key={i} style={{ display: 'flex', gap: 7, alignItems: 'flex-start', marginBottom: 8 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--primary)', marginTop: 6, flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: 'var(--text-main)', lineHeight: 1.6 }}>{tip}</span>
+                <div key={i} className="flex items-start gap-2">
+                  <div className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-700" />
+                  <span className="text-xs leading-relaxed text-slate-700">{tip}</span>
                 </div>
               ))}
-            </div>
+              </div>
+            </section>
 
             {/* Warning */}
-            <div style={{ background: 'rgba(220,38,38,0.09)', borderRadius: 12, padding: '14px', border: '2px solid #ef4444', display: 'flex', gap: 9, alignItems: 'flex-start', boxShadow: '0 6px 16px rgba(239,68,68,0.16)' }}>
-              <div style={{ color: '#b91c1c', marginTop: 1, flexShrink: 0 }}><IconAlertTriangle /></div>
+              <section className="mt-4 pt-2">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#b64235]" />
               <div>
-                <div style={{ fontWeight: 900, color: '#b91c1c', fontSize: 12.5, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.35 }}>{t('Medical Warning', 'تحذير طبي')}</div>
-                <div style={{ color: '#7f1d1d', fontSize: 11.8, lineHeight: 1.65, fontWeight: 600 }}>
-                  {t('AI screening support only. Do not make treatment decisions without consulting a qualified physician.', 'هذه أداة مساعدة للفحص فقط. لا تتخذ أي قرار علاجي قبل مراجعة طبيب مؤهل.')}
+                <div className="text-sm font-bold text-[#9f3329]">MEDICAL WARNING</div>
+                <div className="mt-2 text-xs leading-relaxed text-[#b64235]">
+                  AI screening support only. Do not make treatment decisions without consulting a qualified physician.
                 </div>
               </div>
+              </div>
+              </section>
             </div>
-          </div>
+            </div>
+          </aside>
         </div>
       </div>
 

@@ -10,6 +10,7 @@ import path from 'path';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
+import { DataTypes } from 'sequelize';
 
 import sequelize from './config/database';
 import passport from './config/passport';
@@ -35,6 +36,26 @@ const XRAY_URL = process.env.XRAY_SERVICE_URL || 'http://localhost:8001';
 
 let initPromise: Promise<void> | null = null;
 
+async function ensureUserAuthColumns() {
+  const queryInterface = sequelize.getQueryInterface();
+  const table = await queryInterface.describeTable('users');
+  const addIfMissing = async (name: string, definition: any) => {
+    if (!table[name]) {
+      await queryInterface.addColumn('users', name, definition);
+      console.log(`[DB] Added users.${name}`);
+    }
+  };
+
+  await addIfMissing('email_verified', { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false });
+  await addIfMissing('phone_verified', { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false });
+  await addIfMissing('accepted_disclaimer', { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false });
+  await addIfMissing('onboarding_completed', { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false });
+  await addIfMissing('auth_provider', { type: DataTypes.STRING(20), allowNull: false, defaultValue: 'local' });
+  await addIfMissing('verification_code', { type: DataTypes.STRING(12), allowNull: true });
+  await addIfMissing('verification_channel', { type: DataTypes.STRING(20), allowNull: true });
+  await addIfMissing('verification_expires_at', { type: DataTypes.DATE, allowNull: true });
+}
+
 async function initializeApp() {
   if (initPromise) {
     return initPromise;
@@ -43,11 +64,13 @@ async function initializeApp() {
   initPromise = (async () => {
     if (isVercel) {
       await sequelize.authenticate();
+      await ensureUserAuthColumns();
       console.log('Database connection verified for Vercel runtime.');
       return;
     }
 
     await sequelize.sync();
+    await ensureUserAuthColumns();
     console.log('Database tables synced.');
 
     const userCount = await User.count();

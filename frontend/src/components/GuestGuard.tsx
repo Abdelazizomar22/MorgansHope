@@ -11,5 +11,6 @@ export default function GuestGuard({ children }: { children: ReactNode }) {
 
     if (loading) return null; // avoid flash
 
-    return user ? <Navigate to="/" replace /> : <>{children}</>;
+    if (!user) return <>{children}</>;
+    return <Navigate to={user.onboardingCompleted ? '/' : '/onboarding'} replace />;
 }
