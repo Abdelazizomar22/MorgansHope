@@ -7,7 +7,8 @@ import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest, JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
-import { verifyFirebaseIdToken } from '../config/firebaseAdmin';
+import { generateOTP, hashOTP, verifyOTP } from '../utils/otp';
+import { sendOTPEmail } from '../utils/resend';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '7d';
@@ -56,15 +57,6 @@ function queueVerification(user: User, channel: 'email' | 'phone') {
 
   return code;
 }
-
-const toE164EgyptPhone = (phone?: string) => {
-  const normalized = normalizePhone(phone);
-  if (!normalized) return '';
-  if (normalized.startsWith('+')) return normalized;
-  if (normalized.startsWith('00')) return '+' + normalized.slice(2);
-  if (normalized.startsWith('0')) return '+20' + normalized.slice(1);
-  return normalized;
-};
 
 // â”€â”€ Validators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const registerValidators = [
@@ -308,6 +300,8 @@ export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response
     if (nextPhone !== (user.phone || '')) {
       user.phone = nextPhone || undefined;
       user.phoneVerified = false;
+      user.phoneOtpHash = null;
+      user.phoneOtpExpiry = null;
     }
   }
   if (age !== undefined) user.age = age;
@@ -362,14 +356,35 @@ export const resendVerification = asyncHandler(async (req: AuthRequest, res: Res
     return;
   }
 
+  if (channel === 'phone') {
+    if (!user.email || user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
+      res.status(400).json({ success: false, message: 'No email address is available to deliver the phone verification code.' });
+      return;
+    }
+
+    const otp = generateOTP();
+    user.phoneOtpHash = hashOTP(otp);
+    user.phoneOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+    await sendOTPEmail(user.email, otp);
+
+    res.json({
+      success: true,
+      message: 'Phone verification code sent to your email.',
+      data: {
+        channel,
+        ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {}),
+      },
+    });
+    return;
+  }
+
   const verificationCode = queueVerification(user, channel);
   await user.save();
 
   res.json({
     success: true,
-    message: channel === 'phone'
-      ? 'Use Firebase Phone Auth on the client to send and verify phone OTPs.'
-      : `Verification code generated for your ${channel}.`,
+    message: `Verification code generated for your ${channel}.`,
     data: {
       channel,
       ...(process.env.NODE_ENV !== 'production' ? { devCode: verificationCode } : {}),
@@ -377,37 +392,60 @@ export const resendVerification = asyncHandler(async (req: AuthRequest, res: Res
   });
 });
 
-export const verifyFirebasePhone = asyncHandler(async (req: AuthRequest, res: Response) => {
+export const sendPhoneOtp = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user!;
-  const idToken = (req.body.idToken || '').toString().trim();
 
-  if (!idToken) {
-    res.status(400).json({ success: false, message: 'Firebase phone verification token is required.' });
+  if (!user.phone) {
+    res.status(400).json({ success: false, message: 'Please add your phone number before requesting a verification code.' });
+    return;
+  }
+  if (!user.email || user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
+    res.status(400).json({ success: false, message: 'A valid account email is required to deliver the phone verification code.' });
     return;
   }
 
-  const decoded = await verifyFirebaseIdToken(idToken);
-  const firebasePhone = typeof decoded.phone_number === 'string' ? decoded.phone_number : '';
+  const otp = generateOTP();
+  user.phoneOtpHash = hashOTP(otp);
+  user.phoneOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save();
+  await sendOTPEmail(user.email, otp);
 
-  if (!firebasePhone) {
-    res.status(400).json({ success: false, message: 'Firebase token does not contain a verified phone number.' });
+  res.json({
+    success: true,
+    message: 'A phone verification code was sent to your email.',
+    data: {
+      ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {}),
+    },
+  });
+});
+
+export const verifyPhoneOtp = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = req.user!;
+  const otp = (req.body.otp || '').toString().trim();
+
+  if (!otp) {
+    res.status(400).json({ success: false, message: 'Verification code is required.' });
+    return;
+  }
+  if (!user.phoneOtpHash || !user.phoneOtpExpiry) {
+    res.status(400).json({ success: false, message: 'No phone verification code is pending.' });
+    return;
+  }
+  if (user.phoneOtpExpiry.getTime() < Date.now()) {
+    res.status(400).json({ success: false, message: 'Verification code expired.' });
+    return;
+  }
+  if (!verifyOTP(otp, user.phoneOtpHash)) {
+    res.status(400).json({ success: false, message: 'Invalid verification code.' });
     return;
   }
 
-  const currentPhone = toE164EgyptPhone(user.phone);
-  if (currentPhone && currentPhone !== firebasePhone) {
-    res.status(400).json({ success: false, message: 'Verified phone does not match your profile phone number.' });
-    return;
-  }
-
-  user.phone = firebasePhone;
   user.phoneVerified = true;
-  user.verificationCode = null;
-  user.verificationChannel = null;
-  user.verificationExpiresAt = null;
+  user.phoneOtpHash = null;
+  user.phoneOtpExpiry = null;
   await user.save();
 
-  res.json({ success: true, message: 'Phone verified with Firebase', data: user.toSafeJSON() });
+  res.json({ success: true, message: 'Phone verified successfully.', data: user.toSafeJSON() });
 });
 
 // â”€â”€ Upload Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

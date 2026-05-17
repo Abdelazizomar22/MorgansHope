@@ -1,9 +1,7 @@
-﻿import { useRef, useState, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../utils/api';
-import { auth, isFirebasePhoneAuthConfigured } from '../utils/firebase';
 
 const IconUser = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -33,8 +31,6 @@ export default function OnboardingPage() {
     const [verificationLoading, setVerificationLoading] = useState(false);
     const [verificationNotice, setVerificationNotice] = useState('');
     const [isCodeSent, setIsCodeSent] = useState(false);
-    const confirmationResultRef = useRef<ConfirmationResult | null>(null);
-    const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
 
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
@@ -46,31 +42,16 @@ export default function OnboardingPage() {
         onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm({ ...form, [key]: e.target.value }),
     });
 
-    const toFirebasePhone = (value: string) => {
-        const normalized = value.replace(/[^\d+]/g, '').trim();
-        if (!normalized) return '';
-        if (normalized.startsWith('+')) return normalized;
-        if (normalized.startsWith('00')) return `+${normalized.slice(2)}`;
-        if (normalized.startsWith('0')) return `+20${normalized.slice(1)}`;
-        return normalized;
-    };
-
-    const handleVerifyContact = async () => {
+    const handleVerifyPhoneOtp = async () => {
         if (!verificationCode.trim()) {
             setError(t('Please enter the verification code first.', 'Please enter the verification code first.'));
-            return;
-        }
-        if (!confirmationResultRef.current) {
-            setError(t('Please send a verification code first.', 'Please send a verification code first.'));
             return;
         }
         setVerificationLoading(true);
         setError('');
         setVerificationNotice('');
         try {
-            const credential = await confirmationResultRef.current.confirm(verificationCode.trim());
-            const idToken = await credential.user.getIdToken();
-            const verified = await authApi.verifyFirebasePhone(idToken);
+            const verified = await authApi.verifyPhoneOtp(verificationCode.trim());
             if (verified.data.data) updateUser(verified.data.data);
             await refreshUser();
             setVerificationCode('');
@@ -82,38 +63,27 @@ export default function OnboardingPage() {
         }
     };
 
-    const handleSendPhoneVerification = async () => {
+    const handleSendPhoneOtp = async () => {
         const nextPhone = form.phone.trim();
-        const firebasePhone = toFirebasePhone(nextPhone);
-        if (firebasePhone.replace(/[^\d]/g, '').length < 8) {
+        if (nextPhone.replace(/[^\d]/g, '').length < 8) {
             setError(t('Please enter a valid phone number first.', 'Please enter a valid phone number first.'));
-            return;
-        }
-        if (!auth || !isFirebasePhoneAuthConfigured) {
-            setError(t(
-                'Firebase Phone Auth is not configured yet. Add Firebase environment variables first.',
-                'Firebase Phone Auth is not configured yet. Add Firebase environment variables first.'
-            ));
             return;
         }
         setVerificationLoading(true);
         setError('');
         setVerificationNotice('');
         try {
-            const updated = await authApi.updateProfile({ phone: firebasePhone });
+            const updated = await authApi.updateProfile({ phone: nextPhone });
             if (updated.data.data) updateUser(updated.data.data);
-            if (!recaptchaVerifierRef.current) {
-                recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                    size: 'invisible',
-                });
-            }
-            confirmationResultRef.current = await signInWithPhoneNumber(auth, firebasePhone, recaptchaVerifierRef.current);
+            const response = await authApi.sendPhoneOtp();
             setIsCodeSent(true);
-            setVerificationNotice(t('Firebase sent an SMS verification code to your phone.', 'Firebase sent an SMS verification code to your phone.'));
+            setVerificationNotice(
+                response.data.data?.devCode
+                    ? t(`Verification code sent to your email. Dev code: ${response.data.data.devCode}`, `Verification code sent to your email. Dev code: ${response.data.data.devCode}`)
+                    : t('A verification code was sent to your email.', 'A verification code was sent to your email.')
+            );
             await refreshUser();
         } catch (err: any) {
-            recaptchaVerifierRef.current?.clear();
-            recaptchaVerifierRef.current = null;
             setError(err?.message || err?.response?.data?.message || t('Could not send verification code right now.', 'Could not send verification code right now.'));
         } finally {
             setVerificationLoading(false);
@@ -239,9 +209,6 @@ export default function OnboardingPage() {
                         </div>
                     )}
 
-                    <div id="recaptcha-container"></div>
-
-
                     {/* Phone */}
                     <div style={{ marginBottom: 18 }}>
                         <label style={{ display: 'block', marginBottom: 7, color: 'var(--text-main)', fontSize: '0.82rem', fontWeight: 700 }}>
@@ -275,7 +242,7 @@ export default function OnboardingPage() {
                                         {t('Verify your phone', 'Verify your phone')}
                                     </h3>
                                     <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.6 }}>
-                                        {t('Send a 6-digit code to your phone, then enter it here to continue.', 'Send a 6-digit code to your phone, then enter it here to continue.')}{phoneTarget ? ' ' + phoneTarget : ''}
+                                        {t('We will send a 6-digit code to your email to confirm your phone number, then enter it here to continue.', 'We will send a 6-digit code to your email to confirm your phone number, then enter it here to continue.')}{phoneTarget ? ' ' + phoneTarget : ''}
                                     </p>
                                 </div>
                             </div>
@@ -286,7 +253,7 @@ export default function OnboardingPage() {
                             )}
                             <button
                                 type="button"
-                                onClick={handleSendPhoneVerification}
+                                onClick={handleSendPhoneOtp}
                                 disabled={verificationLoading}
                                 style={{ width: '100%', minHeight: 44, border: '1.5px solid var(--primary)', borderRadius: 14, background: 'rgba(var(--primary-rgb),0.08)', color: 'var(--primary)', fontWeight: 850, cursor: verificationLoading ? 'default' : 'pointer', opacity: verificationLoading ? 0.7 : 1, fontFamily: 'inherit', marginBottom: 10 }}
                             >
@@ -296,14 +263,14 @@ export default function OnboardingPage() {
                                 <input
                                     value={verificationCode}
                                     onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleVerifyContact()}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleVerifyPhoneOtp()}
                                     inputMode="numeric"
                                     placeholder="123456"
                                     style={{ ...inputStyle, letterSpacing: '0.22em', fontWeight: 800, textAlign: 'center' }}
                                 />
                                 <button
                                     type="button"
-                                    onClick={handleVerifyContact}
+                                    onClick={handleVerifyPhoneOtp}
                                     disabled={verificationLoading}
                                     style={{ border: 'none', borderRadius: 14, background: 'var(--primary)', color: '#fff', padding: '0 16px', fontWeight: 800, cursor: verificationLoading ? 'default' : 'pointer', opacity: verificationLoading ? 0.7 : 1, fontFamily: 'inherit' }}
                                 >
@@ -399,7 +366,7 @@ export default function OnboardingPage() {
                             onClick={handleSkip}
                             style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                         >
-                            {t('Skip for now — I\u2019ll do this later', 'تخطي الآن — سأفعل هذا لاحقًا')}
+                            {t('Skip for now — I’ll do this later', 'تخطي الآن — سأفعل هذا لاحقًا')}
                         </button>
                     </div>
                 </div>
