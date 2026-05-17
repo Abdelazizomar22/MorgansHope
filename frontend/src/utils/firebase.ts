@@ -8,6 +8,8 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+export const firebaseRecaptchaSiteKey = import.meta.env.VITE_FIREBASE_RECAPTCHA_SITE_KEY?.trim() || '';
+
 export const isFirebasePhoneAuthConfigured = Boolean(
   firebaseConfig.apiKey &&
   firebaseConfig.authDomain &&
