@@ -120,7 +120,7 @@ export const authApi = {
     api.post<ApiResponse<SafeUser>>('/auth/verify-contact', { code }),
 
   verifyFirebasePhone: (idToken: string) =>
-    api.post<ApiResponse<SafeUser>>('/auth/verify-firebase-phone', { idToken }),
+    api.post<ApiResponse<SafeUser>>('/auth/verify-phone', { idToken }),
 
   resendVerification: (channel?: 'email' | 'phone') =>
     api.post<ApiResponse<{ channel: 'email' | 'phone'; smsSent?: boolean; to?: string; devCode?: string }>>('/auth/resend-verification', { channel }),

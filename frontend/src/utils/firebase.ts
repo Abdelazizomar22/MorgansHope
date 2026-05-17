@@ -20,3 +20,4 @@ export const firebaseApp = isFirebasePhoneAuthConfigured
   : null;
 
 export const firebaseAuth = firebaseApp ? getAuth(firebaseApp) : null;
+export const auth = firebaseAuth;
