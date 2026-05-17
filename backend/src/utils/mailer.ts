@@ -29,7 +29,7 @@ export async function sendOTPEmail(toEmail: string, otp: string) {
   }
 
   await transporter.sendMail({
-    from: gmailUser,
+    from: `Morgan's Hope <${gmailUser}>`,
     to: toEmail,
     subject: 'Your Morgan\'s Hope verification code',
     html: `
