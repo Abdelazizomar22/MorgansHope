@@ -1,25 +1,35 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resendApiKey = process.env.RESEND_API_KEY?.trim();
-const resendFromEmail = process.env.RESEND_FROM_EMAIL?.trim() || 'Morgan\'s Hope <onboarding@resend.dev>';
+const gmailUser = process.env.GMAIL_USER?.trim();
+const gmailAppPassword = process.env.GMAIL_APP_PASSWORD?.trim();
 
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
+const transporter = (gmailUser && gmailAppPassword)
+  ? nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: gmailUser,
+        pass: gmailAppPassword,
+      },
+    })
+  : null;
 
 export async function sendOTPEmail(toEmail: string, otp: string) {
   if (!toEmail) {
     throw new Error('A recipient email address is required to send the OTP.');
   }
 
-  if (!resend) {
+  if (!transporter) {
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`[OTP] RESEND_API_KEY missing. Dev OTP for ${toEmail}: ${otp}`);
+      console.log(`[OTP] Gmail SMTP missing. Dev OTP for ${toEmail}: ${otp}`);
       return;
     }
-    throw new Error('Email OTP is not configured yet. Missing RESEND_API_KEY.');
+    throw new Error('Email OTP is not configured yet. Missing Gmail SMTP credentials.');
   }
 
-  await resend.emails.send({
-    from: resendFromEmail,
+  await transporter.sendMail({
+    from: gmailUser,
     to: toEmail,
     subject: 'Your Morgan\'s Hope verification code',
     html: `
