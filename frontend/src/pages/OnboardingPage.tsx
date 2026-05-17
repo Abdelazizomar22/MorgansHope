@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../utils/api';
-import { auth, firebaseRecaptchaSiteKey, isFirebasePhoneAuthConfigured } from '../utils/firebase';
+import { auth, isFirebasePhoneAuthConfigured } from '../utils/firebase';
 
 const IconUser = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -105,7 +105,6 @@ export default function OnboardingPage() {
             if (!recaptchaVerifierRef.current) {
                 recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
                     size: 'invisible',
-                    sitekey: firebaseRecaptchaSiteKey,
                 });
             }
             confirmationResultRef.current = await signInWithPhoneNumber(auth, firebasePhone, recaptchaVerifierRef.current);
@@ -240,6 +239,8 @@ export default function OnboardingPage() {
                         </div>
                     )}
 
+                    <div id="recaptcha-container"></div>
+
 
                     {/* Phone */}
                     <div style={{ marginBottom: 18 }}>
@@ -309,7 +310,6 @@ export default function OnboardingPage() {
                                     {t('Verify', 'Verify')}
                                 </button>
                             </div>
-                            <div id="recaptcha-container"></div>
                         </div>
                     )}
 
