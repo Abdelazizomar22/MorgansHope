@@ -1,8 +1,9 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
+import axios from 'axios';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest, JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
@@ -14,7 +15,7 @@ const REFRESH_TOKEN_LONG_TTL = '30d';
 const REFRESH_COOKIE = 'medtech_refresh';
 const PHONE_EMAIL_DOMAIN = 'phone.morganshope.local';
 
-// ── Cookie options ────────────────────────────────────────────────────────────
+// â”€â”€ Cookie options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function cookieOptions(maxAgeMs: number) {
   const isProd = process.env.NODE_ENV === 'production';
   return {
@@ -43,21 +44,73 @@ const normalizePhone = (value?: string) => value?.replace(/[^\d+]/g, '').trim() 
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const generateVerificationCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+const toSmsPhone = (phone?: string) => {
+  const normalized = normalizePhone(phone);
+  if (!normalized) return '';
+  if (normalized.startsWith('+')) return normalized;
+  if (normalized.startsWith('00')) return '+' + normalized.slice(2);
+  if (normalized.startsWith('0')) return '+20' + normalized.slice(1);
+  return normalized;
+};
+
+const getSmsConfig = () => ({
+  accountSid: process.env.TWILIO_ACCOUNT_SID?.trim(),
+  authToken: process.env.TWILIO_AUTH_TOKEN?.trim(),
+  from: process.env.TWILIO_PHONE_NUMBER?.trim(),
+});
+
+async function deliverVerificationCode(user: User, channel: 'email' | 'phone', code: string) {
+  if (channel !== 'phone') {
+    return { sent: false, reason: 'email_not_configured' as const };
+  }
+
+  const to = toSmsPhone(user.phone);
+  if (!to) {
+    throw new Error('No valid phone number is available for verification.');
+  }
+
+  const { accountSid, authToken, from } = getSmsConfig();
+  if (!accountSid || !authToken || !from) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Auth] SMS provider is not configured; using local dev verification code only.');
+      return { sent: false, to, reason: 'missing_twilio_config' as const };
+    }
+    throw new Error('SMS provider is not configured.');
+  }
+
+  const body = new URLSearchParams({
+    To: to,
+    From: from,
+    Body: "Morgan's Hope verification code: " + code + '. It expires in 10 minutes.',
+  });
+
+  await axios.post(
+    'https://api.twilio.com/2010-04-01/Accounts/' + accountSid + '/Messages.json',
+    body,
+    {
+      auth: { username: accountSid, password: authToken },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      timeout: 15000,
+    },
+  );
+
+  return { sent: true, to };
+}
+
 function queueVerification(user: User, channel: 'email' | 'phone') {
   const code = generateVerificationCode();
   user.verificationCode = code;
   user.verificationChannel = channel;
   user.verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Wire a real email/SMS provider here. For now we expose/log in non-production so the flow is testable.
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[Auth] Verification code for ${channel}: ${code}`);
+    console.log('[Auth] Verification code for ' + channel + ': ' + code);
   }
 
   return code;
 }
 
-// ── Validators ────────────────────────────────────────────────────────────────
+// â”€â”€ Validators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const registerValidators = [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
@@ -88,7 +141,7 @@ export const loginValidators = [
   }),
 ];
 
-// ── Register ──────────────────────────────────────────────────────────────────
+// â”€â”€ Register â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -137,7 +190,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// ── Login ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -221,13 +274,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// ── Logout ────────────────────────────────────────────────────────────────────
+// â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const logout = asyncHandler(async (_req: Request, res: Response) => {
   res.clearCookie(REFRESH_COOKIE, { path: '/' });
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
-// ── Refresh Access Token ──────────────────────────────────────────────────────
+// â”€â”€ Refresh Access Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const refreshToken = asyncHandler(async (req: Request, res: Response) => {
   const token = req.cookies?.[REFRESH_COOKIE];
   if (!token) {
@@ -265,12 +318,12 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
-// ── /me ───────────────────────────────────────────────────────────────────────
+// â”€â”€ /me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const me = asyncHandler(async (req: AuthRequest, res: Response) => {
   res.json({ success: true, message: 'User retrieved', data: req.user!.toSafeJSON() });
 });
 
-// ── Update Profile ────────────────────────────────────────────────────────────
+// â”€â”€ Update Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user!;
   const { firstName, lastName, phone, currentPassword, newPassword, age, gender, smokingHistory, medicalHistory } = req.body;
@@ -355,18 +408,23 @@ export const resendVerification = asyncHandler(async (req: AuthRequest, res: Res
 
   const verificationCode = queueVerification(user, channel);
   await user.save();
+  const delivery = await deliverVerificationCode(user, channel, verificationCode);
 
   res.json({
     success: true,
-    message: `Verification code sent to your ${channel}.`,
+    message: delivery.sent
+      ? `Verification code sent to your ${channel}.`
+      : 'Verification code generated for local testing. Configure SMS credentials to send real messages.',
     data: {
       channel,
-      ...(process.env.NODE_ENV !== 'production' ? { devCode: verificationCode } : {}),
+      smsSent: delivery.sent,
+      to: 'to' in delivery ? delivery.to : undefined,
+      ...(process.env.NODE_ENV !== 'production' && !delivery.sent ? { devCode: verificationCode } : {}),
     },
   });
 });
 
-// ── Upload Avatar ────────────────────────────────────────────────────────────
+// â”€â”€ Upload Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user!;
   if (!req.file) {
@@ -406,3 +464,4 @@ export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response)
 
   res.json({ success: true, message: 'Profile picture updated', data: user.toSafeJSON() });
 });
+

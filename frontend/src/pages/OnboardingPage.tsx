@@ -17,7 +17,7 @@ const IconAlert = () => (
 
 export default function OnboardingPage() {
     const navigate = useNavigate();
-    const { user, updateUser, refreshUser } = useAuth();
+    const { user, updateUser, refreshUser, logout } = useAuth();
     const [lang] = useState<'en' | 'ar'>('en');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -30,6 +30,7 @@ export default function OnboardingPage() {
     const [verificationCode, setVerificationCode] = useState('');
     const [verificationLoading, setVerificationLoading] = useState(false);
     const [verificationNotice, setVerificationNotice] = useState('');
+    const [isCodeSent, setIsCodeSent] = useState(false);
 
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
@@ -75,10 +76,13 @@ export default function OnboardingPage() {
             const updated = await authApi.updateProfile({ phone: nextPhone });
             if (updated.data.data) updateUser(updated.data.data);
             await authApi.resendVerification('phone').then((response) => {
-                const devCode = response.data.data?.devCode;
-                setVerificationNotice(devCode
-                    ? 'Verification code sent. Dev code: ' + devCode
-                    : t('Verification code sent to your phone.', 'Verification code sent to your phone.'));
+                const payload = response.data.data;
+                setIsCodeSent(true);
+                setVerificationNotice(payload?.devCode
+                    ? 'Local testing code: ' + payload.devCode
+                    : payload?.smsSent
+                        ? 'SMS sent to ' + (payload.to || nextPhone)
+                        : (response.data.message || t('Verification code generated for local testing.', 'Verification code generated for local testing.')));
             });
             await refreshUser();
         } catch (err: any) {
@@ -111,6 +115,11 @@ export default function OnboardingPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleStartOver = async () => {
+        await logout();
+        navigate('/register', { replace: true });
     };
 
     const handleSkip = async () => {
@@ -177,6 +186,15 @@ export default function OnboardingPage() {
                             'ساعدنا في تخصيص تجربتك ببيانات سريعة. يمكنك تحديثها لاحقًا.'
                         )}
                     </p>
+                    {needsPhoneVerification && (
+                        <button
+                            type="button"
+                            onClick={handleStartOver}
+                            style={{ marginTop: 14, background: 'transparent', border: 'none', color: 'var(--primary)', fontSize: '0.82rem', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                            {t('Back to account details', 'الرجوع لبيانات الحساب')}
+                        </button>
+                    )}
                 </div>
 
                 {/* Card */}
@@ -242,7 +260,7 @@ export default function OnboardingPage() {
                                 disabled={verificationLoading}
                                 style={{ width: '100%', minHeight: 44, border: '1.5px solid var(--primary)', borderRadius: 14, background: 'rgba(var(--primary-rgb),0.08)', color: 'var(--primary)', fontWeight: 850, cursor: verificationLoading ? 'default' : 'pointer', opacity: verificationLoading ? 0.7 : 1, fontFamily: 'inherit', marginBottom: 10 }}
                             >
-                                {t('Send verification code', 'Send verification code')}
+                                {isCodeSent ? t('Resend verification code', 'Resend verification code') : t('Send verification code', 'Send verification code')}
                             </button>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 }}>
                                 <input
