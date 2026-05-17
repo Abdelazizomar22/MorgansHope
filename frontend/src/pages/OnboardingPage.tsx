@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../utils/api';
-import { firebaseAuth, isFirebasePhoneAuthConfigured } from '../utils/firebase';
+import { firebaseAuth, firebaseRecaptchaSiteKey, isFirebasePhoneAuthConfigured } from '../utils/firebase';
 
 const IconUser = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -103,8 +103,12 @@ export default function OnboardingPage() {
             const updated = await authApi.updateProfile({ phone: firebasePhone });
             if (updated.data.data) updateUser(updated.data.data);
             if (!recaptchaVerifierRef.current) {
-                recaptchaVerifierRef.current = new RecaptchaVerifier(firebaseAuth, 'firebase-recaptcha-container', {
+                const recaptchaParameters = {
                     size: 'invisible',
+                    ...(firebaseRecaptchaSiteKey ? { sitekey: firebaseRecaptchaSiteKey } : {}),
+                };
+                recaptchaVerifierRef.current = new RecaptchaVerifier(firebaseAuth, 'firebase-recaptcha-container', {
+                    ...recaptchaParameters,
                 });
             }
             confirmationResultRef.current = await signInWithPhoneNumber(firebaseAuth, firebasePhone, recaptchaVerifierRef.current);
