@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
@@ -7,6 +7,7 @@ import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest, JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
+import { verifyFirebaseIdToken } from '../config/firebaseAdmin';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '7d';
@@ -14,7 +15,7 @@ const REFRESH_TOKEN_LONG_TTL = '30d';
 const REFRESH_COOKIE = 'medtech_refresh';
 const PHONE_EMAIL_DOMAIN = 'phone.morganshope.local';
 
-// ── Cookie options ────────────────────────────────────────────────────────────
+// â”€â”€ Cookie options â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function cookieOptions(maxAgeMs: number) {
   const isProd = process.env.NODE_ENV === 'production';
   return {
@@ -49,15 +50,23 @@ function queueVerification(user: User, channel: 'email' | 'phone') {
   user.verificationChannel = channel;
   user.verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Wire a real email/SMS provider here. For now we expose/log in non-production so the flow is testable.
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[Auth] Verification code for ${channel}: ${code}`);
+    console.log('[Auth] Verification code for ' + channel + ': ' + code);
   }
 
   return code;
 }
 
-// ── Validators ────────────────────────────────────────────────────────────────
+const toE164EgyptPhone = (phone?: string) => {
+  const normalized = normalizePhone(phone);
+  if (!normalized) return '';
+  if (normalized.startsWith('+')) return normalized;
+  if (normalized.startsWith('00')) return '+' + normalized.slice(2);
+  if (normalized.startsWith('0')) return '+20' + normalized.slice(1);
+  return normalized;
+};
+
+// â”€â”€ Validators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const registerValidators = [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
@@ -88,7 +97,7 @@ export const loginValidators = [
   }),
 ];
 
-// ── Register ──────────────────────────────────────────────────────────────────
+// â”€â”€ Register â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -137,7 +146,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// ── Login ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -221,13 +230,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// ── Logout ────────────────────────────────────────────────────────────────────
+// â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const logout = asyncHandler(async (_req: Request, res: Response) => {
   res.clearCookie(REFRESH_COOKIE, { path: '/' });
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
-// ── Refresh Access Token ──────────────────────────────────────────────────────
+// â”€â”€ Refresh Access Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const refreshToken = asyncHandler(async (req: Request, res: Response) => {
   const token = req.cookies?.[REFRESH_COOKIE];
   if (!token) {
@@ -265,12 +274,12 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
-// ── /me ───────────────────────────────────────────────────────────────────────
+// â”€â”€ /me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const me = asyncHandler(async (req: AuthRequest, res: Response) => {
   res.json({ success: true, message: 'User retrieved', data: req.user!.toSafeJSON() });
 });
 
-// ── Update Profile ────────────────────────────────────────────────────────────
+// â”€â”€ Update Profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user!;
   const { firstName, lastName, phone, currentPassword, newPassword, age, gender, smokingHistory, medicalHistory } = req.body;
@@ -358,7 +367,9 @@ export const resendVerification = asyncHandler(async (req: AuthRequest, res: Res
 
   res.json({
     success: true,
-    message: `Verification code sent to your ${channel}.`,
+    message: channel === 'phone'
+      ? 'Use Firebase Phone Auth on the client to send and verify phone OTPs.'
+      : `Verification code generated for your ${channel}.`,
     data: {
       channel,
       ...(process.env.NODE_ENV !== 'production' ? { devCode: verificationCode } : {}),
@@ -366,7 +377,40 @@ export const resendVerification = asyncHandler(async (req: AuthRequest, res: Res
   });
 });
 
-// ── Upload Avatar ────────────────────────────────────────────────────────────
+export const verifyFirebasePhone = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = req.user!;
+  const idToken = (req.body.idToken || '').toString().trim();
+
+  if (!idToken) {
+    res.status(400).json({ success: false, message: 'Firebase phone verification token is required.' });
+    return;
+  }
+
+  const decoded = await verifyFirebaseIdToken(idToken);
+  const firebasePhone = typeof decoded.phone_number === 'string' ? decoded.phone_number : '';
+
+  if (!firebasePhone) {
+    res.status(400).json({ success: false, message: 'Firebase token does not contain a verified phone number.' });
+    return;
+  }
+
+  const currentPhone = toE164EgyptPhone(user.phone);
+  if (currentPhone && currentPhone !== firebasePhone) {
+    res.status(400).json({ success: false, message: 'Verified phone does not match your profile phone number.' });
+    return;
+  }
+
+  user.phone = firebasePhone;
+  user.phoneVerified = true;
+  user.verificationCode = null;
+  user.verificationChannel = null;
+  user.verificationExpiresAt = null;
+  await user.save();
+
+  res.json({ success: true, message: 'Phone verified with Firebase', data: user.toSafeJSON() });
+});
+
+// â”€â”€ Upload Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user!;
   if (!req.file) {
@@ -406,3 +450,4 @@ export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response)
 
   res.json({ success: true, message: 'Profile picture updated', data: user.toSafeJSON() });
 });
+

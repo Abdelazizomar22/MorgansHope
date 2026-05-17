@@ -119,8 +119,11 @@ export const authApi = {
   verifyContact: (code: string) =>
     api.post<ApiResponse<SafeUser>>('/auth/verify-contact', { code }),
 
+  verifyFirebasePhone: (idToken: string) =>
+    api.post<ApiResponse<SafeUser>>('/auth/verify-firebase-phone', { idToken }),
+
   resendVerification: (channel?: 'email' | 'phone') =>
-    api.post<ApiResponse<{ channel: 'email' | 'phone'; devCode?: string }>>('/auth/resend-verification', { channel }),
+    api.post<ApiResponse<{ channel: 'email' | 'phone'; smsSent?: boolean; to?: string; devCode?: string }>>('/auth/resend-verification', { channel }),
 
   uploadAvatar: (file: File) => {
     const form = new FormData();
