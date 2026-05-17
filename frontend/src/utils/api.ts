@@ -119,8 +119,11 @@ export const authApi = {
   verifyContact: (code: string) =>
     api.post<ApiResponse<SafeUser>>('/auth/verify-contact', { code }),
 
-  verifyFirebasePhone: (idToken: string) =>
-    api.post<ApiResponse<SafeUser>>('/auth/verify-phone', { idToken }),
+  sendPhoneOtp: () =>
+    api.post<ApiResponse<{ devCode?: string }>>('/auth/send-phone-otp'),
+
+  verifyPhoneOtp: (otp: string) =>
+    api.post<ApiResponse<SafeUser>>('/auth/verify-phone-otp', { otp }),
 
   resendVerification: (channel?: 'email' | 'phone') =>
     api.post<ApiResponse<{ channel: 'email' | 'phone'; smsSent?: boolean; to?: string; devCode?: string }>>('/auth/resend-verification', { channel }),

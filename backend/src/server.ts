@@ -54,6 +54,8 @@ async function ensureUserAuthColumns() {
   await addIfMissing('verification_code', { type: DataTypes.STRING(12), allowNull: true });
   await addIfMissing('verification_channel', { type: DataTypes.STRING(20), allowNull: true });
   await addIfMissing('verification_expires_at', { type: DataTypes.DATE, allowNull: true });
+  await addIfMissing('phone_otp_hash', { type: DataTypes.STRING(255), allowNull: true });
+  await addIfMissing('phone_otp_expiry', { type: DataTypes.DATE, allowNull: true });
 }
 
 async function initializeApp() {

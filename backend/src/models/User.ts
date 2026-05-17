@@ -16,6 +16,8 @@ interface UserAttributes {
   verificationCode?: string | null;
   verificationChannel?: 'email' | 'phone' | null;
   verificationExpiresAt?: Date | null;
+  phoneOtpHash?: string | null;
+  phoneOtpExpiry?: Date | null;
   age?: number;
   gender?: 'male' | 'female' | 'other';
   smokingHistory?: 'never' | 'former' | 'current';
@@ -27,7 +29,7 @@ interface UserAttributes {
   updatedAt?: Date;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'email' | 'phone' | 'emailVerified' | 'phoneVerified' | 'acceptedDisclaimer' | 'onboardingCompleted' | 'authProvider' | 'verificationCode' | 'verificationChannel' | 'verificationExpiresAt' | 'age' | 'gender' | 'smokingHistory' | 'medicalHistory' | 'profilePicture' | 'role' | 'isActive'> { }
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'email' | 'phone' | 'emailVerified' | 'phoneVerified' | 'acceptedDisclaimer' | 'onboardingCompleted' | 'authProvider' | 'verificationCode' | 'verificationChannel' | 'verificationExpiresAt' | 'phoneOtpHash' | 'phoneOtpExpiry' | 'age' | 'gender' | 'smokingHistory' | 'medicalHistory' | 'profilePicture' | 'role' | 'isActive'> { }
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: number;
@@ -44,6 +46,8 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public verificationCode?: string | null;
   public verificationChannel?: 'email' | 'phone' | null;
   public verificationExpiresAt?: Date | null;
+  public phoneOtpHash?: string | null;
+  public phoneOtpExpiry?: Date | null;
   public age?: number;
   public gender?: 'male' | 'female' | 'other';
   public smokingHistory?: 'never' | 'former' | 'current';
@@ -55,7 +59,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public readonly updatedAt!: Date;
 
   toSafeJSON() {
-    const { password, verificationCode, verificationExpiresAt, ...safe } = this.toJSON() as any;
+    const { password, verificationCode, verificationExpiresAt, phoneOtpHash, phoneOtpExpiry, ...safe } = this.toJSON() as any;
     if (typeof safe.email === 'string' && safe.email.endsWith('@phone.morganshope.local')) {
       safe.email = null;
     }
@@ -79,6 +83,8 @@ User.init(
     verificationCode: { type: DataTypes.STRING(12), allowNull: true, field: 'verification_code' },
     verificationChannel: { type: DataTypes.ENUM('email', 'phone'), allowNull: true, field: 'verification_channel' },
     verificationExpiresAt: { type: DataTypes.DATE, allowNull: true, field: 'verification_expires_at' },
+    phoneOtpHash: { type: DataTypes.STRING(255), allowNull: true, field: 'phone_otp_hash' },
+    phoneOtpExpiry: { type: DataTypes.DATE, allowNull: true, field: 'phone_otp_expiry' },
     age: { type: DataTypes.INTEGER, allowNull: true },
     gender: { type: DataTypes.ENUM('male', 'female', 'other'), allowNull: true },
     smokingHistory: { type: DataTypes.ENUM('never', 'former', 'current'), allowNull: true },
