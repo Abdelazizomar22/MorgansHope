@@ -3,11 +3,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User';
 import { AuthRequest, JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
+import { verifyFirebaseIdToken } from '../config/firebaseAdmin';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '7d';
@@ -44,59 +44,6 @@ const normalizePhone = (value?: string) => value?.replace(/[^\d+]/g, '').trim() 
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const generateVerificationCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-const toSmsPhone = (phone?: string) => {
-  const normalized = normalizePhone(phone);
-  if (!normalized) return '';
-  if (normalized.startsWith('+')) return normalized;
-  if (normalized.startsWith('00')) return '+' + normalized.slice(2);
-  if (normalized.startsWith('0')) return '+20' + normalized.slice(1);
-  return normalized;
-};
-
-const getSmsConfig = () => ({
-  accountSid: process.env.TWILIO_ACCOUNT_SID?.trim(),
-  authToken: process.env.TWILIO_AUTH_TOKEN?.trim(),
-  from: process.env.TWILIO_PHONE_NUMBER?.trim(),
-});
-
-async function deliverVerificationCode(user: User, channel: 'email' | 'phone', code: string) {
-  if (channel !== 'phone') {
-    return { sent: false, reason: 'email_not_configured' as const };
-  }
-
-  const to = toSmsPhone(user.phone);
-  if (!to) {
-    throw new Error('No valid phone number is available for verification.');
-  }
-
-  const { accountSid, authToken, from } = getSmsConfig();
-  if (!accountSid || !authToken || !from) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[Auth] SMS provider is not configured; using local dev verification code only.');
-      return { sent: false, to, reason: 'missing_twilio_config' as const };
-    }
-    throw new Error('SMS provider is not configured.');
-  }
-
-  const body = new URLSearchParams({
-    To: to,
-    From: from,
-    Body: "Morgan's Hope verification code: " + code + '. It expires in 10 minutes.',
-  });
-
-  await axios.post(
-    'https://api.twilio.com/2010-04-01/Accounts/' + accountSid + '/Messages.json',
-    body,
-    {
-      auth: { username: accountSid, password: authToken },
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      timeout: 15000,
-    },
-  );
-
-  return { sent: true, to };
-}
-
 function queueVerification(user: User, channel: 'email' | 'phone') {
   const code = generateVerificationCode();
   user.verificationCode = code;
@@ -109,6 +56,15 @@ function queueVerification(user: User, channel: 'email' | 'phone') {
 
   return code;
 }
+
+const toE164EgyptPhone = (phone?: string) => {
+  const normalized = normalizePhone(phone);
+  if (!normalized) return '';
+  if (normalized.startsWith('+')) return normalized;
+  if (normalized.startsWith('00')) return '+' + normalized.slice(2);
+  if (normalized.startsWith('0')) return '+20' + normalized.slice(1);
+  return normalized;
+};
 
 // â”€â”€ Validators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export const registerValidators = [
@@ -408,20 +364,50 @@ export const resendVerification = asyncHandler(async (req: AuthRequest, res: Res
 
   const verificationCode = queueVerification(user, channel);
   await user.save();
-  const delivery = await deliverVerificationCode(user, channel, verificationCode);
 
   res.json({
     success: true,
-    message: delivery.sent
-      ? `Verification code sent to your ${channel}.`
-      : 'Verification code generated for local testing. Configure SMS credentials to send real messages.',
+    message: channel === 'phone'
+      ? 'Use Firebase Phone Auth on the client to send and verify phone OTPs.'
+      : `Verification code generated for your ${channel}.`,
     data: {
       channel,
-      smsSent: delivery.sent,
-      to: 'to' in delivery ? delivery.to : undefined,
-      ...(process.env.NODE_ENV !== 'production' && !delivery.sent ? { devCode: verificationCode } : {}),
+      ...(process.env.NODE_ENV !== 'production' ? { devCode: verificationCode } : {}),
     },
   });
+});
+
+export const verifyFirebasePhone = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = req.user!;
+  const idToken = (req.body.idToken || '').toString().trim();
+
+  if (!idToken) {
+    res.status(400).json({ success: false, message: 'Firebase phone verification token is required.' });
+    return;
+  }
+
+  const decoded = await verifyFirebaseIdToken(idToken);
+  const firebasePhone = typeof decoded.phone_number === 'string' ? decoded.phone_number : '';
+
+  if (!firebasePhone) {
+    res.status(400).json({ success: false, message: 'Firebase token does not contain a verified phone number.' });
+    return;
+  }
+
+  const currentPhone = toE164EgyptPhone(user.phone);
+  if (currentPhone && currentPhone !== firebasePhone) {
+    res.status(400).json({ success: false, message: 'Verified phone does not match your profile phone number.' });
+    return;
+  }
+
+  user.phone = firebasePhone;
+  user.phoneVerified = true;
+  user.verificationCode = null;
+  user.verificationChannel = null;
+  user.verificationExpiresAt = null;
+  await user.save();
+
+  res.json({ success: true, message: 'Phone verified with Firebase', data: user.toSafeJSON() });
 });
 
 // â”€â”€ Upload Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

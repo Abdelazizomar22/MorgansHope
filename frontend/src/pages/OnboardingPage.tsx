@@ -1,7 +1,9 @@
-﻿import { useState, type ChangeEvent } from 'react';
+﻿import { useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../utils/api';
+import { firebaseAuth, isFirebasePhoneAuthConfigured } from '../utils/firebase';
 
 const IconUser = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -31,6 +33,8 @@ export default function OnboardingPage() {
     const [verificationLoading, setVerificationLoading] = useState(false);
     const [verificationNotice, setVerificationNotice] = useState('');
     const [isCodeSent, setIsCodeSent] = useState(false);
+    const confirmationResultRef = useRef<ConfirmationResult | null>(null);
+    const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
 
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
@@ -42,22 +46,37 @@ export default function OnboardingPage() {
         onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm({ ...form, [key]: e.target.value }),
     });
 
+    const toFirebasePhone = (value: string) => {
+        const normalized = value.replace(/[^\d+]/g, '').trim();
+        if (!normalized) return '';
+        if (normalized.startsWith('+')) return normalized;
+        if (normalized.startsWith('00')) return `+${normalized.slice(2)}`;
+        if (normalized.startsWith('0')) return `+20${normalized.slice(1)}`;
+        return normalized;
+    };
+
     const handleVerifyContact = async () => {
         if (!verificationCode.trim()) {
             setError(t('Please enter the verification code first.', 'Please enter the verification code first.'));
+            return;
+        }
+        if (!confirmationResultRef.current) {
+            setError(t('Please send a verification code first.', 'Please send a verification code first.'));
             return;
         }
         setVerificationLoading(true);
         setError('');
         setVerificationNotice('');
         try {
-            const verified = await authApi.verifyContact(verificationCode.trim());
+            const credential = await confirmationResultRef.current.confirm(verificationCode.trim());
+            const idToken = await credential.user.getIdToken();
+            const verified = await authApi.verifyFirebasePhone(idToken);
             if (verified.data.data) updateUser(verified.data.data);
             await refreshUser();
             setVerificationCode('');
-            setVerificationNotice(t('Contact verified successfully.', 'Contact verified successfully.'));
+            setVerificationNotice(t('Phone verified successfully.', 'Phone verified successfully.'));
         } catch (err: any) {
-            setError(err?.response?.data?.message || t('Verification failed. Please check the code and try again.', 'Verification failed. Please check the code and try again.'));
+            setError(err?.message || err?.response?.data?.message || t('Verification failed. Please check the code and try again.', 'Verification failed. Please check the code and try again.'));
         } finally {
             setVerificationLoading(false);
         }
@@ -65,28 +84,37 @@ export default function OnboardingPage() {
 
     const handleSendPhoneVerification = async () => {
         const nextPhone = form.phone.trim();
-        if (nextPhone.replace(/[^\d]/g, '').length < 8) {
+        const firebasePhone = toFirebasePhone(nextPhone);
+        if (firebasePhone.replace(/[^\d]/g, '').length < 8) {
             setError(t('Please enter a valid phone number first.', 'Please enter a valid phone number first.'));
+            return;
+        }
+        if (!firebaseAuth || !isFirebasePhoneAuthConfigured) {
+            setError(t(
+                'Firebase Phone Auth is not configured yet. Add Firebase environment variables first.',
+                'Firebase Phone Auth is not configured yet. Add Firebase environment variables first.'
+            ));
             return;
         }
         setVerificationLoading(true);
         setError('');
         setVerificationNotice('');
         try {
-            const updated = await authApi.updateProfile({ phone: nextPhone });
+            const updated = await authApi.updateProfile({ phone: firebasePhone });
             if (updated.data.data) updateUser(updated.data.data);
-            await authApi.resendVerification('phone').then((response) => {
-                const payload = response.data.data;
-                setIsCodeSent(true);
-                setVerificationNotice(payload?.devCode
-                    ? 'Local testing code: ' + payload.devCode
-                    : payload?.smsSent
-                        ? 'SMS sent to ' + (payload.to || nextPhone)
-                        : (response.data.message || t('Verification code generated for local testing.', 'Verification code generated for local testing.')));
-            });
+            if (!recaptchaVerifierRef.current) {
+                recaptchaVerifierRef.current = new RecaptchaVerifier(firebaseAuth, 'firebase-recaptcha-container', {
+                    size: 'invisible',
+                });
+            }
+            confirmationResultRef.current = await signInWithPhoneNumber(firebaseAuth, firebasePhone, recaptchaVerifierRef.current);
+            setIsCodeSent(true);
+            setVerificationNotice(t('Firebase sent an SMS verification code to your phone.', 'Firebase sent an SMS verification code to your phone.'));
             await refreshUser();
         } catch (err: any) {
-            setError(err?.response?.data?.message || t('Could not send verification code right now.', 'Could not send verification code right now.'));
+            recaptchaVerifierRef.current?.clear();
+            recaptchaVerifierRef.current = null;
+            setError(err?.message || err?.response?.data?.message || t('Could not send verification code right now.', 'Could not send verification code right now.'));
         } finally {
             setVerificationLoading(false);
         }
@@ -280,6 +308,7 @@ export default function OnboardingPage() {
                                     {t('Verify', 'Verify')}
                                 </button>
                             </div>
+                            <div id="firebase-recaptcha-container" />
                         </div>
                     )}
 

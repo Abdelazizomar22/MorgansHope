@@ -11,6 +11,7 @@ import {
   me,
   updateProfile,
   verifyContact,
+  verifyFirebasePhone,
   resendVerification,
   uploadAvatar,
 } from '../controllers/authController';
@@ -138,6 +139,7 @@ router.post('/refresh', refreshToken);
 router.get('/me', authenticate, me);
 router.put('/profile', authenticate, updateProfile);
 router.post('/verify-contact', authenticate, verifyContact);
+router.post('/verify-firebase-phone', authenticate, verifyFirebasePhone);
 router.post('/resend-verification', authenticate, resendVerification);
 router.post('/avatar', authenticate, upload.single('avatar'), uploadAvatar);
 
