@@ -8,7 +8,7 @@ import User from '../models/User';
 import { AuthRequest, JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
 import { generateOTP, hashOTP, verifyOTP } from '../utils/otp';
-import { sendOTPEmail } from '../utils/resend';
+import { sendOTPEmail } from '../utils/mailer';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '7d';
