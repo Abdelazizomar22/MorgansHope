@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../utils/api';
-import { firebaseAuth, firebaseRecaptchaSiteKey, isFirebasePhoneAuthConfigured } from '../utils/firebase';
+import { auth, firebaseRecaptchaSiteKey, isFirebasePhoneAuthConfigured } from '../utils/firebase';
 
 const IconUser = () => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -89,7 +89,7 @@ export default function OnboardingPage() {
             setError(t('Please enter a valid phone number first.', 'Please enter a valid phone number first.'));
             return;
         }
-        if (!firebaseAuth || !isFirebasePhoneAuthConfigured) {
+        if (!auth || !isFirebasePhoneAuthConfigured) {
             setError(t(
                 'Firebase Phone Auth is not configured yet. Add Firebase environment variables first.',
                 'Firebase Phone Auth is not configured yet. Add Firebase environment variables first.'
@@ -103,15 +103,12 @@ export default function OnboardingPage() {
             const updated = await authApi.updateProfile({ phone: firebasePhone });
             if (updated.data.data) updateUser(updated.data.data);
             if (!recaptchaVerifierRef.current) {
-                const recaptchaParameters = {
+                recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
                     size: 'invisible',
-                    ...(firebaseRecaptchaSiteKey ? { sitekey: firebaseRecaptchaSiteKey } : {}),
-                };
-                recaptchaVerifierRef.current = new RecaptchaVerifier(firebaseAuth, 'firebase-recaptcha-container', {
-                    ...recaptchaParameters,
+                    sitekey: firebaseRecaptchaSiteKey,
                 });
             }
-            confirmationResultRef.current = await signInWithPhoneNumber(firebaseAuth, firebasePhone, recaptchaVerifierRef.current);
+            confirmationResultRef.current = await signInWithPhoneNumber(auth, firebasePhone, recaptchaVerifierRef.current);
             setIsCodeSent(true);
             setVerificationNotice(t('Firebase sent an SMS verification code to your phone.', 'Firebase sent an SMS verification code to your phone.'));
             await refreshUser();
@@ -312,7 +309,7 @@ export default function OnboardingPage() {
                                     {t('Verify', 'Verify')}
                                 </button>
                             </div>
-                            <div id="firebase-recaptcha-container" />
+                            <div id="recaptcha-container"></div>
                         </div>
                     )}
 
