@@ -90,7 +90,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
           className="theme-logo"
           style={{ height: 56, width: 56, objectFit: 'contain', transform: 'scale(1.35) translateY(-2px)', marginRight: -8 }}
         />
-        <div className="hidden md:flex items-center gap-1.5">
+        <div dir="ltr" className="hidden md:flex items-center gap-1.5" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>
           <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.5, lineHeight: 1 }}>Morgan&apos;s</span>
           <span style={{ fontSize: 18, fontWeight: 400, fontStyle: 'italic', color: 'var(--primary)', opacity: 0.85, lineHeight: 1 }}>Hope</span>
         </div>
@@ -198,7 +198,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                     color: 'var(--text-main)',
                     fontSize: 13,
                     fontWeight: 700,
-                    textAlign: 'left',
+                    textAlign: ar ? 'right' : 'left',
                     padding: '10px 12px',
                     cursor: 'pointer',
                   }}
@@ -216,7 +216,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                     color: 'var(--text-main)',
                     fontSize: 13,
                     fontWeight: 700,
-                    textAlign: 'left',
+                    textAlign: ar ? 'right' : 'left',
                     padding: '10px 12px',
                     cursor: 'pointer',
                   }}
