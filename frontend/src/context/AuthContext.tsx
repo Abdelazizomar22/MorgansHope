@@ -7,6 +7,7 @@ import {
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../utils/api';
+import { TokenService } from '../services/tokenService';
 import type { SafeUser } from '../types';
 
 interface AuthContextType {
@@ -37,29 +38,10 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 // Key used to remember where the user was trying to go before being redirected to login
 export const REDIRECT_KEY = 'medtech_redirect_after_login';
-const TOKEN_KEY = 'medtech_token';
-const REMEMBER_KEY = 'medtech_remember';
-
-const getStoredToken = () => localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-
-const storeToken = (nextToken: string, rememberMe: boolean) => {
-  const storage = rememberMe ? localStorage : sessionStorage;
-  const otherStorage = rememberMe ? sessionStorage : localStorage;
-  storage.setItem(TOKEN_KEY, nextToken);
-  otherStorage.removeItem(TOKEN_KEY);
-  if (rememberMe) localStorage.setItem(REMEMBER_KEY, '1');
-  else localStorage.removeItem(REMEMBER_KEY);
-};
-
-const clearStoredToken = () => {
-  localStorage.removeItem(TOKEN_KEY);
-  sessionStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(REMEMBER_KEY);
-};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
-  const [token, setToken] = useState<string | null>(getStoredToken());
+  const [token, setToken] = useState<string | null>(TokenService.getToken() || null);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -70,13 +52,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Bootstrap: validate stored token on mount ─────────────────────────────
   useEffect(() => {
-    const stored = getStoredToken();
+    const stored = TokenService.getToken();
     if (stored) {
       authApi.me()
         .then((res) => setUser(res.data.data ?? null))
         .catch(() => {
           // Token invalid — clear and let silent refresh interceptor handle 401
-          clearStoredToken();
+          TokenService.removeToken();
           setToken(null);
         })
         .finally(() => setLoading(false));
@@ -90,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleForcedLogout = () => {
       setUser(null);
       setToken(null);
-      clearStoredToken();
+      TokenService.removeToken();
       navigate('/login', { replace: true });
     };
     window.addEventListener('auth:logout', handleForcedLogout);
@@ -106,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (identifier: string, password: string, rememberMe = false) => {
     const res = await authApi.login({ identifier, password, rememberMe });
     const { user: u, token: t } = res.data.data!;
-    storeToken(t, rememberMe);
+    TokenService.setToken(t);
     setToken(t);
     setUser(u);
 
@@ -117,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const completeSocialLogin = async (incomingToken: string) => {
-    storeToken(incomingToken, true);
+    TokenService.setToken(incomingToken);
     setToken(incomingToken);
     const res = await authApi.me();
     const currentUser = res.data.data ?? null;
@@ -132,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterData) => {
     const res = await authApi.register(data);
     const { user: u, token: t } = res.data.data!;
-    storeToken(t, true);
+    TokenService.setToken(t);
     setToken(t);
     setUser(u);
     navigate('/onboarding', { replace: true });
@@ -141,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Logout ────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try { await authApi.logout(); } catch { /* ignore */ }
-    clearStoredToken();
+    TokenService.removeToken();
     setToken(null);
     setUser(null);
     navigate('/login', { replace: true });
