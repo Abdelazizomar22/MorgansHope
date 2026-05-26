@@ -14,7 +14,7 @@ import { SURVIVAL } from '../data/survival';
 import { EGYPT_CARDS } from '../data/eg-cards';
 import { FEATURES } from '../data/features';
 // Icons
-import { TriangleAlert, FileText, CloudUpload, BrainCircuit, Target } from 'lucide-react';
+import { HiExclamationTriangle, HiDocumentText, HiCloudArrowUp, HiCpuChip } from 'react-icons/hi2';
 import { DONUT_DATA } from '../data/donut';
 
 // Interface for language
@@ -224,7 +224,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	              </div>
 	
 	              <div className='bg-[var(--primar-light)]/60 border border-[var(--primary)] border-dashed text-[var(--text-main)] flex items-center gap-4' style={{ marginTop: 24, borderRadius: 14, padding: '16px 20px', position: 'relative', overflow: 'hidden' }}>
-	                <TriangleAlert color={'var(--primary)'} size={30} />
+	                <HiExclamationTriangle color={'var(--primary)'} size={30} />
 	                <p style={{ fontSize: 11, margin: 0, fontWeight: 600, lineHeight: 1.6, position: 'relative', zIndex: 1 }}>
 	                  {t('Stage I detection yields a 13× higher survival rate than Stage IV. Every scan is a chance for life.', 'اكتشاف المرحلة الأولى يحقق معدل بقاء أعلى بـ 13 مرة من الرابعة. كل فحص هو فرصة للحياة.')}
 	                </p>
@@ -279,7 +279,7 @@ export default function HomePage({ lang }: HomePageProps) {
             <div style={{ position: 'absolute', bottom: '-45%', left: '-5%', width: 160, height: 160, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
             <div style={{ flexShrink: 0, position: 'relative', margin: isMobile ? '0 auto' : '0' }}>
               <div style={{ width: 64, height: 64, background: 'rgba(255,255,255,0.1)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Target />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
               </div>
             </div>
 
@@ -315,9 +315,9 @@ export default function HomePage({ lang }: HomePageProps) {
 
 	            <MotionStaggerList staggerDelay={0.15} style={{  display: 'grid', gridTemplateColumns: isTablet ? '1fr' : 'repeat(3,1fr)', gap: 22 }}>
 	              {[
-	                { Icon: <CloudUpload size={30} />, title: t('Upload Scan', 'رفع الصورة'), desc: t('CT or X-Ray image (JPG/PNG/WebP, max 10MB)', 'صورة CT أو أشعة سينية (JPG/PNG/WebP، حتى 10MB)') },
-	                { Icon: <BrainCircuit size={30} />, title: t('AI Analysis', 'التحليل بالذكاء الاصطناعي'), desc: t('Advanced deep learning model analyzes your scans quickly', 'نموذج ذكاء اصطناعي متقدم يحلل الصور بسرعة') },
-	                { Icon: <FileText size={30} />, title: t('Get Report', 'استلام التقرير'), desc: t('PDF report with urgency level & hospital guidance', 'تقرير PDF مع مستوى الخطورة وإرشادات المستشفيات') },
+                { Icon: <HiCloudArrowUp size={30} />, title: t('Upload Scan', 'رفع الصورة'), desc: t('CT or X-Ray image (JPG/PNG/WebP, max 10MB)', 'صورة CT أو أشعة سينية (JPG/PNG/WebP، حتى 10MB)') },
+                { Icon: <HiCpuChip size={30} />, title: t('AI Analysis', 'التحليل بالذكاء الاصطناعي'), desc: t('Advanced deep learning model analyzes your scans quickly', 'نموذج ذكاء اصطناعي متقدم يحلل الصور بسرعة') },
+                { Icon: <HiDocumentText size={30} />, title: t('Get Report', 'استلام التقرير'), desc: t('PDF report with urgency level & hospital guidance', 'تقرير PDF مع مستوى الخطورة وإرشادات المستشفيات') },
 	              ].map((s, index) => {
 					  const CURRENT_IMAGE = CARDS_IMAGES[index];
 
