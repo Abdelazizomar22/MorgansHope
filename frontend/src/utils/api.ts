@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────────────────────
 import axios, { AxiosRequestConfig } from 'axios';
 import type { SafeUser, AnalysisResult, Hospital, City, UploadResponse, PaginatedResponse, ApiResponse } from '../types';
+import { TokenService } from '../services/tokenService';
 import { API_BASE_URL } from './env';
 
 const api = axios.create({
@@ -13,7 +14,7 @@ const api = axios.create({
 
 // ── Request interceptor: attach access token ──────────────────────────────────
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('medtech_token') || sessionStorage.getItem('medtech_token');
+  const token = TokenService.getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -60,9 +61,7 @@ api.interceptors.response.use(
       try {
         const { data } = await api.post<ApiResponse<{ token: string; user: SafeUser }>>('/auth/refresh');
         const newToken = data.data!.token;
-        const remember = localStorage.getItem('medtech_remember') === '1';
-        const storage = remember ? localStorage : sessionStorage;
-        storage.setItem('medtech_token', newToken);
+        TokenService.setToken(newToken);
         processQueue(null, newToken);
 
         original.headers = original.headers || {};
@@ -71,9 +70,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         // Refresh failed — truly expired, log out cleanly
-        localStorage.removeItem('medtech_token');
-        sessionStorage.removeItem('medtech_token');
-        localStorage.removeItem('medtech_remember');
+        TokenService.removeToken();
         window.dispatchEvent(new CustomEvent('auth:logout'));
         return Promise.reject(refreshError);
       } finally {

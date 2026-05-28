@@ -1,4 +1,4 @@
-import { Search, X } from 'lucide-react';
+import { HiMagnifyingGlass, HiXMark } from 'react-icons/hi2';
 import type { ReactNode } from 'react';
 import type { FilterOption, HospitalType } from '../types/hospital';
 
@@ -86,13 +86,13 @@ export default function HospitalFilters({
             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-[#1B4D3E] hover:text-[#1B4D3E]"
             aria-label="Close filters"
           >
-            <X className="h-4 w-4" />
+            <HiXMark className="h-4 w-4" />
           </button>
         )}
       </div>
 
       <div className="relative mb-5">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+        <HiMagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
         <input
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}

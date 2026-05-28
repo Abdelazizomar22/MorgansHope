@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Building2, SlidersHorizontal } from 'lucide-react';
+import { HiBuildingOffice, HiAdjustmentsHorizontal } from 'react-icons/hi2';
 import { useSearchParams } from 'react-router-dom';
 import HospitalCard from '../components/HospitalCard';
 import HospitalFilters from '../components/HospitalFilters';
@@ -245,7 +245,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
             onClick={() => setFiltersOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-[#1B4D3E] px-4 py-2 text-sm font-black text-white shadow-md"
           >
-            <SlidersHorizontal className="h-4 w-4" />
+            <HiAdjustmentsHorizontal className="h-4 w-4" />
             Filters
           </button>
           <p className="text-sm font-black text-slate-700">
@@ -330,7 +330,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
             ) : (
               <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#1B4D3E]/10 text-[#1B4D3E]">
-                  <Building2 className="h-7 w-7" />
+                  <HiBuildingOffice className="h-7 w-7" />
                 </div>
                 <p className="mt-4 text-sm font-black text-slate-800">No hospitals found matching your filters</p>
                 <button

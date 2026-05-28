@@ -1,11 +1,11 @@
-import type { UrgencyLevel } from "../types";
+import type { ComponentType } from "react";
 import {
-	CheckCircle2,
-	AlertCircle,
-	AlertTriangle,
-	XCircle,
-	LucideIcon,
-} from "lucide-react";
+	HiCheckCircle,
+	HiExclamationCircle,
+	HiExclamationTriangle,
+	HiXCircle,
+} from "react-icons/hi2";
+import type { UrgencyLevel } from "../types";
 
 export const URGENCY_CONFIG: Record<
 	UrgencyLevel,
@@ -15,7 +15,7 @@ export const URGENCY_CONFIG: Record<
 		border: string;
 		label_en: string;
 		label_ar: string;
-		Icon: LucideIcon;
+		Icon: ComponentType<{ size?: number; className?: string }>;
 	}
 > = {
 	none: {
@@ -24,7 +24,7 @@ export const URGENCY_CONFIG: Record<
 		border: "rgba(34,197,94,0.3)",
 		label_en: "No Findings",
 		label_ar: "لا توجد نتائج",
-		Icon: CheckCircle2,
+		Icon: HiCheckCircle,
 	},
 	low: {
 		color: "#5C8374",
@@ -32,7 +32,7 @@ export const URGENCY_CONFIG: Record<
 		border: "rgba(92,131,116,0.3)",
 		label_en: "Low Risk",
 		label_ar: "خطر منخفض",
-		Icon: AlertCircle,
+		Icon: HiExclamationCircle,
 	},
 	medium: {
 		color: "#fbbf24",
@@ -40,7 +40,7 @@ export const URGENCY_CONFIG: Record<
 		border: "rgba(251,191,36,0.3)",
 		label_en: "Medium Risk",
 		label_ar: "خطر متوسط",
-		Icon: AlertTriangle,
+		Icon: HiExclamationTriangle,
 	},
 	high: {
 		color: "#f87171",
@@ -48,7 +48,7 @@ export const URGENCY_CONFIG: Record<
 		border: "rgba(248,113,113,0.3)",
 		label_en: "High Risk",
 		label_ar: "خطر مرتفع",
-		Icon: AlertTriangle,
+		Icon: HiExclamationTriangle,
 	},
 	critical: {
 		color: "#ef4444",
@@ -56,6 +56,6 @@ export const URGENCY_CONFIG: Record<
 		border: "rgba(239,68,68,0.4)",
 		label_en: "Critical",
 		label_ar: "حالة حرجة",
-		Icon: XCircle,
+		Icon: HiXCircle,
 	},
 };

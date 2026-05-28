@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Lightbulb, Shield, Sparkles, Zap } from 'lucide-react';
+import { HiExclamationTriangle, HiShieldCheck, HiSparkles, HiBolt } from 'react-icons/hi2';
 import { analysisApi } from '../utils/api';
 import { MAX_WIDTH } from '../constants/layouts';
 
@@ -137,9 +137,9 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const STAGE_LABELS = ar ? STAGES.ar : STAGES.en;
 
   const sideCards = [
-    { Icon: Shield, title: t('Privacy First', 'خصوصيتك أولاً'), body: t('Your images are processed securely and never shared with third parties.', 'صورك تُعالج بأمان ولا تُشارك مع أطراف خارجية أبداً.'), source: '' },
-    { Icon: Sparkles, title: t('AI Models', 'نماذج الذكاء الاصطناعي'), body: t('Accurate and reliable AI algorithms specialized for Chest CT and X-Ray analysis.', 'خوارزميات ذكاء اصطناعي دقيقة ومخصصة لتحليل صور الصدر.'), source: '' },
-    { Icon: Zap, title: t('Fast Batch Processing', 'معالجة سريعة للدفعات'), body: t('Upload multiple scans at once. Results are processed quickly.', 'ارفع عدة صور دفعة واحدة. تتم المعالجة بسرعة وتظهر النتائج بشكل منظم.'), source: '' },
+    { Icon: HiShieldCheck, title: t('Privacy First', 'خصوصيتك أولاً'), body: t('Your images are processed securely and never shared with third parties.', 'صورك تُعالج بأمان ولا تُشارك مع أطراف خارجية أبداً.'), source: '' },
+    { Icon: HiSparkles, title: t('AI Models', 'نماذج الذكاء الاصطناعي'), body: t('Accurate and reliable AI algorithms specialized for Chest CT and X-Ray analysis.', 'خوارزميات ذكاء اصطناعي دقيقة ومخصصة لتحليل صور الصدر.'), source: '' },
+    { Icon: HiBolt, title: t('Fast Batch Processing', 'معالجة سريعة للدفعات'), body: t('Upload multiple scans at once. Results are processed quickly.', 'ارفع عدة صور دفعة واحدة. تتم المعالجة بسرعة وتظهر النتائج بشكل منظم.'), source: '' },
   ];
 
   return (
@@ -268,7 +268,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
             {/* Tips card */}
             <section>
               <div className="flex items-center gap-3">
-                <Lightbulb className="h-5 w-5 shrink-0 text-teal-700 drop-shadow-sm" />
+                <svg className="h-5 w-5 shrink-0 text-teal-700 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6" /><path d="M10 22h4" /><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" /></svg>
                 <div className="text-sm font-bold text-slate-900">{t('Tips for Best Results', 'نصائح لأفضل نتائج')}</div>
               </div>
               <div className="mt-2 space-y-2 pl-8">
@@ -288,7 +288,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
             {/* Warning */}
               <section className="mt-4 pt-2">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#b64235]" />
+                <HiExclamationTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#b64235]" />
               <div>
                 <div className="text-sm font-bold text-[#9f3329]">MEDICAL WARNING</div>
                 <div className="mt-2 text-xs leading-relaxed text-[#b64235]">

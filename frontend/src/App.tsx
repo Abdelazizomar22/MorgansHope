@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 // Guards
 import AuthGuard from './components/AuthGuard';
 import GuestGuard from './components/GuestGuard';
-import AdminGuard from './components/AdminGuard';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -53,52 +52,30 @@ function AnimatedRoutes({ lang, toggleLang }: { lang: 'en' | 'ar', toggleLang: (
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}>
         <Routes location={location} key={location.pathname}>
-          {/* ── Guest-only pages (redirect to / if already logged in) ── */}
-          <Route path="/login" element={<GuestGuard><LoginPage /></GuestGuard>} />
-          <Route path="/register" element={<GuestGuard><RegisterPage /></GuestGuard>} />
-
-          {/* ── Public pages (with Navbar, no auth needed) ── */}
+          {/* ── Public routes ── */}
+          <Route path="/" element={<Layout lang={lang} onLangToggle={toggleLang}><HomePage lang={lang} /></Layout>} />
           <Route path="/about" element={<Layout lang={lang} onLangToggle={toggleLang}><AboutPage lang={lang} /></Layout>} />
           <Route path="/contact" element={<Layout lang={lang} onLangToggle={toggleLang}><ContactPage lang={lang} /></Layout>} />
-          <Route path="/faqs" element={<Layout lang={lang} onLangToggle={toggleLang}><FAQsPage lang={lang} /></Layout>} />
           <Route path="/privacy" element={<Layout lang={lang} onLangToggle={toggleLang}><PrivacyPage lang={lang} /></Layout>} />
+          <Route path="/faqs" element={<Layout lang={lang} onLangToggle={toggleLang}><FAQsPage lang={lang} /></Layout>} />
 
-          {/* ── Protected pages ── */}
-          <Route path="/" element={
-            <Layout lang={lang} onLangToggle={toggleLang}>
-              <AuthGuard><HomePage lang={lang} /></AuthGuard>
-            </Layout>
-          } />
-          <Route path="/upload" element={
-            <Layout lang={lang} onLangToggle={toggleLang}>
-              <AuthGuard><UploadPage lang={lang} /></AuthGuard>
-            </Layout>
-          } />
-          <Route path="/results" element={
-            <Layout lang={lang} onLangToggle={toggleLang}>
-              <AuthGuard><ResultsPage lang={lang} /></AuthGuard>
-            </Layout>
-          } />
-          <Route path="/hospitals" element={
-            <Layout lang={lang} onLangToggle={toggleLang}>
-              <AuthGuard><HospitalsPage lang={lang} /></AuthGuard>
-            </Layout>
-          } />
-          <Route path="/chat" element={
-            <Layout lang={lang} onLangToggle={toggleLang}>
-              <AuthGuard><ChatBot lang={lang} /></AuthGuard>
-            </Layout>
-          } />
-          <Route path="/profile" element={
-            <Layout lang={lang} onLangToggle={toggleLang}>
-              <AuthGuard><ProfilePage lang={lang} /></AuthGuard>
-            </Layout>
-          } />
-          <Route path="/onboarding" element={
-            <AuthGuard><OnboardingPage /></AuthGuard>
-          } />
+          {/* ── Guest routes (redirect to / if logged in) ── */}
+          <Route element={<GuestGuard />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+          </Route>
 
-          {/* ── Admin-only example (AdminGuard drops in wherever needed) ── */}
+          {/* ── Protected routes with Layout (redirect to /login if not logged in) ── */}
+          <Route element={<AuthGuard />}>
+            <Route path="/upload" element={<Layout lang={lang} onLangToggle={toggleLang}><UploadPage lang={lang} /></Layout>} />
+            <Route path="/results" element={<Layout lang={lang} onLangToggle={toggleLang}><ResultsPage lang={lang} /></Layout>} />
+            <Route path="/chat" element={<Layout lang={lang} onLangToggle={toggleLang}><ChatBot lang={lang} /></Layout>} />
+            <Route path="/hospitals" element={<Layout lang={lang} onLangToggle={toggleLang}><HospitalsPage lang={lang} /></Layout>} />
+            <Route path="/profile" element={<Layout lang={lang} onLangToggle={toggleLang}><ProfilePage lang={lang} /></Layout>} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+          </Route>
+
+          {/* ── Admin-only example ── */}
           {/* <Route path="/admin" element={<AuthGuard><AdminGuard><AdminPage /></AdminGuard></AuthGuard>} /> */}
 
           {/* ── Redirects ── */}

@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 
 interface AboutPageProps { lang: 'en' | 'ar'; }
 
+import { HiMagnifyingGlass, HiGlobeAlt } from 'react-icons/hi2';
+
 // SVG Icon map for cards
 const CARD_ICONS: Record<string, JSX.Element> = {
-  target: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>,
-  shield: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+  target: <HiMagnifyingGlass size={28} style={{ color: 'white' }} />,
+  shield: <img src="/logo3.png" alt="" style={{ width: 28, height: 28, filter: 'brightness(0) invert(1)', objectFit: 'contain' }} />,
 };
 
 // Bronchial Tree SVG Watermark
@@ -95,7 +97,7 @@ export function AboutPage({ lang }: AboutPageProps) {
             <MotionHoverScale scaleAmount={1.02}>
               <div style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)', borderRadius: 24, padding: isMobile ? '24px' : '40px', marginBottom: 50, color: 'white', textAlign: 'center', boxShadow: '0 10px 30px var(--shadow-main)' }}>
                 <div style={{ marginBottom: 16, display: 'inline-flex', padding: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 14 }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>
+                  <HiGlobeAlt size={28} style={{ color: 'white' }} />
                 </div>
                 <h2 style={{ fontSize: isMobile ? 24 : 28, fontWeight: 900, color: 'white', marginBottom: 16 }}>
                   {t('Our Vision', 'رؤيتنا')}
