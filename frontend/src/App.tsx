@@ -4,12 +4,11 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AnimationProvider } from './context/AnimationContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { HiMagnifyingGlass } from 'react-icons/hi2';
 
 // Guards
 import AuthGuard from './components/AuthGuard';
 import GuestGuard from './components/GuestGuard';
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary, { NotFoundPage } from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -76,22 +75,11 @@ function AnimatedRoutes({ lang, toggleLang }: { lang: 'en' | 'ar', toggleLang: (
             <Route path="/onboarding" element={<OnboardingPage />} />
           </Route>
 
-          {/* ── Admin-only example ── */}
-          {/* <Route path="/admin" element={<AuthGuard><AdminGuard><AdminPage /></AdminGuard></AuthGuard>} /> */}
-
           {/* ── Redirects ── */}
           <Route path="/analysis" element={<Navigate to="/upload" replace />} />
 
           {/* ── 404 ── */}
-          <Route path="*" element={
-            <div style={{ textAlign: 'center', padding: '80px 40px', fontFamily: 'Sora, sans-serif' }}>
-              <div style={{ marginBottom: 16, color: '#9ca3af' }}>
-                <HiMagnifyingGlass size={72} className="opacity-60" />
-              </div>
-              <h1 style={{ fontSize: 34, fontWeight: 900, color: 'var(--primary-dark)', marginBottom: 10 }}>404 — Not Found</h1>
-              <a href="/" style={{ color: 'var(--primary)', fontWeight: 700 }}>← Home</a>
-            </div>
-          } />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </motion.div>
     </AnimatePresence>
