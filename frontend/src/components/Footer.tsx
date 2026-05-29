@@ -65,7 +65,7 @@ export default function Footer({ lang }: FooterProps) {
                         {/* Logo + Name — mirrors Navbar exactly */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                             <img
-                                src="/logo.png"
+                                src="/logo-v1.png"
                                 alt="Morgan's Hope Logo"
                                 className="theme-logo"
                                 style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }}

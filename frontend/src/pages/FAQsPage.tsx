@@ -1,26 +1,18 @@
 import { useState } from 'react';
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
+import { HiChevronDown } from 'react-icons/hi2';
 
 interface FAQsPageProps { lang: 'en' | 'ar'; }
 
 const ArrowIcon = ({ open }: { open: boolean }) => (
-    <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <HiChevronDown
+        size={20}
         style={{
             transition: 'transform 0.25s',
             transform: open ? 'rotate(180deg)' : 'rotate(0deg)'
         }}
-    >
-        <path d="m6 9 6 6 6-6" />
-    </svg>
+    />
 );
 
 export function FAQsPage({ lang }: FAQsPageProps) {
