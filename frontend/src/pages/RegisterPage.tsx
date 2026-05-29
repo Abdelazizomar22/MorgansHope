@@ -3,29 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 import { GOOGLE_AUTH_URL } from '../utils/env';
+import { HiUser, HiEnvelope, HiLockClosed, HiCheck, HiXMark, HiExclamationCircle, HiShieldCheck, HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
-const IconUser = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
+const IconUser = () => <HiUser size={17} />;
 
-const IconMail = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-    <polyline points="22,6 12,13 2,6" />
-  </svg>
-);
+const IconMail = () => <HiEnvelope size={17} />;
 
-const IconLock = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
+const IconLock = () => <HiLockClosed size={17} />;
 
 const IconEye = ({ open }: { open: boolean }) => open ? (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -39,33 +25,13 @@ const IconEye = ({ open }: { open: boolean }) => open ? (
   </svg>
 );
 
-const IconCheck = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
+const IconCheck = () => <HiCheck size={13} />;
 
-const IconXSm = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
+const IconXSm = () => <HiXMark size={13} />;
 
-const IconAlert = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-);
+const IconAlert = () => <HiExclamationCircle size={15} />;
 
-const IconXClose = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
+const IconXClose = () => <HiXMark size={18} />;
 
 // ─── Password strength ────────────────────────────────────────────────────────
 
@@ -98,9 +64,7 @@ function ConsentModal({ onAccept, onDecline, lang }: { onAccept: () => void; onD
 
         <div className="auth-modal-header">
           <div className="auth-modal-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
+            <HiShieldCheck size={28} />
           </div>
           <h2 className="auth-modal-title">
             {t('Medical Research Disclaimer', 'إخلاء المسؤولية الطبية')}
@@ -403,9 +367,7 @@ export default function RegisterPage() {
         {step === 3 && (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(22,163,74,0.1)', border: '2px solid rgba(22,163,74,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <HiCheck size={28} color="#16a34a" />
             </div>
             <h3 style={{ margin: '0 0 8px', color: 'var(--text-main)', fontSize: 20, fontWeight: 800 }}>
               {t('Account created!', 'تم إنشاء الحساب!')}
@@ -519,9 +481,7 @@ export default function RegisterPage() {
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}
             >
               {t('Continue', 'متابعة')}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                {ar ? <polyline points="15 18 9 12 15 6" /> : <polyline points="9 18 15 12 9 6" />}
-              </svg>
+              {ar ? <HiChevronLeft size={16} color="white" /> : <HiChevronRight size={16} color="white" />}
             </button>
 
             <div className="auth-divider">

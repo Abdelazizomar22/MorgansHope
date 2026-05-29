@@ -14,7 +14,7 @@ import { SURVIVAL } from '../data/survival';
 import { EGYPT_CARDS } from '../data/eg-cards';
 import { FEATURES } from '../data/features';
 // Icons
-import { HiExclamationTriangle, HiDocumentText, HiCloudArrowUp, HiCpuChip } from 'react-icons/hi2';
+import { HiExclamationTriangle, HiDocumentText, HiCloudArrowUp, HiCpuChip, HiInformationCircle, HiChartBarSquare, HiClock, HiMagnifyingGlass } from 'react-icons/hi2';
 import { DONUT_DATA } from '../data/donut';
 
 // Interface for language
@@ -101,7 +101,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.background = 'var(--primary-dark)'; }}
 	                    onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = 'var(--primary)'; }}
 	                  >
-	                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
+	                    <HiCloudArrowUp size={16} />
 	                    {t('Start Free Analysis', 'ابدأ التحليل مجاناً')}
 	                  </Link>
 	                </MotionHoverScale>
@@ -166,7 +166,7 @@ export default function HomePage({ lang }: HomePageProps) {
 
 				  <div style={{ textAlign: 'center', marginBottom: 50 }}>
 					<div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--card-bg)', border: '1px solid var(--card-border)', color: 'var(--primary)', borderRadius: 99, padding: '6px 18px', fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase' as const, marginBottom: 16, boxShadow: '0 2px 8px var(--shadow-main)' }}>
-					    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r=".5" fill="currentColor" /></svg>
+					    <HiInformationCircle size={12} />
 					    {t('Local Context — Real Statistics', 'الواقع المحلي — إحصائيات حقيقية')}
 					</div>
 					<h2 style={{ fontSize: 32, fontWeight: 900, color: 'var(--text-main)', margin: '0 0 10px', letterSpacing: -0.6 }}>{t('Lung Cancer in Egypt', 'سرطان الرئة في مصر')}</h2>
@@ -209,7 +209,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	            <div style={{ background: 'var(--card-bg)', borderRadius: 24, padding: '34px', border: '1px solid var(--card-border)', boxShadow: '0 4px 20px var(--shadow-main)' }}>
 	              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
 	                <div style={{ padding: 10, background: 'var(--bg-main)', borderRadius: 12, color: 'var(--primary)' }}>
-	                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+	                  <HiChartBarSquare size={20} />
 	                </div>
 	                <div>
 	                  <h3 style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 17, margin: 0 }}>{t('Survival Rate by Stage', 'معدل البقاء حسب المرحلة')}</h3>
@@ -236,7 +236,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	            <div style={{ background: 'var(--card-bg)', borderRadius: 24, padding: '34px', border: '1px solid var(--card-border)', boxShadow: '0 4px 20px var(--shadow-main)' }}>
 	              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
 	                <div style={{ padding: 10, background: 'var(--bg-main)', borderRadius: 12, color: 'var(--primary)' }}>
-	                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+	                  <HiClock size={20} />
 	                </div>
 	                <div>
 	                  <h3 style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 17, margin: 0 }}>{t('Global Histology', 'التوزيع النسيجي العالمي')}</h3>

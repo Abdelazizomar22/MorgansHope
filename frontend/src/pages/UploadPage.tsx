@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HiExclamationTriangle, HiShieldCheck, HiSparkles, HiBolt } from 'react-icons/hi2';
+import { HiExclamationTriangle, HiShieldCheck, HiSparkles, HiBolt, HiCloudArrowUp } from 'react-icons/hi2';
 import { analysisApi } from '../utils/api';
 import { MAX_WIDTH } from '../constants/layouts';
 
@@ -8,10 +8,7 @@ interface UploadPageProps { lang: 'en' | 'ar'; }
 type ScanType = 'xray' | 'ct';
 
 const IconCloudUpload = ({ size = 48 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
-    <polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" />
-    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-  </svg>
+  <HiCloudArrowUp size={size} className="opacity-40" style={{ color: 'var(--primary)' }} />
 );
 const IconXray = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -26,12 +23,7 @@ const IconCT = () => (
     <line x1="3" y1="12" x2="8" y2="12" /><line x1="16" y1="12" x2="21" y2="12" />
   </svg>
 );
-const IconAlertTriangle = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
+const IconAlertTriangle = () => <HiExclamationTriangle size={16} />;
 
 const STAGES = {
   en: ['Uploading secure image...', 'Sending to AI engine...', 'AI is analyzing lung tissues...', 'Generating final report...', 'Done!'],
@@ -150,7 +142,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
 	      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', color: 'white' }}>
 	          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
 	            <div style={{ padding: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
-	              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
+	              <HiCloudArrowUp size={20} color="white" />
 	            </div>
 	            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>{t('Upload & Analyze', 'رفع وتحليل')}</h1>
 	          </div>

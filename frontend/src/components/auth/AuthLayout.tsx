@@ -64,7 +64,7 @@ export function AuthLayout({
             <div className="auth-brand-inner" style={{ width: 'min(100%, 660px)', minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', transform: 'translateY(-68px)' }}>
               <div className="auth-brand-lockup" style={{ margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="auth-brand-logo-shell" style={{ width: 'min(420px, 82vw)', height: 'min(420px, 82vw)', margin: '0 auto 8px', display: 'grid', placeItems: 'center', transform: 'translateY(-8px)' }}>
-                  <img src="/logo.png" alt="Morgan's Hope Logo" className="theme-logo" style={{ width: 'min(396px, 76vw)', height: 'min(396px, 76vw)', objectFit: 'contain' }} />
+                  <img src="/logo-v1.png" alt="Morgan's Hope Logo" className="theme-logo" style={{ width: 'min(396px, 76vw)', height: 'min(396px, 76vw)', objectFit: 'contain' }} />
                 </div>
                 <div className="auth-brand-copy" style={{ maxWidth: 660, margin: '0 auto' }}>
                   <h1 className="auth-brand-title" style={{ fontSize: 'clamp(3.4rem, 6.6vw, 5.2rem)', letterSpacing: '-0.065em', lineHeight: 0.92, transform: 'translateY(-104px)' }}>
@@ -84,7 +84,7 @@ export function AuthLayout({
           // ── Features mode (Cohere-style) ──
           <div className="auth-features-inner">
             <div className="auth-features-logo-row">
-              <img src="/logo.png" alt="Morgan's Hope" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 14, background: 'rgba(255,255,255,0.1)', padding: 6 }} />
+              <img src="/logo-v1.png" alt="Morgan's Hope" style={{ width: 52, height: 52, objectFit: 'contain', borderRadius: 14, background: 'rgba(255,255,255,0.1)', padding: 6 }} />
               <div>
                 <div style={{ fontWeight: 900, fontSize: '1.15rem', letterSpacing: '-0.03em' }}>Morgan&apos;s Hope</div>
                 <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>{brandSlogan}</div>

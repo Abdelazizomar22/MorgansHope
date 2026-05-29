@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
+import { HiExclamationCircle } from 'react-icons/hi2';
 
 interface Props {
     children: ReactNode;
@@ -45,13 +46,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                     justifyContent: 'center', minHeight: '100vh',
                     background: '#f8f9fa', fontFamily: 'Sora, sans-serif', padding: '40px',
                 }}>
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
-                        stroke="#b91c1c" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-                        style={{ marginBottom: 24 }}>
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="12" y1="8" x2="12" y2="12" />
-                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
+                    <HiExclamationCircle size={64} color="#b91c1c" style={{ marginBottom: 24 }} />
                     <h1 style={{ fontSize: 28, fontWeight: 900, color: '#1f2937', marginBottom: 8 }}>
                         Something went wrong
                     </h1>

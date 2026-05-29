@@ -1,6 +1,7 @@
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
 import { useState, useEffect } from 'react';
+import { HiShieldCheck, HiExclamationCircle, HiLockClosed, HiUsers, HiDocumentText } from 'react-icons/hi2';
 
 interface PrivacyPageProps { lang: 'en' | 'ar'; }
 
@@ -17,7 +18,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
 
     const SECTIONS = [
         {
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+            icon: <HiShieldCheck size={22} />,
             title: t('Data We Collect', 'البيانات التي نجمعها'),
             content: t(
                 'We collect basic account information (name, email, optional phone) and medical scan images you choose to upload for analysis. We do not collect unnecessary personal data or track your behavior beyond what is needed to provide the service.',
@@ -25,7 +26,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>,
+            icon: <HiExclamationCircle size={22} />,
             title: t('How We Use Your Data', 'كيف نستخدم بياناتك'),
             content: t(
                 'Uploaded scans are used solely for AI analysis and generating your diagnostic report. We do not use your medical data for training our models without explicit consent. Your data is never sold, shared, or distributed to any third party.',
@@ -33,7 +34,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>,
+            icon: <HiLockClosed size={22} />,
             title: t('Data Security', 'أمان البيانات'),
             content: t(
                 'All data is transmitted over HTTPS with 256-bit SSL encryption. Authentication uses short-lived JWT access tokens (15 minutes) combined with HttpOnly, SameSite=Strict refresh cookies to prevent XSS and CSRF attacks. Passwords are hashed using bcrypt with 12 rounds.',
@@ -41,7 +42,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+            icon: <HiUsers size={22} />,
             title: t('Your Rights', 'حقوقك'),
             content: t(
                 'You can delete your analysis history at any time from your profile page. You can update your personal information or request complete account deletion by contacting us at info@morganshope.com. We will process your request within 7 business days.',
@@ -49,7 +50,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>,
+            icon: <HiDocumentText size={22} />,
             title: t('Medical Data Disclaimer', 'إخلاء المسؤولية عن البيانات الطبية'),
             content: t(
                 "Morgan's Hope is an experimental AI diagnostic assistance tool developed for educational and research purposes. Results are not a final medical diagnosis and should never replace consultation with a qualified physician. We are not liable for any medical decisions made based solely on our AI output.",
@@ -77,9 +78,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                             display: 'inline-flex', padding: '10px 12px',
                             background: 'rgba(255,255,255,0.12)', borderRadius: 12, marginBottom: 18,
                         }}>
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                            </svg>
+                            <HiShieldCheck size={28} color="white" />
                         </div>
                         <h1 style={{ fontSize: isMobile ? 32 : 36, fontWeight: 900, margin: '0 0 10px', letterSpacing: -0.5 }}>
                             {t('Privacy Policy', 'سياسة الخصوصية')}

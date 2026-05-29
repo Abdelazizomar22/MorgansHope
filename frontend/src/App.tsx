@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AnimationProvider } from './context/AnimationContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import { HiMagnifyingGlass } from 'react-icons/hi2';
 
 // Guards
 import AuthGuard from './components/AuthGuard';
@@ -85,10 +86,7 @@ function AnimatedRoutes({ lang, toggleLang }: { lang: 'en' | 'ar', toggleLang: (
           <Route path="*" element={
             <div style={{ textAlign: 'center', padding: '80px 40px', fontFamily: 'Sora, sans-serif' }}>
               <div style={{ marginBottom: 16, color: '#9ca3af' }}>
-                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
+                <HiMagnifyingGlass size={72} className="opacity-60" />
               </div>
               <h1 style={{ fontSize: 34, fontWeight: 900, color: 'var(--primary-dark)', marginBottom: 10 }}>404 — Not Found</h1>
               <a href="/" style={{ color: 'var(--primary)', fontWeight: 700 }}>← Home</a>
