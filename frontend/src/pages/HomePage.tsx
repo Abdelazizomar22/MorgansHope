@@ -140,7 +140,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	
 	        {/* ══ STATS BAR ═════════════════════════════════════════════════════ */}
 	        <section ref={statsRef} style={{ background: 'var(--card-bg)', boxShadow: '0 2px 12px var(--shadow-main)', padding: isMobile ? '20px 16px' : '28px 40px', borderBottom: '1px solid var(--card-border)' }}>
-	          <div className='group' style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: isMobile || isTablet ? 24 : 0 }}>
+	          <div style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: isMobile || isTablet ? 24 : 0 }}>
 	            {[
 	              { val: '99.86%', label: t('CT Scan Accuracy', 'دقة CT Scan') },
 	              { val: '6', label: t('Cancer Types', 'أنواع السرطان') },
@@ -148,7 +148,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	              { val: '1,200+', label: t('Scans Analyzed', 'فحص تم تحليله') },
 	              { val: '<4s', label: t('Avg Analysis Time', 'متوسط وقت التحليل') },
 	            ].map((s, i) => (
-	              <div className='group-hover:scale-104 group-hover:-translate-y-[3px] transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
+	              <div className='group *:group-hover:scale-125 *:group-hover:-translate-y-2 *:transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
 	                <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', lineHeight: 1.1, letterSpacing: -0.5 }}>{s.val}</div>
 	                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 5, fontWeight: 700 }}>{s.label}</div>
 	              </div>

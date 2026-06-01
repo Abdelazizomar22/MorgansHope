@@ -121,7 +121,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                   textDecoration: 'none',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 5,
+                  gap: 6,
                   padding: '0 11px',
                   height: 60,
                   fontSize: 13.5,
@@ -132,10 +132,8 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                   whiteSpace: 'nowrap',
                 }}
               >
-								<span style={{ opacity: active ? 1 : 0.6 }}>
-									<Icon icon={NavIcon} className='w-3.5 h-3.5' />
-                </span>
-                {ar ? arLabel : en}
+								<Icon style={{ opacity: active ? 1 : 0.7 }} icon={NavIcon} className='w-4 h-4' />
+                <p className='translate-y-0.5'>{ar ? arLabel : en}</p>
               </Link>
             );
           })}
