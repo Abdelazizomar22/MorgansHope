@@ -84,7 +84,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
       style={{
         background: 'var(--card-bg)',
         borderBottom: '1px solid var(--card-border)',
-        padding: isMobile ? '0 14px' : '0 32px',
+        padding: isMobile ? '0 14px 0 18px' : '0 32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
