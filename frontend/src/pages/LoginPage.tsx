@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 import { GOOGLE_AUTH_URL } from '../utils/env';
-import { HiEnvelope, HiLockClosed, HiExclamationCircle, HiShieldCheck, HiXMark } from 'react-icons/hi2';
+import { HiEnvelope, HiLockClosed, HiExclamationCircle, HiShieldCheck } from 'react-icons/hi2';
+import DisclaimerModal from '../components/DisclaimerModal';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -26,109 +27,6 @@ const IconEye = ({ open }: { open: boolean }) => open ? (
 const IconAlert = () => <HiExclamationCircle size={15} />;
 
 const IconShield = () => <HiShieldCheck size={15} />;
-
-const IconX = () => <HiXMark size={18} />;
-
-// ─── Consent Modal ────────────────────────────────────────────────────────────
-
-function ConsentModal({ onAccept, onDecline, lang }: { onAccept: () => void; onDecline: () => void; lang: 'en' | 'ar' }) {
-  const [agreed, setAgreed] = useState(false);
-  const ar = lang === 'ar';
-  const t = (en: string, arText: string) => ar ? arText : en;
-
-  return (
-    <div className="auth-modal-overlay" dir={ar ? 'rtl' : 'ltr'}>
-      <div className="auth-modal-card">
-        <button
-          onClick={onDecline}
-          className="auth-modal-close"
-          aria-label={t('Close', 'إغلاق')}
-        >
-          <IconX />
-        </button>
-
-        <div className="auth-modal-header">
-          <div className="auth-modal-icon">
-            <HiShieldCheck size={28} />
-          </div>
-          <h2 className="auth-modal-title">
-            {t('Medical Research Disclaimer', 'إخلاء المسؤولية الطبية')}
-          </h2>
-          <p className="auth-modal-subtitle">
-            {t('Please read and accept before continuing', 'يرجى القراءة والموافقة قبل المتابعة')}
-          </p>
-        </div>
-
-        <div className="auth-consent-scroll">
-          <div style={{ textAlign: 'center', marginBottom: 16, fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 700 }}>
-            {t('↓ Scroll to read all', '↓ قم بالتمرير لقراءة الكل')}
-          </div>
-          <p>{t(
-            "Morgan's Hope is an AI-assisted lung cancer research and support platform. By signing in, you acknowledge and agree to the following:",
-            "مورغان هوب هي منصة بحثية وداعمة للكشف المبكر عن سرطان الرئة بمساعدة الذكاء الاصطناعي. بتسجيل دخولك، فإنك تقر وتوافق على ما يلي:"
-          )}</p>
-
-          <ul>
-            <li>{t(
-              "This platform provides AI-powered preliminary analysis only and does not constitute medical advice.",
-              "تقدم هذه المنصة تحليلات أولية بمساعدة الذكاء الاصطناعي فقط ولا تشكل نصيحة طبية."
-            )}</li>
-            <li>{t(
-              "Results and insights from this tool must not replace consultation with a licensed physician or specialist.",
-              "يجب ألا تحل نتائج هذه الأداة محل استشارة الطبيب المرخص أو الاختصاصي."
-            )}</li>
-            <li>{t(
-              "Your medical data will be used exclusively for research purposes within this platform and kept strictly confidential.",
-              "ستُستخدم بياناتك الطبية حصريًا لأغراض البحث داخل هذه المنصة وتُحفظ سرية تامة."
-            )}</li>
-            <li>{t(
-              "In case of a medical emergency, please contact your local emergency services immediately.",
-              "في حالة الطوارئ الطبية، يرجى الاتصال بخدمات الطوارئ المحلية فورًا."
-            )}</li>
-            <li>{t(
-              "By proceeding, you consent to our Terms of Service and Privacy Policy.",
-              "بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية."
-            )}</li>
-          </ul>
-
-          <div className="auth-consent-warning" style={{ marginBottom: 20 }}>
-            <IconAlert />
-            <span>{t(
-              "This tool is not a substitute for professional medical care.",
-              "هذه الأداة ليست بديلاً عن الرعاية الطبية المتخصصة."
-            )}</span>
-          </div>
-
-          <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '12px 14px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 12 }}>
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              style={{ width: 18, height: 18, accentColor: 'var(--primary)', cursor: 'pointer' }}
-            />
-            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', userSelect: 'none' }}>
-              {t("I have read and understood the disclaimer.", "لقد قرأت إخلاء المسؤولية وأفهمه جيدًا.")}
-            </span>
-          </label>
-        </div>
-
-        <div className="auth-modal-actions">
-          <button className="auth-modal-decline" onClick={onDecline}>
-            {t('Decline', 'رفض')}
-          </button>
-          <button
-            className="auth-modal-accept"
-            onClick={agreed ? onAccept : undefined}
-            disabled={!agreed}
-            style={{ opacity: agreed ? 1 : 0.5, cursor: agreed ? 'pointer' : 'not-allowed' }}
-          >
-            {t('I Agree & Continue', 'أوافق وأتابع')}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -257,10 +155,12 @@ export default function LoginPage() {
   return (
     <>
       {showConsentModal && (
-        <ConsentModal
+        <DisclaimerModal
           lang={lang}
           onAccept={handleConsentAccept}
           onDecline={() => setShowConsentModal(false)}
+          subtitle={t('Please read and accept before continuing', 'يرجى القراءة والموافقة قبل المتابعة')}
+          acceptLabel={t('I Agree & Continue', 'أوافق وأتابع')}
         />
       )}
 
