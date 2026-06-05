@@ -325,10 +325,10 @@ export default function HomePage({ lang }: HomePageProps) {
 						  key={index}
 						  style={{ height: '100%', textAlign: 'center', background: 'var(--card-bg)', borderRadius: 16, padding: '20px 15px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
 	                  <div className='text-(--primary) flex items-center justify-center group-hover:-translate-y-[3px] group-hover:text-[var(--primary-dark)]'
-	                    style={{ backgroundImage: `url(${CURRENT_IMAGE})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 10, height: 130, marginBottom: 16, }}>
-							  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
-								  {s.Icon}
-							</div>
+				                 style={{ backgroundImage: `url(${CURRENT_IMAGE})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 10, height: 130, marginBottom: 16, }}>
+										  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
+											  {s.Icon}
+											</div>
 	                  </div>
 	                  <h3 className='group-hover:text-[var(--primary)] group-hover:-translate-y-[3px]' style={{ fontWeight: 800, margin: '0 0 10px', fontSize: 16 }}>{s.title}</h3>
 	                  <p className='text-[var(--text-muted)] group-hover:text-[var(--text-main)] group-hover:-translate-y-[3px]' style={{ fontSize: 13, lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
@@ -351,25 +351,21 @@ export default function HomePage({ lang }: HomePageProps) {
 	              const currentImage = CARDS_IMAGES[i%3];
 
 	              return (
-	                <div className='text-center' key={i} style={{ height: '100%', background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)', transition: 'box-shadow 0.2s, transform 0.2s' }}
-	                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 22px var(--shadow-hover)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-	                  onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-main)'; e.currentTarget.style.transform = 'none'; }}
-	                >
-						<div className='flex items-center justify-center' style={{
-						    backgroundImage: `url(${currentImage})`,
-						    backgroundSize: 'cover',
-							backgroundPosition: 'center',
-						    borderRadius: 10,
-						    height: 160,
-						    marginBottom: 16,
-						    color: 'var(--primary)',
-						}}>
-							  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
-								  <Icon size={29} />
-					 		  </div>
-						  </div>
-	                  <h4 style={{ fontWeight: 800, color: 'var(--text-main)', margin: '0 0 7px' }} className='text-md md:text-lg'>{ar ? title.ar : title.en}</h4>
-	                  <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.65, margin: 0 }}>{ar ? desc.ar : desc.en}</p>
+	                <div className='group-hover:scale-104 animate-card group *:transition-all *:duration-300 text-center' key={i} style={{ height: '100%', background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
+										<div className='text-(--primary) flex items-center justify-center group-hover:-translate-y-[3px] group-hover:text-[var(--primary-dark)]' style={{
+										    backgroundImage: `url(${currentImage})`,
+										    backgroundSize: 'cover',
+												backgroundPosition: 'center',
+										    borderRadius: 10,
+										    height: 160,
+										    marginBottom: 16,
+										}}>
+										  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
+											  <Icon size={29} />
+								 		  </div>
+								  	</div>
+	                  <h3 className='group-hover:text-[var(--primary)] group-hover:-translate-y-[3px]' style={{ fontWeight: 800, margin: '0 0 7px', fontSize: isMobile ? 15 : 17 }}>{ar ? title.ar : title.en}</h3>
+	                  <p className='text-[var(--text-muted)] group-hover:text-[var(--text-main)] group-hover:-translate-y-[3px]' style={{ fontSize: 13, lineHeight: 1.65, margin: 0 }}>{ar ? desc.ar : desc.en}</p>
 				    </div>
 	              )
               })}
