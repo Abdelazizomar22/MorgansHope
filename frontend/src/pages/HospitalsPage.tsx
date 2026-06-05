@@ -3,7 +3,7 @@ import { HiBuildingOffice, HiAdjustmentsHorizontal } from 'react-icons/hi2';
 import { useSearchParams } from 'react-router-dom';
 import HospitalCard from '../components/HospitalCard';
 import HospitalFilters from '../components/HospitalFilters';
-import { REAL_HOSPITALS } from '../data/hospitals';
+import { hospitalsApi } from '../utils/api';
 import type { FilterOption, Hospital, HospitalType } from '../types/hospital';
 
 interface HospitalsPageProps {
@@ -52,15 +52,14 @@ const matchesSearch = (hospital: Hospital, search: string, ar: boolean) => {
   const query = normalize(search);
   if (!query) return true;
 
-  return [
-    ar ? hospital.hospitalNameAr : hospital.hospitalName,
+  const searchValues: string[] = [
+    ar ? hospital.hospitalNameAr ?? '' : hospital.hospitalName,
     hospital.hospitalName,
     hospital.city,
     hospital.specialization,
     ...hospital.services,
-  ]
-    .map(normalize)
-    .some((value) => value.includes(query));
+  ];
+  return searchValues.map(normalize).some((value) => value.includes(query));
 };
 
 const getOptionCount = (
@@ -112,6 +111,35 @@ function SkeletonCards() {
   );
 }
 
+function transformHospital(apiHospital: Record<string, any>): Hospital {
+  return {
+    id: apiHospital.id,
+    hospitalName: apiHospital.hospitalName,
+    hospitalNameAr: apiHospital.hospitalNameAr,
+    specialization: apiHospital.specialization,
+    specializationAr: apiHospital.specializationAr,
+    city: apiHospital.cityName || apiHospital.city?.cityName || '',
+    cityAr: apiHospital.cityNameAr,
+    address: apiHospital.address,
+    addressAr: apiHospital.addressAr,
+    phone: apiHospital.phone,
+    rating: apiHospital.rating,
+    totalReviews: apiHospital.totalReviews,
+    about: apiHospital.about,
+    aboutAr: apiHospital.aboutAr,
+    website: apiHospital.website,
+    bookingUrl: apiHospital.bookingUrl,
+    googleMaps: apiHospital.googleMaps,
+    coordinates: { lat: apiHospital.latitude, lng: apiHospital.longitude },
+    beds: apiHospital.beds,
+    established: apiHospital.establishedYear?.toString(),
+    type: (apiHospital.type === 'Gov' ? 'Government' : 'Private') as HospitalType,
+    services: apiHospital.services || apiHospital.expertise || [],
+    badge: apiHospital.badge,
+    badgeColor: apiHospital.badgeColor,
+  };
+}
+
 export default function HospitalsPage({ lang }: HospitalsPageProps) {
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => (ar ? arText : en);
@@ -127,6 +155,8 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const filtersState = useMemo(
     () => ({ search, selectedCities, selectedTypes, selectedSpecializations }),
@@ -134,8 +164,20 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
   );
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 250);
-    return () => window.clearTimeout(timer);
+    let cancelled = false;
+    setLoading(true);
+    hospitalsApi.getAll({ limit: 50 })
+      .then(({ data }) => {
+        if (cancelled) return;
+        setHospitals(data.data.map(transformHospital));
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError('Failed to load hospitals');
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -151,42 +193,42 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
     setSearchParams(params, { replace: true });
   }, [search, selectedCities, selectedTypes, selectedSpecializations, setSearchParams]);
 
-  const allCities = useMemo(() => Array.from(new Set(REAL_HOSPITALS.map((hospital) => hospital.city))), []);
+  const allCities = useMemo(() => Array.from(new Set(hospitals.map((hospital) => hospital.city))), [hospitals]);
   const allSpecializations = useMemo(
-    () => Array.from(new Set(REAL_HOSPITALS.flatMap((hospital) => [hospital.specialization, ...hospital.services]))).sort(),
-    [],
+    () => Array.from(new Set(hospitals.flatMap((hospital) => [hospital.specialization, ...hospital.services]))).sort(),
+    [hospitals],
   );
 
   const filtered = useMemo(
     () =>
-      REAL_HOSPITALS.filter(
+      hospitals.filter(
         (hospital) =>
           matchesSearch(hospital, search, ar) &&
           (!selectedCities.length || selectedCities.includes(hospital.city)) &&
           (!selectedTypes.length || selectedTypes.includes(hospital.type as HospitalType)) &&
           includesSpecialization(hospital, selectedSpecializations),
       ),
-    [ar, search, selectedCities, selectedTypes, selectedSpecializations],
+    [ar, search, selectedCities, selectedTypes, selectedSpecializations, hospitals],
   );
 
   const cityOptions = useMemo(() => {
-    const base = getOptionCount(REAL_HOSPITALS, filtersState, ar, 'city');
+    const base = getOptionCount(hospitals, filtersState, ar, 'city');
     const options = allCities
       .map((city) => toFilterOption(city, city, base.filter((hospital) => hospital.city === city).length))
       .filter((option) => option.count > 0);
 
     return [toFilterOption('All Cities', 'All Cities', base.length), ...options];
-  }, [allCities, ar, filtersState]);
+  }, [allCities, ar, filtersState, hospitals]);
 
   const typeOptions = useMemo(() => {
-    const base = getOptionCount(REAL_HOSPITALS, filtersState, ar, 'type');
+    const base = getOptionCount(hospitals, filtersState, ar, 'type');
     return TYPE_OPTIONS.map((type) =>
       toFilterOption(type.label, type.value, base.filter((hospital) => hospital.type === type.value).length),
     ).filter((option) => option.count > 0);
-  }, [ar, filtersState]);
+  }, [ar, filtersState, hospitals]);
 
   const specializationOptions = useMemo(() => {
-    const base = getOptionCount(REAL_HOSPITALS, filtersState, ar, 'specialization');
+    const base = getOptionCount(hospitals, filtersState, ar, 'specialization');
     return allSpecializations
       .map((specialization) =>
         toFilterOption(
@@ -196,7 +238,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
         ),
       )
       .filter((option) => option.count > 0);
-  }, [allSpecializations, ar, filtersState]);
+  }, [allSpecializations, ar, filtersState, hospitals]);
 
   const hasActiveFilters =
     Boolean(search.trim()) || selectedCities.length > 0 || selectedTypes.length > 0 || selectedSpecializations.length > 0;
@@ -315,6 +357,10 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
 
             {loading ? (
               <SkeletonCards />
+            ) : error ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+                <p className="text-sm font-black text-slate-800">{error}</p>
+              </div>
             ) : filtered.length > 0 ? (
               <div className="grid gap-5 md:grid-cols-2 items-stretch">
                 {filtered.map((hospital) => (
