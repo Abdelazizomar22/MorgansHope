@@ -1,8 +1,7 @@
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionHoverScale } from '../components/animations/MotionHoverScale';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
-import { useState, useEffect } from 'react';
-import { HiShieldCheck, HiExclamationCircle, HiLockClosed, HiUsers, HiDocumentText } from 'react-icons/hi2';
+import { useState, useEffect, useRef } from 'react';
 
 interface PrivacyPageProps { lang: 'en' | 'ar'; }
 
@@ -11,15 +10,40 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
     const t = (en: string, arText: string) => ar ? arText : en;
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [activeSection, setActiveSection] = useState(0);
+    const contentRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        const container = contentRef.current;
+        if (!container) return;
+
+        const sectionEls = container.querySelectorAll<HTMLElement>('[data-section-index]');
+        if (!sectionEls.length) return;
+
+        const updateActiveSection = () => {
+            let current = 0;
+            sectionEls.forEach((el, i) => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= 150) {
+                    current = i;
+                }
+            });
+            setActiveSection(current);
+        };
+
+        window.addEventListener('scroll', updateActiveSection, { passive: true });
+        updateActiveSection();
+        return () => window.removeEventListener('scroll', updateActiveSection);
+    }, []);
+
     const SECTIONS = [
         {
-            icon: <HiShieldCheck size={22} />,
             title: t('Data We Collect', 'البيانات التي نجمعها'),
             content: t(
                 'We collect basic account information (name, email, optional phone) and medical scan images you choose to upload for analysis. We do not collect unnecessary personal data or track your behavior beyond what is needed to provide the service.',
@@ -27,7 +51,6 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <HiExclamationCircle size={22} />,
             title: t('How We Use Your Data', 'كيف نستخدم بياناتك'),
             content: t(
                 'Uploaded scans are used solely for AI analysis and generating your diagnostic report. We do not use your medical data for training our models without explicit consent. Your data is never sold, shared, or distributed to any third party.',
@@ -35,7 +58,6 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <HiLockClosed size={22} />,
             title: t('Data Security', 'أمان البيانات'),
             content: t(
                 'All data is transmitted over HTTPS with 256-bit SSL encryption. Authentication uses short-lived JWT access tokens (15 minutes) combined with HttpOnly, SameSite=Strict refresh cookies to prevent XSS and CSRF attacks. Passwords are hashed using bcrypt with 12 rounds.',
@@ -43,7 +65,6 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <HiUsers size={22} />,
             title: t('Your Rights', 'حقوقك'),
             content: t(
                 'You can delete your analysis history at any time from your profile page. You can update your personal information or request complete account deletion by contacting us at morganshope40@gmail.com. We will process your request within 7 business days.',
@@ -51,7 +72,6 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
             ),
         },
         {
-            icon: <HiDocumentText size={22} />,
             title: t('Medical Data Disclaimer', 'إخلاء المسؤولية عن البيانات الطبية'),
             content: t(
                 "Morgan's Hope is an experimental AI diagnostic assistance tool developed for educational and research purposes. Results are not a final medical diagnosis and should never replace consultation with a qualified physician. We are not liable for any medical decisions made based solely on our AI output.",
@@ -76,136 +96,152 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: isMobile ? '1fr' : '0.85fr 1.35fr',
+                            gridTemplateColumns: isMobile ? '1fr' : '220px 1fr',
                             gap: isMobile ? 32 : 48,
                             alignItems: 'start',
                         }}
                     >
-                        <MotionFade direction="up" delay={0.05}>
-                            <aside style={{ paddingTop: 8, textAlign: ar ? 'right' : 'left' }}>
+                        {/* Left — Table of Contents Sidebar */}
+                        {!isMobile && (
+                            <aside
+                                style={{
+                                    position: 'sticky',
+                                    top: 100,
+                                    paddingTop: 12,
+                                }}
+                            >
                                 <div
                                     style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: 8,
-                                        padding: '8px 14px',
-                                        borderRadius: 999,
-                                        background: 'color-mix(in srgb, var(--primary) 10%, var(--card-bg))',
-                                        color: 'var(--primary-dark)',
-                                        fontSize: 12,
+                                        fontSize: 11,
                                         fontWeight: 800,
-                                        letterSpacing: 0.5,
+                                        letterSpacing: 1.2,
                                         textTransform: 'uppercase',
+                                        color: 'var(--text-muted)',
                                         marginBottom: 16,
                                     }}
                                 >
-                                    <HiShieldCheck size={16} />
-                                    {t("Morgan's Hope", "Morgan's Hope")}
+                                    {t('Table of contents', 'محتويات')}
                                 </div>
-                                <h1
+                                <nav
                                     style={{
-                                        maxWidth: 520,
-                                        fontSize: isMobile ? 32 : 48,
-                                        fontWeight: 800,
-                                        lineHeight: 1.05,
-                                        letterSpacing: '-0.04em',
-                                        color: 'var(--primary-dark)',
-                                        margin: 0,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 4,
                                     }}
                                 >
-                                    {t('Privacy Policy', 'سياسة الخصوصية')}
-                                </h1>
-                                <p
-                                    style={{
-                                        marginTop: 16,
-                                        maxWidth: 450,
-                                        fontSize: 16,
-                                        lineHeight: 1.85,
-                                        color: 'var(--text-muted)',
-                                    }}
-                                >
-                                    {t("Your privacy is fundamental to everything we build.", "خصوصيتك أساس كل ما نبنيه.")}
-                                </p>
-                                <span
-                                    style={{
-                                        display: 'inline-block',
-                                        marginTop: 12,
-                                        fontSize: 13,
-                                        color: 'var(--text-muted)',
-                                        background: 'color-mix(in srgb, var(--primary) 6%, var(--card-bg))',
-                                        padding: '6px 14px',
-                                        borderRadius: 999,
-                                        fontWeight: 600,
-                                    }}
-                                >
-                                    {t('Last updated: March 2026', 'آخر تحديث: مارس 2026')}
-                                </span>
+                                    {SECTIONS.map((sec, i) => {
+                                        const isActive = i === activeSection;
+                                        return (
+                                            <a
+                                                key={i}
+                                                href={`#section-${i}`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setActiveSection(i);
+                                                    document.getElementById(`section-${i}`)?.scrollIntoView({ behavior: 'smooth' });
+                                                }}
+                                                style={{
+                                                    textDecoration: 'none',
+                                                    fontSize: 13,
+                                                    fontWeight: isActive ? 700 : 500,
+                                                    color: isActive ? 'var(--primary)' : 'var(--text-muted)',
+                                                    padding: '6px 0 6px 12px',
+                                                    borderLeft: isActive ? `3px solid var(--primary)` : '3px solid transparent',
+                                                    transition: 'color 0.2s, border-color 0.2s, font-weight 0.2s',
+                                                    lineHeight: 1.4,
+                                                }}
+                                            >
+                                                {sec.title}
+                                            </a>
+                                        );
+                                    })}
+                                </nav>
                             </aside>
-                        </MotionFade>
+                        )}
 
-                        <section>
+                        {/* Right — Main Content */}
+                        <main ref={contentRef}>
+                            <h1
+                                style={{
+                                    fontSize: isMobile ? 32 : 44,
+                                    fontWeight: 800,
+                                    lineHeight: 1.1,
+                                    letterSpacing: '-0.03em',
+                                    color: 'var(--primary-dark)',
+                                    margin: '0 0 8px',
+                                }}
+                            >
+                                {t('Privacy Policy', 'سياسة الخصوصية')}
+                            </h1>
+                            <p
+                                style={{
+                                    fontSize: 16,
+                                    lineHeight: 1.7,
+                                    color: 'var(--text-muted)',
+                                    margin: '0 0 4px',
+                                    maxWidth: 600,
+                                }}
+                            >
+                                {t("Your privacy is fundamental to everything we build.", "خصوصيتك أساس كل ما نبنيه.")}
+                            </p>
+                            <span
+                                style={{
+                                    display: 'inline-block',
+                                    fontSize: 13,
+                                    color: 'var(--text-muted-alt)',
+                                    fontWeight: 600,
+                                    marginBottom: 28,
+                                }}
+                            >
+                                {t('Last updated: March 2026', 'آخر تحديث: مارس 2026')}
+                            </span>
+
                             <div
                                 style={{
                                     height: 1,
                                     width: '100%',
                                     background: 'linear-gradient(to right, color-mix(in srgb, var(--primary) 20%, transparent), color-mix(in srgb, var(--primary) 50%, transparent), color-mix(in srgb, var(--primary) 10%, transparent))',
+                                    marginBottom: 32,
                                 }}
                             />
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 24 }}>
-                                {SECTIONS.map((sec, i) => (
-                                    <MotionFade key={i} direction="up" delay={i * 0.06}>
-                                        <div
-                                            style={{
-                                                background: 'var(--card-bg)',
-                                                border: '1px solid var(--card-border)',
-                                                borderRadius: 16,
-                                                padding: isMobile ? '20px' : '24px 28px',
-                                                boxShadow: '0 2px 12px var(--shadow-main)',
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                                                <div
-                                                    style={{
-                                                        padding: 10,
-                                                        background: 'rgba(var(--primary-rgb), 0.08)',
-                                                        borderRadius: 10,
-                                                        color: 'var(--primary)',
-                                                        flexShrink: 0,
-                                                    }}
-                                                >
-                                                    {sec.icon}
-                                                </div>
-                                                <h2
-                                                    style={{
-                                                        fontSize: 17,
-                                                        fontWeight: 800,
-                                                        color: 'var(--text-main)',
-                                                        margin: 0,
-                                                    }}
-                                                >
-                                                    {sec.title}
-                                                </h2>
-                                            </div>
-                                            <p
-                                                style={{
-                                                    fontSize: 14,
-                                                    color: 'var(--text-muted)',
-                                                    lineHeight: 1.85,
-                                                    margin: 0,
-                                                }}
-                                            >
-                                                {sec.content}
-                                            </p>
-                                        </div>
-                                    </MotionFade>
-                                ))}
-                            </div>
+                            {SECTIONS.map((sec, i) => (
+                                <section
+                                    key={i}
+                                    id={`section-${i}`}
+                                    data-section-index={i}
+                                    style={{
+                                        marginBottom: 32,
+                                        scrollMarginTop: 100,
+                                    }}
+                                >
+                                    <h2
+                                        style={{
+                                            fontSize: 20,
+                                            fontWeight: 700,
+                                            color: 'var(--text-main)',
+                                            margin: '0 0 12px',
+                                        }}
+                                    >
+                                        {sec.title}
+                                    </h2>
+                                    <p
+                                        style={{
+                                            fontSize: 16,
+                                            lineHeight: 1.7,
+                                            color: 'var(--text-muted)',
+                                            margin: 0,
+                                        }}
+                                    >
+                                        {sec.content}
+                                    </p>
+                                </section>
+                            ))}
 
                             <MotionFade direction="up" delay={0.45}>
                                 <div
                                     style={{
-                                        marginTop: 32,
+                                        marginTop: 48,
                                         padding: '22px 28px',
                                         background: 'var(--card-bg)',
                                         borderRadius: 14,
@@ -246,10 +282,23 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                                     </MotionHoverScale>
                                 </div>
                             </MotionFade>
-                        </section>
+                        </main>
                     </div>
                 </div>
             </div>
+
+            <style>{`
+                html { scroll-behavior: smooth; }
+                blockquote {
+                    margin: 16px 0;
+                    padding: 8px 16px;
+                    border-left: 4px solid var(--primary);
+                    font-style: italic;
+                    color: var(--text-muted);
+                    background: color-mix(in srgb, var(--primary) 4%, var(--bg-main));
+                    border-radius: 0 8px 8px 0;
+                }
+            `}</style>
         </MotionPageTransition>
     );
 }
