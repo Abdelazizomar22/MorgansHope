@@ -242,8 +242,8 @@ export default function RegisterPage() {
           lang={lang}
           onAccept={handleConsentAccept}
           onDecline={() => setShowConsentModal(false)}
-          subtitle={t('Step 2 of 3 — Read carefully before proceeding', 'الخطوة 2 من 3 — اقرأ بعناية قبل المتابعة')}
-          acceptLabel={t('I Agree — Create Account', 'أوافق — إنشاء الحساب')}
+          subtitle={t('Step 2 of 3 - Read carefully before proceeding', 'الخطوة 2 من 3 — اقرأ بعناية قبل المتابعة')}
+          acceptLabel={t('I Understand and Accept', 'أوافق — إنشاء الحساب')}
         />
       )}
 
