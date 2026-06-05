@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 interface AboutPageProps { lang: 'en' | 'ar'; }
 
 import { HiMagnifyingGlass, HiGlobeAlt } from 'react-icons/hi2';
+import DeerLogo from '../components/ui/deer-logo';
 
 // SVG Icon map for cards
 const CARD_ICONS: Record<string, JSX.Element> = {
@@ -48,6 +49,7 @@ export function AboutPage({ lang }: AboutPageProps) {
         <section className='border-b-4 border-(--primary) section-bg-image page-header-padding'
         	style={{ backgroundPosition: 'center', color: 'white', padding: isMobile ? '40px 20px' : '70px 40px', textAlign: 'center', position: 'relative', zIndex: 1, overflow: 'hidden' }}>
           <MotionFade direction="up" delay={0.1}>
+          	<DeerLogo className='h-48 w-48 text-[#eee]' />
             <h1 style={{ fontSize: isMobile ? 32 : 38, fontWeight: 900, margin: '0 0 14px', position: 'relative', zIndex: 2 }}>Morgan's <span style={{ opacity: 0.9 }}>Hope</span></h1>
             <p style={{ fontSize: isMobile ? 15 : 17, fontStyle: 'italic', opacity: 0.95, margin: '0 0 16px', position: 'relative', zIndex: 2 }}>
               {t('"Legacy of Care, Vision of Hope."', '"إرث من الرعاية، ورؤية من الأمل."')}
