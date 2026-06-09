@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiExclamationTriangle, HiShieldCheck, HiSparkles, HiBolt, HiCloudArrowUp } from 'react-icons/hi2';
+import { WarningGraphic } from '../components/ui/warning-graphic';
 import { analysisApi } from '../utils/api';
 import { MAX_WIDTH } from '../constants/layouts';
 
@@ -10,19 +11,7 @@ type ScanType = 'xray' | 'ct';
 const IconCloudUpload = ({ size = 48 }: { size?: number }) => (
   <HiCloudArrowUp size={size} className="opacity-40" style={{ color: 'var(--primary)' }} />
 );
-const IconXray = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="12" y1="8" x2="12" y2="16" />
-    <path d="M8 12h8" /><circle cx="12" cy="12" r="1" fill="currentColor" />
-  </svg>
-);
-const IconCT = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="4" />
-    <line x1="12" y1="3" x2="12" y2="8" /><line x1="12" y1="16" x2="12" y2="21" />
-    <line x1="3" y1="12" x2="8" y2="12" /><line x1="16" y1="12" x2="21" y2="12" />
-  </svg>
-);
+
 const IconAlertTriangle = () => <HiExclamationTriangle size={16} />;
 
 const STAGES = {
@@ -51,8 +40,17 @@ export default function UploadPage({ lang }: UploadPageProps) {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+	}, []);
+  
+  const IconXray = () => {
+    const selected = scanType === 'xray';
+    return <img src={`/images/icons/x-ray${selected ? '-selected' : ''}.png`} alt="X-Ray" width={isMobile ? 25 : 35} height={isMobile ? 25 : 35} style={{ objectFit: 'contain' }} />;
+  };
+  const IconCT = () => {
+    const selected = scanType === 'ct';
+    return <img src={`/images/icons/ct-scan${selected ? '-selected' : ''}.png`} alt="CT Scan" width={isMobile ? 25 : 35} height={isMobile ? 25 : 35} style={{ objectFit: 'contain' }} />;
+  };
+  
   const handleFiles = (newFiles: FileList | null) => {
     if (!newFiles) return;
     const validFiles: File[] = [];
@@ -152,13 +150,13 @@ export default function UploadPage({ lang }: UploadPageProps) {
 	      </div>
       </div>
 
-      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: isMobile ? '20px' : '32px 24px' }}>
-        <div className="flex items-start gap-6" style={{ flexDirection: isMobile ? 'column' : 'row' }}>
+      <div style={{ maxWidth: MAX_WIDTH, margin: '0 auto', padding: isMobile ? '30px 25px' : '50px 0' }}>
+        <div className="flex gap-6 items-center md:items-start flex-col md:flex-row">
 
           {/* LEFT: Upload area */}
           <div className="flex flex-col" style={{ flex: isMobile ? undefined : '1 1 0%' }}>
             {/* Scan type toggle */}
-            <div style={{ width: 264, maxWidth: '100%', height: 52, background: '#ffffff', borderRadius: 12, padding: 6, display: 'inline-flex', gap: 8, marginBottom: 20, boxShadow: '0 4px 14px rgba(15, 23, 42, 0.10)', border: '1px solid #dbe6e4' }}>
+            <div style={{ maxWidth: '100%', height: 52, background: '#ffffff', borderRadius: 12, padding: 6, display: 'inline-flex', gap: 8, marginBottom: 20, boxShadow: '0 4px 14px rgba(15, 23, 42, 0.10)', border: '1px solid #dbe6e4' }}>
               {([
                 { type: 'xray' as ScanType, Icon: IconXray, label: t('X-Ray', 'أشعة سينية') },
                 { type: 'ct' as ScanType, Icon: IconCT, label: t('CT Scan', 'CT Scan') },
@@ -231,21 +229,34 @@ export default function UploadPage({ lang }: UploadPageProps) {
                 ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" /></path></svg>{t('Analyzing...', 'جاري التحليل...')}</>
                 : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>{t(`Analyze ${files.length > 1 ? files.length + ' Scans' : 'Scan'}`, `تحليل ${files.length > 1 ? files.length + ' صور' : 'الصورة'}`)}</>}
             </button>
+
+            {/* Warning */}
+            <section className="mt-4 p-3 mb-5 md:mb-0 border border-border border-dashed rounded-2xl">
+              <div className="flex items-center md:items-start gap-3">
+                <WarningGraphic width={100} height={50} enableAnimations={true}
+                        animationSpeed={1.5} color="#b64235" className="mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-sm font-bold text-[#9f3329]">MEDICAL WARNING</div>
+                  <div className="mt-2 text-xs leading-relaxed text-[#b64235]">
+                    AI screening support only. Do not make treatment decisions without consulting a qualified physician.
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
 
           {/* RIGHT: Info sidebar */}
           <aside
-            className="relative h-auto max-w-sm overflow-hidden rounded-2xl border border-teal-100 shadow-sm"
+            className="relative h-auto overflow-hidden rounded-2xl border border-teal-100 shadow-sm"
             style={{
-              width: isMobile ? '100%' : 320,
-              backgroundImage: "url('/upload card.png')",
+							width: isMobile ? '100%' : 320,
+        			backgroundImage: "url('/upload card.png')",
               backgroundPosition: 'center',
-              backgroundSize: '100% 100%',
               backgroundRepeat: 'no-repeat',
             }}
           >
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-white/5" />
-            <div className="relative z-10 p-6">
+						<div className="relative z-10 p-4">
               <div className="space-y-4">
             {sideCards.map(({ Icon, title, body }, i) => (
               <section key={i} className="border-b border-teal-200/40 pb-4">
@@ -277,18 +288,6 @@ export default function UploadPage({ lang }: UploadPageProps) {
               </div>
             </section>
 
-            {/* Warning */}
-              <section className="mt-4 pt-2">
-              <div className="flex items-start gap-3">
-                <HiExclamationTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#b64235]" />
-              <div>
-                <div className="text-sm font-bold text-[#9f3329]">MEDICAL WARNING</div>
-                <div className="mt-2 text-xs leading-relaxed text-[#b64235]">
-                  AI screening support only. Do not make treatment decisions without consulting a qualified physician.
-                </div>
-              </div>
-              </div>
-              </section>
             </div>
             </div>
           </aside>
