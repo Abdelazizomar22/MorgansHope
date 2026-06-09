@@ -133,7 +133,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
   ];
 
   return (
-    <div dir={ar ? 'rtl' : 'ltr'} className="overflow-x-hidden" style={{ minHeight: '100vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
+    <div dir={ar ? 'rtl' : 'ltr'} className="overflow-x-hidden" style={{ minHeight: '90vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
       <div className='section-bg-image page-header-padding'>
