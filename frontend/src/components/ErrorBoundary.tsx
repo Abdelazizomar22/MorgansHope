@@ -14,7 +14,7 @@ function NotFoundFooter() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
                         <img
-                            src="/logo-v1.png"
+                            src="/logo-v2.png"
                             alt="Morgan's Hope Logo"
                             className="theme-logo"
                             style={{ height: 40, width: 40, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -8 }}
