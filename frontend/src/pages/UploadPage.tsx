@@ -247,7 +247,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
 
           {/* RIGHT: Info sidebar */}
           <aside
-            className="relative h-auto overflow-hidden rounded-2xl border border-teal-100 shadow-sm"
+            className="relative py-2 md:py-5.5 h-auto overflow-hidden rounded-2xl border border-teal-100 shadow-sm"
             style={{
 							width: isMobile ? '100%' : 320,
         			backgroundImage: "url('/upload card.png')",
