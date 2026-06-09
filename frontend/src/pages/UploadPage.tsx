@@ -250,7 +250,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
             className="relative py-2 md:py-6 h-auto overflow-hidden rounded-2xl border border-border"
             style={{
 							width: isMobile ? '100%' : 320,
-        			backgroundImage: "url('/upload card.png')",
+        			backgroundImage: "url('/images/common/upload-card.png')",
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
             }}
