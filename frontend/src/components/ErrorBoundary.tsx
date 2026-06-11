@@ -12,14 +12,14 @@ function NotFoundFooter() {
             <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
                 {/* Brand + Tagline */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                    <div className="mb-1 lg:mb-0" style={{ display: 'flex', alignItems: 'center'}}>
                         <img
                             src="/logo-v2.png"
                             alt="Morgan's Hope Logo"
-                            className="theme-logo"
-                            style={{ height: 40, width: 40, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -8 }}
+                            className="theme-logo w-7 h-7 lg:w-7 lg:h-7"
+                            style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -8 }}
                         />
-                        <div dir="ltr" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div dir="ltr" className='ml-4' style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                             <span style={{ fontSize: 18, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
                             <span style={{ fontSize: 16, fontWeight: 400, fontStyle: 'italic', color: 'white', opacity: 0.85, lineHeight: 1 }}>Hope</span>
                         </div>

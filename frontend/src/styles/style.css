@@ -159,6 +159,10 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.theme-logo {
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.75));
+}
+
 .animate-card {
     @apply hover:scale-101 transition-all duration-300 hover:shadow-xl
 }
