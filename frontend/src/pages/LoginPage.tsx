@@ -1,9 +1,10 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthLayout } from '../components/auth/AuthLayout';
+import { AuthPage } from '../components/ui/auth-page';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { GOOGLE_AUTH_URL } from '../utils/env';
-import { HiEnvelope, HiLockClosed, HiExclamationCircle, HiShieldCheck } from 'react-icons/hi2';
+import { HiEnvelope, HiLockClosed, HiExclamationCircle } from 'react-icons/hi2';
 import DisclaimerModal from '../components/DisclaimerModal';
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
@@ -26,13 +27,11 @@ const IconEye = ({ open }: { open: boolean }) => open ? (
 
 const IconAlert = () => <HiExclamationCircle size={15} />;
 
-const IconShield = () => <HiShieldCheck size={15} />;
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function LoginPage() {
   const { login, completeSocialLogin } = useAuth();
-  const [lang, setLang] = useState<'en' | 'ar'>('en');
+  const { lang, toggleLang, t } = useLanguage();
   const [identifier, setIdentifier] = useState('');
   const [pass, setPass] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -43,7 +42,6 @@ export default function LoginPage() {
   const [showConsentModal, setShowConsentModal] = useState(false);
 
   const ar = lang === 'ar';
-  const t = (en: string, arText: string) => ar ? arText : en;
   const googleAuthUrl = GOOGLE_AUTH_URL;
 
   // Handle Google OAuth callback
@@ -164,19 +162,11 @@ export default function LoginPage() {
         />
       )}
 
-      <AuthLayout
-        dir={ar ? 'rtl' : 'ltr'}
-        fontFamily={ar ? "'Cairo', sans-serif" : "'Sora', sans-serif"}
-        langToggleLabel={ar ? 'EN' : 'عربي'}
-        onToggleLang={() => setLang(ar ? 'en' : 'ar')}
-        onToggleTheme={() => { }}
-        themeToggleIcon={null}
-        brandSlogan={t('"A Second Chance for Every Breath"', '"فرصة ثانية لكل نفس"')}
-        formBadge=""
-        hideFormBadge
-        formTitle={t('Welcome back', 'أهلاً بك مجدداً')}
-        formDescription={t('Secure, AI-powered medical platform.', 'منصة طبية آمنة ومدعومة بالذكاء الاصطناعي.')}
-        formMaxWidth={450}
+      <AuthPage
+        title={t('Welcome back', 'أهلاً بك مجدداً')}
+        description={t('Secure, AI-powered medical platform.', 'منصة طبية آمنة ومدعومة بالذكاء الاصطناعي.')}
+        lang={lang}
+        onLangToggle={toggleLang}
       >
         {/* Error */}
         {error && (
@@ -283,17 +273,11 @@ export default function LoginPage() {
           {t('Continue with Google', 'المتابعة عبر Google')}
         </button>
 
-        {/* Shield note */}
-        <div className="auth-note-card" style={{ marginTop: 18 }}>
-          <div style={{ color: 'var(--primary)', flexShrink: 0 }}><IconShield /></div>
-          <p>{t('Your data stays encrypted and protected inside the platform.', 'بياناتك تبقى مشفرة ومحمية داخل المنصة.')}</p>
-        </div>
-
         <p className="auth-footer-text">
           {t("Don't have an account?", 'ليس لديك حساب؟')}{' '}
           <Link to="/register">{t('Create account', 'إنشاء حساب')}</Link>
         </p>
-      </AuthLayout>
+      </AuthPage>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap');

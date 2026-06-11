@@ -1,7 +1,8 @@
 import { useState, type ChangeEvent, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthLayout } from '../components/auth/AuthLayout';
+import { AuthPage } from '../components/ui/auth-page';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { GOOGLE_AUTH_URL } from '../utils/env';
 import { HiUser, HiEnvelope, HiLockClosed, HiCheck, HiXMark, HiExclamationCircle, HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
 import DisclaimerModal from '../components/DisclaimerModal';
@@ -84,8 +85,8 @@ function StepIndicator({ step, lang }: { step: 1 | 2 | 3; lang: 'en' | 'ar' }) {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { lang, toggleLang, t } = useLanguage();
   const { register } = useAuth();
-  const [lang, setLang] = useState<'en' | 'ar'>('en');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -102,7 +103,6 @@ export default function RegisterPage() {
   });
 
   const ar = lang === 'ar';
-  const t = (en: string, arText: string) => ar ? arText : en;
   const googleAuthUrl = GOOGLE_AUTH_URL;
 
   const passStrength = strength(form.password);
@@ -247,19 +247,11 @@ export default function RegisterPage() {
         />
       )}
 
-      <AuthLayout
-        dir={ar ? 'rtl' : 'ltr'}
-        fontFamily={ar ? "'Cairo', sans-serif" : "'Sora', sans-serif"}
-        langToggleLabel={ar ? 'EN' : 'عربي'}
-        onToggleLang={() => setLang(ar ? 'en' : 'ar')}
-        onToggleTheme={() => { }}
-        themeToggleIcon={null}
-        brandSlogan={t('"A Second Chance for Every Breath"', '"فرصة ثانية لكل نفس"')}
-        formBadge=""
-        hideFormBadge
-        formTitle={t('Create your account', 'أنشئ حسابك')}
-        formDescription={t('Join thousands of patients and researchers on a mission to fight lung cancer.', 'انضم إلى آلاف المرضى والباحثين في مهمة محاربة سرطان الرئة.')}
-        formMaxWidth={500}
+      <AuthPage
+        title={t('Create your account', 'أنشئ حسابك')}
+        description={t('Join thousands of patients and researchers on a mission to fight lung cancer.', 'انضم إلى آلاف المرضى والباحثين في مهمة محاربة سرطان الرئة.')}
+        lang={lang}
+        onLangToggle={toggleLang}
       >
         {/* Error */}
         {error && (
@@ -435,7 +427,7 @@ export default function RegisterPage() {
             <Link to="/login">{t('Sign in', 'تسجيل الدخول')}</Link>
           </p>
         )}
-      </AuthLayout>
+      </AuthPage>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800;900&display=swap');
