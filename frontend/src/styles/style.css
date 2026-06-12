@@ -26,7 +26,7 @@
   --accent-color: #38706E;
   --source-color: #64748B;
   --header-gradient: linear-gradient(150deg, #1F403E 0%, #2E5C5A 50%, #38706E 100%);
-  --panel-gradient: linear-gradient(150deg, #1F403E 0%, #2E5C5A 100%);
+  --panel-gradient: linear-gradient(150deg, var(--primary-dark) 0%, var(--primary-dark) 100%);
   --warning-bg: rgba(46, 92, 90, 0.05);
   --warning-border: #99C2C1;
   --warning-text: #2E5C5A;
