@@ -18,7 +18,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
     <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       {/* ── Brand panel ── */}
       <div className="relative hidden h-full flex-col border-r p-10 lg:flex" style={{ background: 'var(--panel-gradient)' }}>
-        <div className="from-background absolute inset-0 z-10 bg-gradient-to-t to-transparent opacity-20" />
+        <div className="from-primary absolute inset-0 z-10 bg-gradient-to-t to-primary-dark opacity-20" />
         <a href="/" className="z-10 flex items-center gap-3 text-white">
         	<img
           src="/logo-v2.png"
