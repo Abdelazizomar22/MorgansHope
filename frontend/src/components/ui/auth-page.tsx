@@ -19,17 +19,16 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
       {/* ── Brand panel ── */}
       <div className="relative hidden h-full flex-col border-r p-10 lg:flex" style={{ background: 'var(--panel-gradient)' }}>
         <div className="from-primary absolute inset-0 z-10 bg-gradient-to-t to-primary-dark opacity-20" />
-        <a href="/" className="z-10 flex items-center gap-3 text-white">
+        <div className="z-10 absolute inset-0 m-auto w-fit h-fit">
         	<img
-          src="/logo-v2.png"
-          alt="Morgan's Hope Logo"
-          className="theme-logo"
-          width={50}
-          height={50}
-          style={{ objectFit: 'contain' }}
+	          src="/images/auth-logo.png"
+	          alt="Morgan's Hope Logo"
+	          className="theme-logo opacity-75"
+	          width={370}
+	          height={370}
+	          style={{ objectFit: 'contain' }}
 					/>
-          <p className="text-2xl mt-3 font-semibold theme-logo italic">Morgan's Hope</p>
-				</a>
+				</div>
         
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">
