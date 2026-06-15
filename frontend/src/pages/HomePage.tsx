@@ -159,8 +159,8 @@ export default function HomePage({ lang }: HomePageProps) {
 		  {/* ══ EGYPT STATS & INSIGHTS ══════════════════════════════════════════ */}
 		  <section style={{
 			  position: 'relative', overflow: 'hidden', marginTop: "30px" }}>
-          <img src="images/home/stats-1.png" className='hidden md:block' style={{ position: 'absolute', left: 0, top: 0, width: '40%', height: '40%', objectFit: 'cover', zIndex: 0 }} />
-          <img src="images/home/stats-2.png" className='hidden md:block' style={{ position: 'absolute', right: 0, top: 0, width: '40%', height: '40%', objectFit: 'cover', zIndex: 0 }} />
+          <img src="images/home/stats-1.png" className='hidden md:block' style={{ position: 'absolute', left: -30, top: 130, width: '40%', height: '40%', objectFit: 'cover', zIndex: 0 }} />
+          <img src="images/home/stats-2.png" className='hidden md:block' style={{ position: 'absolute', right: 0, top: 150, width: '40%', height: '40%', objectFit: 'cover', zIndex: 0 }} />
           <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'rgba(255,255,255,0.4)' }} />
 		    	<div style={{position: 'relative', padding: isMobile ? '40px 20px 10px' : '80px 40px 10px', zIndex: 10, maxWidth: 1100, margin: '0 auto'}}>
 
