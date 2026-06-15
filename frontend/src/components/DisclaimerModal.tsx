@@ -76,100 +76,103 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
         className="auth-modal-card"
         style={{ maxWidth: 720 }}
       >
-        {/* Header — no close button */}
-        <div className="auth-modal-header">
-          <h2 className="mb-2 text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-black text-[var(--text-main)]">
-            {t('Medical Research Disclaimer', 'إخلاء المسؤولية الطبية')}
-          </h2>
-          <p className="auth-modal-subtitle">
-            {subtitle || t('Please read and accept before continuing', 'يرجى القراءة والموافقة قبل المتابعة')}
-					</p>
-					<p className="auth-modal-subtitle" style={{ textAlign: 'left', marginTop: '10px'}}>{t(`
-						I Understand and Accept", you acknowledge that Morgan's Hope 
+        <div className="auth-modal-scroll">
+          {/* Header — no close button */}
+          <div className="auth-modal-header">
+            <h2 className="mb-2 text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-black text-[var(--text-main)]">
+              {t('Medical Research Disclaimer', 'إخلاء المسؤولية الطبية')}
+            </h2>
+            <p className="auth-modal-subtitle">
+              {subtitle || t('Please read and accept before continuing', 'يرجى القراءة والموافقة قبل المتابعة')}
+            </p>
+            <p className="auth-modal-subtitle" style={{ textAlign: 'left', marginTop: '10px'}}>{t(`
+              I Understand and Accept", you acknowledge that Morgan's Hope 
 provides AI-powered preliminary analysis only and does not constitute medical 
 advice or replace professional medical consultation.`,
-					`
-					بالنقر على أفهم وأوافق، فإنك تقر بأن منصة Morgan's Hope تقدم تحليلات أولية بمساعدة الذكاء الاصطناعي فقط، ولا تشكل نصيحة طبية ولا تحل محل الاستشارة الطبية المتخصصة.
-						`)}</p>
-        </div>
-
-        {/* Rules Section */}
-        <div style={{ padding: '0 32px', marginTop: 20 }}>
-          <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
-            {t('Important Disclaimers', 'إخلاء مسؤولية هام')}
+            `
+            بالنقر على أفهم وأوافق، فإنك تقر بأن منصة Morgan's Hope تقدم تحليلات أولية بمساعدة الذكاء الاصطناعي فقط، ولا تشكل نصيحة طبية ولا تحل محل الاستشارة الطبية المتخصصة.
+              `)}</p>
           </div>
-          <div
-            className="auth-consent-scroll"
-            style={{
-              height: isMobile ? 220 : 280,
-              padding: '16px 20px',
-              border: '1px solid var(--card-border)',
-              borderRadius: 14,
-              background: 'color-mix(in srgb, var(--card-bg) 98%, var(--primary))',
-              overflowY: 'auto',
-            }}
-          >
-            {rules(t).map((rule, i) => (
-              <div key={i} style={{ marginBottom: 20 }}>
-                <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: 4 }}>
-                  {rule.heading}
-                </strong>
-                <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-                  {rule.body}
-                </p>
+
+          <div className="auth-modal-body">
+            {/* Rules Section */}
+            <div style={{ padding: '0 32px', marginTop: 20 }}>
+              <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+                {t('Important Disclaimers', 'إخلاء مسؤولية هام')}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Acknowledgments Checklist */}
-        <div style={{ padding: '0 32px', marginTop: 24 }}>
-          <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
-            {t('Terms and Conditions', 'الشروط والأحكام')}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {acknowledgments(t).map((item, i) => (
               <div
-                key={i}
+                className="auth-consent-scroll"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 16px',
-                  borderRadius: 12,
+                  padding: '16px 20px',
+                  border: '1px solid var(--card-border)',
+                  borderRadius: 14,
+                  background: 'color-mix(in srgb, var(--card-bg) 98%, var(--primary))',
+                  overflowY: 'auto',
                 }}
               >
-								<div
-									className='rounded-full'
-                  style={{
-                    width: 40,
-										height: 40,
-                    background: 'rgba(var(--primary-rgb), 0.08)',
-                    color: 'var(--primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  {item.icon}
-                </div>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
-                  {item.text}
-                </span>
+                {rules(t).map((rule, i) => (
+                  <div key={i} style={{ marginBottom: 20 }}>
+                    <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: 4 }}>
+                      {rule.heading}
+                    </strong>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                      {rule.body}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Action Buttons */}
-        <div className="auth-modal-actions" style={{ justifyContent: 'flex-end' }}>
-          <button className="auth-modal-decline" onClick={onDecline} style={{ flex: 'none', padding: '0 28px' }}>
-            {t('Decline', 'رفض')}
-          </button>
-          <button className="auth-modal-accept" onClick={onAccept} style={{ flex: 'none', padding: '0 28px' }}>
-            {acceptLabel || t('I Understand and Accept', 'أوافق وأتابع')}
-          </button>
+            {/* Acknowledgments Checklist */}
+            <div style={{ padding: '0 32px', marginTop: 24 }}>
+              <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
+                {t('Terms and Conditions', 'الشروط والأحكام')}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {acknowledgments(t).map((item, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '12px 16px',
+                      borderRadius: 12,
+                    }}
+                  >
+                    <div
+                      className='rounded-full'
+                      style={{
+                        width: 40,
+                        height: 40,
+                        background: 'rgba(var(--primary-rgb), 0.08)',
+                        color: 'var(--primary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.icon}
+                    </div>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
+                      {item.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="auth-modal-actions" style={{ justifyContent: 'flex-end' }}>
+            <button className="auth-modal-decline" onClick={onDecline} style={{ flex: 'none', padding: '0 28px' }}>
+              {t('Decline', 'رفض')}
+            </button>
+            <button className="auth-modal-accept" onClick={onAccept} style={{ flex: 'none', padding: '0 28px' }}>
+              {acceptLabel || t('I Understand and Accept', 'أوافق وأتابع')}
+            </button>
+          </div>
         </div>
       </div>
     </div>

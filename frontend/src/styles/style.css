@@ -1030,16 +1030,21 @@ body {
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 48px);
-    overflow-y: auto;
-    scrollbar-width: none;
+    max-height: calc(100vh - 50px);
+    overflow: hidden;
     animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.auth-modal-card::-webkit-scrollbar {
-    display: none;
+.auth-modal-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
 }
 
+.auth-modal-scroll::-webkit-scrollbar-track {
+    margin-right: 10px;
+}
+ 
 .auth-modal-close {
     position: absolute;
     top: 20px;
