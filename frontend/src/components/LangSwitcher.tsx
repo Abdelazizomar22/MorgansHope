@@ -42,7 +42,7 @@ export default function LangSwitcher({ ar, onLangToggle }: LangSwitcherProps) {
             style={{
               position: 'absolute',
               top: 40,
-              [ar ? 'left' : 'right']: 0,
+              right: 0,
               minWidth: 120,
               background: 'var(--card-bg)',
               border: '1px solid var(--card-border)',
