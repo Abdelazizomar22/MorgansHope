@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { analysisApi, authApi } from '../utils/api';
 import { API_BASE_URL } from '../utils/env';
 import type { AnalysisResult } from '../types';
-import { HiEnvelope, HiPhone, HiCamera, HiPencilSquare, HiLockClosed, HiCloudArrowUp, HiTrash, HiChartBar, HiExclamationTriangle, HiMagnifyingGlass } from 'react-icons/hi2';
+import { HiEnvelope, HiPhone, HiCamera, HiPencilSquare, HiLockClosed, HiCloudArrowUp, HiTrash } from 'react-icons/hi2';
 import { Toaster, toast } from 'sonner';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
