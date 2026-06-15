@@ -47,7 +47,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
       </div>
 
       {/* ── Form panel ── */}
-      <div className="relative flex min-h-screen flex-col justify-center p-4 overflow-y-auto">
+      <div className="relative flex min-h-screen flex-col px-4 py-10 overflow-y-auto">
         <div
           aria-hidden
           className="absolute inset-0 isolate contain-strict -z-10 opacity-60"
@@ -77,7 +77,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
           <LangSwitcher ar={ar} onLangToggle={onLangToggle} />
         </div>
         	
-        <div className="px-4 lg:px-0 lg:mx-auto space-y-4 mt-8 lg:mt-0 sm:w-sm">
+        <div className="px-4 lg:px-0 lg:mx-auto space-y-4 sm:w-sm" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
           <div className="flex flex-col space-y-1">
             <h1 className="font-heading text-2xl font-bold tracking-wide">
               {title}
