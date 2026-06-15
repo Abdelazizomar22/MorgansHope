@@ -21,6 +21,11 @@ const URGENCY_COLORS: Record<string, { bg: string; color: string; label: string 
   Malignant_General: { bg: '#fff1f2', color: '#dc2626', label: 'Malignant' },
 };
 
+const IMAGE_TYPE_COLORS: Record<string, string> = {
+  ct: '#2563eb',
+  xray: 'var(--primary)',
+};
+
 function getStyle(cls: string) {
   return URGENCY_COLORS[cls] || { bg: '#eef2ff', color: '#334155', label: cls };
 }
@@ -35,6 +40,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [changePwd, setChangePwd] = useState(false);
+  const [imageTypeFilter, setImageTypeFilter] = useState<'all' | 'ct' | 'xray'>('all');
   const [confirmDeleteAccount, setConfirmDeleteAccount] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: number | null; loading: boolean }>({ open: false, id: null, loading: false });
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -192,6 +198,31 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
   };
 
   const formatDate = (date: string) => new Date(date).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
+
+  const formatTime = (date: string) => {
+    const d = new Date(date);
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const h = hours % 12 || 12;
+    return `${h}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+  };
+
+  const groupByDate = (items: AnalysisResult[]) => {
+    const groups: Record<string, AnalysisResult[]> = {};
+    for (const item of items) {
+      const key = new Date(item.createdAt).toLocaleDateString('en-CA'); // YYYY-MM-DD
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    }
+    return Object.entries(groups).sort(([a], [b]) => b.localeCompare(a));
+  };
+
+  const groupedHistory = groupByDate(history);
+
+  const filteredHistory = groupedHistory
+    .map(([dateKey, items]) => [dateKey, imageTypeFilter === 'all' ? items : items.filter((item) => item.imageType.toLowerCase() === imageTypeFilter)] as [string, AnalysisResult[]])
+    .filter(([, items]) => items.length > 0);
 
   const statCards = [
     {
@@ -591,91 +622,126 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                   </p>
                 </div>
 
+                {history.length > 0 && (
+                  <div className="mb-4 flex gap-2">
+                    {(['all', 'ct', 'xray'] as const).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setImageTypeFilter(type)}
+                        className="rounded-xl border px-4 py-2 text-xs font-bold uppercase tracking-wide transition"
+                        style={{
+                          borderColor: imageTypeFilter === type ? 'var(--primary)' : 'var(--card-border)',
+                          background: imageTypeFilter === type ? 'var(--primary)' : 'var(--card-bg)',
+                          color: imageTypeFilter === type ? '#fff' : 'var(--text-muted)',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        {type === 'all' ? t('All', 'الكل') : type.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 {loading ? (
                   <div className="py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                     {t('Loading history...', 'جارٍ تحميل السجل...')}
                   </div>
-                ) : history.length === 0 ? (
+                ) : filteredHistory.length === 0 ? (
                   <div className="py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                     {t('No analyses yet.', 'لا توجد تحليلات بعد.')}
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-3">
-                    {history.map((item) => {
-                      const state = getStyle(item.classification);
-                      return (
+                  <div className="flex flex-col gap-5">
+                    {filteredHistory.map(([dateKey, items]) => (
+                      <div key={dateKey}>
                         <div
-                          key={item.id}
-                          className="overflow-hidden rounded-2xl border transition hover:shadow-md"
-                          style={{
-                            borderColor: 'var(--card-border)',
-                            borderInlineStart: `4px solid ${state.color}`,
-                          }}
+                          className="mb-2.5 text-xs font-black uppercase tracking-wider"
+                          style={{ color: 'var(--text-muted)' }}
                         >
-                          <div className="p-4 md:p-5">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div className="min-w-0 flex-1">
-                                <div className="mb-2 flex flex-wrap items-center gap-2.5">
-                                  <span className="font-bold" style={{ fontSize: 15 }}>{item.imageType.toUpperCase()}</span>
-                                  <span
-                                    className="rounded-full px-2.5 py-1 text-xs font-bold leading-none"
-                                    style={{ background: state.bg, color: state.color }}
-                                  >
-                                    {item.classification}
-                                  </span>
-                                </div>
-                                <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-                                  <span>{t('Date', 'التاريخ')}: {formatDate(item.createdAt)}</span>
-                                  <span>{t('Confidence', 'الثقة')}: {Math.round(item.confidence * 100)}%</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="mt-3 flex flex-wrap items-center gap-2.5">
-                              <a
-                                href={`/results?id=${item.id}`}
-                                className="inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-bold no-underline transition"
+                          {formatDate(items[0].createdAt)}
+                        </div>
+                        <div className="flex flex-col gap-2.5">
+                          {items.map((item) => {
+                            const state = getStyle(item.classification);
+                            const typeColor = IMAGE_TYPE_COLORS[item.imageType.toLowerCase()] || state.color;
+                            return (
+                              <div
+                                key={item.id}
+                                className="overflow-hidden rounded-2xl border transition hover:shadow-md"
                                 style={{
                                   borderColor: 'var(--card-border)',
-                                  background: 'var(--card-bg)',
-                                  color: 'var(--text-main)',
+                                  borderInlineStart: `4px solid ${typeColor}`,
                                 }}
                               >
-                                {t('View report', 'عرض التقرير')}
-                              </a>
-                              {item.isMalignant && (
-                                <a
-                                  href="/hospitals"
-                                  className="inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-bold no-underline transition"
-                                  style={{
-                                    borderColor: 'var(--card-border)',
-                                    background: 'var(--card-bg)',
-                                    color: 'var(--text-main)',
-                                  }}
-                                >
-                                  {t('Recommended hospitals', 'المستشفيات المقترحة')}
-                                </a>
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => setDeleteModal({ open: true, id: item.id, loading: false })}
-                                className="inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-bold transition"
-                                style={{
-                                  borderColor: 'rgba(220,38,38,0.24)',
-                                  background: 'var(--card-bg)',
-                                  color: '#dc2626',
-                                  cursor: 'pointer',
-                                  fontFamily: 'inherit',
-                                }}
-                              >
-                                <HiTrash size={15} />
-                                {t('Delete', 'حذف')}
-                              </button>
-                            </div>
-                          </div>
+                                <div className="p-4 md:p-5">
+                                  <div className="flex flex-wrap items-start justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
+                                      <div className="mb-2 flex flex-wrap items-center gap-2.5">
+                                        <span className="font-bold" style={{ fontSize: 15 }}>{item.imageType.toUpperCase()}</span>
+                                        <span
+                                          className="rounded-full px-2.5 py-1 text-xs font-bold leading-none"
+                                          style={{ background: state.bg, color: state.color }}
+                                        >
+                                          {item.classification}
+                                        </span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                                        <span>{t('Time', 'الوقت')}: {formatTime(item.createdAt)}</span>
+                                        <span>{t('Confidence', 'الثقة')}: {Math.round(item.confidence * 100)}%</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="mt-3 flex flex-wrap items-center gap-2.5" style={{ justifyContent: ar ? 'flex-start' : 'flex-end' }}>
+                                    <a
+                                      href={`/results?id=${item.id}`}
+                                      className="inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-bold no-underline transition"
+                                      style={{
+                                        borderColor: 'var(--card-border)',
+                                        background: 'var(--card-bg)',
+                                        color: 'var(--text-main)',
+                                      }}
+                                    >
+                                      {t('View report', 'عرض التقرير')}
+                                    </a>
+                                    {item.isMalignant && (
+                                      <a
+                                        href="/hospitals"
+                                        className="inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-bold no-underline transition"
+                                        style={{
+                                          borderColor: 'var(--card-border)',
+                                          background: 'var(--card-bg)',
+                                          color: 'var(--text-main)',
+                                        }}
+                                      >
+                                        {t('Recommended hospitals', 'المستشفيات المقترحة')}
+                                      </a>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => setDeleteModal({ open: true, id: item.id, loading: false })}
+                                      className="inline-flex items-center gap-1.5 rounded-2xl border px-4 py-2 text-sm font-bold transition"
+                                      style={{
+                                        borderColor: 'rgba(220,38,38,0.24)',
+                                        background: 'var(--card-bg)',
+                                        color: '#dc2626',
+                                        cursor: 'pointer',
+                                        fontFamily: 'inherit',
+                                      }}
+                                    >
+                                      <HiTrash size={15} />
+                                      {t('Delete', 'حذف')}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
