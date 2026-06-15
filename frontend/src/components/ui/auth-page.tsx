@@ -47,7 +47,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
       </div>
 
       {/* ── Form panel ── */}
-      <div className="relative flex min-h-screen flex-col justify-center p-4">
+      <div className="relative flex min-h-screen flex-col justify-center p-4 overflow-y-auto">
         <div
           aria-hidden
           className="absolute inset-0 isolate contain-strict -z-10 opacity-60"
