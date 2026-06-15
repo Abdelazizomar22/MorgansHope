@@ -159,6 +159,30 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--card-border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--card-border);
+}
+
 .theme-logo {
   filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.75));
 }
@@ -1007,8 +1031,13 @@ body {
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 48px);
-    overflow: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
     animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-modal-card::-webkit-scrollbar {
+    display: none;
 }
 
 .auth-modal-close {
