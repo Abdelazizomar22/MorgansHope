@@ -57,7 +57,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
     return (
         <MotionPageTransition>
             <div
-                dir={ar ? 'rtl' : 'ltr'}
+
                 style={{
                     minHeight: '100vh',
                     background: 'radial-gradient(circle at 12% 18%, rgba(var(--primary-rgb),0.08), transparent 22%), radial-gradient(circle at 88% 14%, rgba(var(--primary-rgb),0.06), transparent 20%), linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, var(--bg-main)) 0%, var(--bg-main) 100%)',
@@ -76,7 +76,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
                         }}
                     >
                         <MotionFade direction="up" delay={0.05}>
-                            <aside style={{ paddingTop: 8, textAlign: ar ? 'right' : 'left' }}>
+                            <aside style={{ paddingTop: 8, textAlign: 'start' }}>
                                 <div
                                     style={{
                                         display: 'inline-flex',
@@ -144,7 +144,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
                                             style={{
                                                 width: '100%',
                                                 padding: isMobile ? '20px 0' : '24px 0',
-                                                textAlign: ar ? 'right' : 'left',
+                                                textAlign: 'start',
                                                 color: 'var(--text-main)',
                                             }}
                                         >

@@ -62,7 +62,7 @@ function StepIndicator({ step, lang }: { step: 1 | 2 | 3; lang: 'en' | 'ar' }) {
     t('Complete', 'اكتمل'),
   ];
   return (
-    <div className="auth-step-indicator" dir={ar ? 'rtl' : 'ltr'}>
+    <div className="auth-step-indicator">
       {steps.map((label, i) => {
         const n = i + 1;
         const active = step === n;
@@ -201,7 +201,7 @@ export default function RegisterPage() {
 
   const iconPos = (field: string): CSSProperties => ({
     position: 'absolute',
-    [ar ? 'right' : 'left']: 15,
+    insetInlineStart: 15,
     top: '50%',
     transform: 'translateY(-50%)',
     color: focused === field ? 'var(--primary)' : 'var(--text-muted)',
@@ -321,7 +321,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  style={{ position: 'absolute', [ar ? 'left' : 'right']: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex', alignItems: 'center' }}
+                  style={{ position: 'absolute', insetInlineEnd: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, display: 'flex', alignItems: 'center' }}
                   aria-label={showPass ? t('Hide password', 'إخفاء كلمة المرور') : t('Show password', 'إظهار كلمة المرور')}
                 >
                   <IconEye open={showPass} />
