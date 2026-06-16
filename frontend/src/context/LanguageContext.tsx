@@ -17,6 +17,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('lang', lang);
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
   }, [lang]);
 
   const toggleLang = () => setLang(l => l === 'en' ? 'ar' : 'en');
