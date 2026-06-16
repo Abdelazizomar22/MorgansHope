@@ -42,7 +42,7 @@ export default function LangSwitcher({ ar, onLangToggle }: LangSwitcherProps) {
             style={{
               position: 'absolute',
               top: 40,
-              right: 0,
+              insetInlineEnd: 0,
               minWidth: 120,
               background: 'var(--card-bg)',
               border: '1px solid var(--card-border)',
@@ -62,7 +62,7 @@ export default function LangSwitcher({ ar, onLangToggle }: LangSwitcherProps) {
                 color: 'var(--text-main)',
                 fontSize: 13,
                 fontWeight: 700,
-                textAlign: ar ? 'right' : 'left',
+                textAlign: 'start',
                 padding: '10px 12px',
                 cursor: 'pointer',
               }}
@@ -80,7 +80,7 @@ export default function LangSwitcher({ ar, onLangToggle }: LangSwitcherProps) {
                 color: 'var(--text-main)',
                 fontSize: 13,
                 fontWeight: 700,
-                textAlign: ar ? 'right' : 'left',
+                textAlign: 'start',
                 padding: '10px 12px',
                 cursor: 'pointer',
               }}

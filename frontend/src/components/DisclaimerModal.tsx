@@ -71,7 +71,7 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
   }, []);
 
   return (
-    <div className="auth-modal-overlay" dir={ar ? 'rtl' : 'ltr'}>
+    <div className="auth-modal-overlay">
       <div
         className="auth-modal-card"
         style={{ maxWidth: 720 }}

@@ -78,7 +78,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
 
   return (
     <nav
-      dir={ar ? 'rtl' : 'ltr'}
       style={{
         background: 'var(--card-bg)',
         borderBottom: '1px solid var(--card-border)',
@@ -94,12 +93,12 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
         fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
       }}
     >
-      <Link to="/" className='flex items-center gap-5' style={{ textDecoration: 'none', minWidth: 0 }}>
+      <Link dir='ltr' to="/" className='flex items-center gap-5' style={{ textDecoration: 'none', minWidth: 0 }}>
 	      <img
 	        src="/logo-v2.png"
 	        alt="Morgan's Hope Logo"
 	        className="theme-logo"
-	        style={{ height: 30, width: 30, objectFit: 'contain', transform: 'scale(1.35) translateY(-2px)', marginRight: -8 }}
+	        style={{ height: 30, width: 30, objectFit: 'contain', transform: 'scale(1.35) translateY(-2px)', marginInlineEnd: -8 }}
 	      />
         <div dir="ltr" className="hidden md:flex items-center gap-1.5" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>
           <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.5, lineHeight: 1 }}>Morgan&apos;s</span>
@@ -204,7 +203,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                 <div
                   style={{
                     position: 'absolute',
-                    [ar ? 'left' : 'right']: 0,
+                    insetInlineEnd: 0,
                     top: 46,
                     background: 'var(--card-bg)',
                     borderRadius: 12,
@@ -254,7 +253,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                       background: 'none',
                       border: 'none',
                       borderTop: '1px solid var(--card-border)',
-                      textAlign: ar ? 'right' : 'left',
+                      textAlign: 'start',
                       cursor: 'pointer',
                       color: '#ef4444',
                       fontWeight: 600,
@@ -265,7 +264,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                     onMouseEnter={(e) => { e.currentTarget.style.background = menuItemHoverDanger; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
-                  	<HiArrowRightOnRectangle className="h-3.5 w-3.5" />
+                  	<HiArrowRightOnRectangle className="h-3.5 w-3.5 mirror-rtl" />
                     {t('Sign Out', 'تسجيل الخروج')}
                   </button>
                 </div>
@@ -298,8 +297,8 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
           style={{
             position: 'absolute',
             top: 60,
-            left: 0,
-            right: 0,
+            insetInlineStart: 0,
+            insetInlineEnd: 0,
             background: 'var(--card-bg)',
             borderBottom: '1px solid var(--card-border)',
             boxShadow: '0 4px 12px var(--shadow-main)',
