@@ -5,7 +5,6 @@ services:
       - "8000:7860"
     environment:
       CT_MODEL_PATH: /home/user/app/model.pt
-      CT_HF_REPO: ${CT_HF_REPO:-}
 
   xray-service:
     build: ./xray_service

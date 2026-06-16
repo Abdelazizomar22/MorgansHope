@@ -42,10 +42,41 @@ export function AboutPage({ lang }: AboutPageProps) {
                   {t('Who we are?', 'من نحن؟')}
                 </h2>
                 <p style={{ color: 'var(--text-main)', fontSize: isMobile ? 15 : 16, lineHeight: 1.8, margin: 0 }}>
-                  {t("Morgan's Hope simplifies the diagnostic journey through AI-powered imaging analysis. It offers faster, clearer early-screening support, with a smart medical chatbot and batch scanning for multiple images at once.", "Morgan's Hope يبسّط رحلة التشخيص عبر تحليل الصور الطبية بالذكاء الاصطناعي. ويوفر دعمًا أسرع وأوضح للكشف المبكر، مع مساعد طبي ذكي ونظام فحص دفعات لمعالجة عدة صور في وقت واحد.")}
+                  {t("Morgan's Hope simplifies the diagnostic journey through AI-powered chest imaging analysis. Today it supports the existing CT lung-cancer classifier and a newer Chest X-Ray clinical-group pipeline for major respiratory and chest findings.", "Morgan's Hope يبسّط رحلة التشخيص عبر تحليل صور الصدر بالذكاء الاصطناعي. يدعم حالياً موديل CT الحالي لتصنيف سرطان الرئة، ومساراً أحدث للأشعة السينية يصنف مجموعات أمراض وملاحظات الصدر الرئيسية.")}
                 </p>
               </MotionFade>
             </div>
+          </div>
+        </div>
+
+        {/* Section 1.5 — Current Screening Coverage */}
+        <div style={{ background: 'var(--bg-main)', padding: isMobile ? '42px 20px' : '60px 40px' }}>
+          <div style={{ maxWidth: 1040, margin: '0 auto', textAlign: 'center' }}>
+            <MotionFade direction="up" delay={0.15}>
+              <h2 style={{ fontSize: isMobile ? 25 : 30, fontWeight: 900, color: 'var(--primary-dark)', margin: '0 0 14px' }}>
+                {t('What Morgan\'s Hope Screens Today', 'ما الذي يفحصه Morgan\'s Hope حالياً')}
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? 14 : 15, lineHeight: 1.75, maxWidth: 760, margin: '0 auto 24px' }}>
+                {t('Chest CT keeps the original six-class lung cancer model. Chest X-Ray now focuses on broader clinical disease groups instead of the old binary CXR model.', 'يحافظ CT للصدر على موديل سرطان الرئة الأصلي بستة تصنيفات. أما الأشعة السينية للصدر فتركز الآن على مجموعات مرضية سريرية أوسع بدلاً من موديل CXR الثنائي القديم.')}
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 18, textAlign: ar ? 'right' : 'left' }}>
+                {[
+                  {
+                    title: t('Chest CT', 'CT للصدر'),
+                    body: t('Normal, Benign, Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and Malignant General.', 'طبيعي، حميد، سرطان غدي، سرطان كبير الخلايا، سرطان حرشفي، وخبيث عام.'),
+                  },
+                  {
+                    title: t('Chest X-Ray', 'الأشعة السينية للصدر'),
+                    body: t('Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, Pleural Diseases, and optional TB signal.', 'عدوى/التهاب رئوي، ملاحظات مرتبطة بالانسداد الرئوي، أمراض التليف الرئوي، مؤشرات قلبية، مؤشرات اشتباه أورام، أمراض الغشاء البلوري، وإشارة اختيارية للسل.'),
+                  },
+                ].map((item) => (
+                  <div key={item.title} style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: 18, padding: 22, boxShadow: '0 10px 28px var(--shadow-main)' }}>
+                    <h3 style={{ color: 'var(--primary-dark)', fontSize: 18, fontWeight: 900, margin: '0 0 10px' }}>{item.title}</h3>
+                    <p style={{ color: 'var(--hero-text-2)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>{item.body}</p>
+                  </div>
+                ))}
+              </div>
+            </MotionFade>
           </div>
         </div>
         

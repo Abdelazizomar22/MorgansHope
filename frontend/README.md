@@ -2,6 +2,11 @@
 
 React 18 + Vite + TypeScript. Port **3001**.
 
+The frontend presents Morgan's Hope as an AI-assisted chest screening platform. It currently explains:
+
+- Chest CT: the existing six-class lung cancer classifier.
+- Chest X-Ray: the new clinical disease-group pipeline for pulmonary infection, COPD-related findings, fibrotic lung disease, cardiac conditions, potential malignancy findings, pleural diseases, and optional TB signal.
+
 ## Setup
 
 ```bash

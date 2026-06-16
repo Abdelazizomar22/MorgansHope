@@ -6,8 +6,8 @@ Morgan's Hope runs the AI pipeline as separate HTTP services. The Node.js backen
 
 | Service | Folder | Port | Endpoint | Purpose |
 | --- | --- | --- | --- | --- |
-| CT classifier | `ct_service` | `8000` | `POST /predict` | EfficientNet-B3 CT cancer classification into 6 classes |
-| CXR classifier | `xray_service` | `8001` | `POST /predict/xray` | Chest X-Ray multi-disease clinical group classification plus optional TB signal |
+| CT classifier | `ct_service` | `8000` | `POST /predict` | Existing EfficientNet-B3 CT cancer classifier kept unchanged |
+| CXR classifier | `xray_service` | `8001` | `POST /predict/xray` | New Chest X-Ray multi-disease clinical group classifier plus optional TB signal |
 | Pre-classification gate | `gate_service` | `8002` | `POST /predict` | EfficientNet-B0 routing: Chest X-Ray, Chest CT, Other Medical, Non Medical |
 | CT nodule detector | `nodule_service` | `8003` | `POST /detect` | YOLO nodule localization after positive CT classifier output |
 
@@ -17,7 +17,7 @@ Each service expects a TorchScript/YOLO model file inside its own folder unless 
 
 | Service | Local file | Optional env |
 | --- | --- | --- |
-| CT classifier | `ai/ct_service/model.pt` | `CT_MODEL_PATH`, `CT_HF_REPO` |
+| CT classifier | `ai/ct_service/model.pt` | `CT_MODEL_PATH` |
 | CXR classifier | `ai/xray_service/model.pt` | `XRAY_MODEL_PATH`, `XRAY_HF_REPO` |
 | TB classifier | `ai/xray_service/tb_model.pt` | `TB_MODEL_PATH`, `TB_HF_REPO` |
 | Gate classifier | `ai/gate_service/model.pt` | `GATE_MODEL_PATH`, `GATE_HF_REPO` |
@@ -49,7 +49,7 @@ The backend now stores:
 - TB detection and confidence when the TB model is available
 - CT nodule bounding box, estimated size, and confidence
 
-If a required AI model is unavailable, the service returns `503` instead of returning mock medical predictions.
+The CT classifier intentionally keeps the original service behavior. The old binary CXR model is no longer the documented target pipeline; CXR output should now follow the six clinical groups used by `xray_service`.
 
 ## Deployment Options
 
