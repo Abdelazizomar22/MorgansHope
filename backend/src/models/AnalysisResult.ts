@@ -20,6 +20,7 @@ interface AnalysisResultAttributes {
   allProbabilities: Record<string, number>;
   tbDetected: boolean | null;
   tbConfidence: number | null;
+  tbLocalizations: Array<Record<string, unknown>> | null;
   noduleBoundingBox: Record<string, number> | null;
   noduleSizeMm: number | null;
   noduleDetectionConfidence: number | null;
@@ -43,6 +44,7 @@ interface AnalysisResultCreationAttributes
     | 'clinicalGroup'
     | 'tbDetected'
     | 'tbConfidence'
+    | 'tbLocalizations'
     | 'noduleBoundingBox'
     | 'noduleSizeMm'
     | 'noduleDetectionConfidence'
@@ -72,6 +74,7 @@ class AnalysisResult
   public allProbabilities!: Record<string, number>;
   public tbDetected!: boolean | null;
   public tbConfidence!: number | null;
+  public tbLocalizations!: Array<Record<string, unknown>> | null;
   public noduleBoundingBox!: Record<string, number> | null;
   public noduleSizeMm!: number | null;
   public noduleDetectionConfidence!: number | null;
@@ -102,6 +105,7 @@ AnalysisResult.init(
     allProbabilities: { type: DataTypes.JSON, allowNull: false },
     tbDetected: { type: DataTypes.BOOLEAN, allowNull: true },
     tbConfidence: { type: DataTypes.DECIMAL(5, 4), allowNull: true },
+    tbLocalizations: { type: DataTypes.JSON, allowNull: true },
     noduleBoundingBox: { type: DataTypes.JSON, allowNull: true },
     noduleSizeMm: { type: DataTypes.DECIMAL(8, 2), allowNull: true },
     noduleDetectionConfidence: { type: DataTypes.DECIMAL(5, 4), allowNull: true },

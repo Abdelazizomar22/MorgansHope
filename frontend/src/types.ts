@@ -45,6 +45,7 @@ export interface AnalysisResult {
   allProbabilities: Record<string, number>;
   tbDetected?: boolean | null;
   tbConfidence?: number | null;
+  tbLocalizations?: Array<Record<string, unknown>> | null;
   noduleBoundingBox?: Record<string, number> | null;
   noduleSizeMm?: number | null;
   noduleDetectionConfidence?: number | null;
