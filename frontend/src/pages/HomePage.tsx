@@ -344,7 +344,7 @@ export default function HomePage({ lang }: HomePageProps) {
         </div>
 
 				{/* ══ FEATURES ══════════════════════════════════════════════════════ */}
-				<div className='mt-2' style={{
+				<div className='mt-0.5' style={{
 			    backgroundImage: "url('images/common/flowers-1.jpeg')",
 					backgroundSize: 'contain',
         }}>
