@@ -3,8 +3,12 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import { asyncHandler } from '../utils/asyncHandler';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'changeme_min32chars_xxxxxxxxxxxxxxxxxx';
-const REFRESH_SECRET = process.env.REFRESH_SECRET || `${JWT_SECRET}_refresh`;
+const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
+
+if (!JWT_SECRET || !REFRESH_SECRET) {
+  throw new Error('JWT_SECRET and REFRESH_SECRET must be set in environment');
+}
 
 export interface AuthRequest extends Request {
   user?: InstanceType<typeof User>;
@@ -24,7 +28,7 @@ export const authenticate = asyncHandler(async (
   }
 
   const token = header.slice(7);
-  const payload = jwt.verify(token, JWT_SECRET) as { id: number };
+  const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as { id: number };
 
   const user = await User.findOne({ where: { id: payload.id, isActive: true } });
   if (!user) {
@@ -54,7 +58,7 @@ export function requireRole(...roles: Array<'admin' | 'user'>) {
 // ── Verify Refresh Token (from HttpOnly cookie) ───────────────────────────────
 export async function verifyRefreshToken(token: string): Promise<{ id: number } | null> {
   try {
-    return jwt.verify(token, REFRESH_SECRET) as { id: number };
+    return jwt.verify(token, REFRESH_SECRET, { algorithms: ['HS256'] }) as { id: number };
   } catch {
     return null;
   }

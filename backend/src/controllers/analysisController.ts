@@ -4,14 +4,14 @@ import path from 'path';
 import axios from 'axios';
 import FormData from 'form-data';
 import AnalysisResult from '../models/AnalysisResult';
-import Hospital from '../models/Hospital';
-import City from '../models/City';
 import { AuthRequest } from '../middleware/auth';
+import { getAnalysisQueue } from '../queues/analysis.queue';
+import { getTopActiveHospitals } from '../utils/hospitalCache';
+import type Hospital from '../models/Hospital';
 
 const CT_URL = process.env.CT_SERVICE_URL || 'http://localhost:8000';
 const XRAY_URL = process.env.XRAY_SERVICE_URL || 'http://localhost:8001';
 
-// ── Urgency helper ─────────────────────────────────────────────────────────
 type UrgencyLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 
 function computeUrgency(r: AnalysisResult): UrgencyLevel {
@@ -22,7 +22,79 @@ function computeUrgency(r: AnalysisResult): UrgencyLevel {
   return 'high';
 }
 
-// ── Upload & analyse ───────────────────────────────────────────────────────
+async function processAnalysisSync(record: AnalysisResult): Promise<void> {
+  const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
+  const uploadPath = path.isAbsolute(uploadsRoot)
+    ? uploadsRoot
+    : path.join(process.cwd(), uploadsRoot);
+  const filePath = path.join(uploadPath, record.imagePath);
+
+  const startTime = Date.now();
+
+  const form = new FormData();
+  form.append('file', fs.readFileSync(filePath), record.originalFilename);
+
+  let aiData: Record<string, unknown>;
+  if (record.imageType === 'ct') {
+    const response = await axios.post(`${CT_URL}/predict`, form, {
+      headers: form.getHeaders(),
+      timeout: 120_000,
+    });
+    aiData = response.data;
+  } else {
+    const response = await axios.post(`${XRAY_URL}/predict/xray`, form, {
+      headers: form.getHeaders(),
+      timeout: 120_000,
+    });
+    aiData = response.data;
+  }
+
+  let classification: string;
+  let confidence: number;
+  let hasFindings: boolean;
+  let hasCancer: boolean | null = null;
+  let cancerProbability: number | null = null;
+  let isMalignant: boolean | null = null;
+  let allProbabilities: Record<string, number>;
+  let nextStep: string | null = null;
+
+  if (record.imageType === 'ct') {
+    classification = aiData.diagnosis as string;
+    confidence = aiData.confidence as number;
+    hasFindings = (aiData.has_cancer as boolean) || false;
+    hasCancer = aiData.has_cancer as boolean;
+    cancerProbability = aiData.cancer_prob as number;
+    isMalignant = aiData.is_malignant as boolean;
+    allProbabilities = (aiData.all_probs as Record<string, number>) || {};
+  } else {
+    classification = aiData.diagnosis as string;
+    confidence = aiData.confidence as number;
+    hasFindings = (aiData.has_finding as boolean) || false;
+    allProbabilities = (aiData.all_probs as Record<string, number>) || {};
+    nextStep = (aiData.next_step as string) || null;
+  }
+
+  const processingTimeMs = Date.now() - startTime;
+
+  let recommendedHospitals: Hospital[] = [];
+  if (isMalignant) {
+    recommendedHospitals = await getTopActiveHospitals();
+  }
+
+  await record.update({
+    classification,
+    confidence,
+    hasFindings,
+    hasCancer,
+    cancerProbability,
+    isMalignant,
+    allProbabilities,
+    nextStep,
+    status: 'completed',
+    processingTimeMs,
+  });
+}
+
 export async function upload(req: AuthRequest, res: Response): Promise<void> {
   const file = req.file;
   if (!file) {
@@ -30,7 +102,6 @@ export async function upload(req: AuthRequest, res: Response): Promise<void> {
     return;
   }
 
-  // Normalise imageType (frontend may send "CT" or "XRAY")
   const imageType = ((req.body.imageType as string) || '').toLowerCase() as 'xray' | 'ct';
   if (!['xray', 'ct'].includes(imageType)) {
     try { fs.unlinkSync(file.path); } catch { }
@@ -38,10 +109,8 @@ export async function upload(req: AuthRequest, res: Response): Promise<void> {
     return;
   }
 
-  const startTime = Date.now();
   const sessionId = req.body.sessionId || null;
 
-  // ── Create pending record ────────────────────────────────────────────────
   const record = await AnalysisResult.create({
     userId: req.user!.id,
     sessionId,
@@ -56,93 +125,31 @@ export async function upload(req: AuthRequest, res: Response): Promise<void> {
   });
 
   try {
-    // ── Call AI service ────────────────────────────────────────────────────
-    const form = new FormData();
-    // Using readFileSync instead of createReadStream prevents unhandled stream rejections in Node if Axios fails instantly (ECONNREFUSED)
-    form.append('file', fs.readFileSync(file.path), file.originalname);
-
-    let aiData: Record<string, unknown>;
-    if (imageType === 'ct') {
-      const response = await axios.post(`${CT_URL}/predict`, form, {
-        headers: form.getHeaders(),
-        timeout: 120_000,
-      });
-      aiData = response.data;
-    } else {
-      const response = await axios.post(`${XRAY_URL}/predict/xray`, form, {
-        headers: form.getHeaders(),
-        timeout: 120_000,
-      });
-      aiData = response.data;
-    }
-
-    // ── Map AI response to DB columns ─────────────────────────────────────
-    let classification: string;
-    let confidence: number;
-    let hasFindings: boolean;
-    let hasCancer: boolean | null = null;
-    let cancerProbability: number | null = null;
-    let isMalignant: boolean | null = null;
-    let allProbabilities: Record<string, number>;
-    let nextStep: string | null = null;
-
-    if (imageType === 'ct') {
-      classification = aiData.diagnosis as string;
-      confidence = aiData.confidence as number;
-      hasFindings = (aiData.has_cancer as boolean) || false;
-      hasCancer = aiData.has_cancer as boolean;
-      cancerProbability = aiData.cancer_prob as number;
-      isMalignant = aiData.is_malignant as boolean;
-      allProbabilities = (aiData.all_probs as Record<string, number>) || {};
-    } else {
-      classification = aiData.diagnosis as string;
-      confidence = aiData.confidence as number;
-      hasFindings = (aiData.has_finding as boolean) || false;
-      allProbabilities = (aiData.all_probs as Record<string, number>) || {};
-      nextStep = (aiData.next_step as string) || null;
-    }
-
-    const processingTimeMs = Date.now() - startTime;
-
-    await record.update({
-      classification,
-      confidence,
-      hasFindings,
-      hasCancer,
-      cancerProbability,
-      isMalignant,
-      allProbabilities,
-      nextStep,
-      status: 'completed',
-      processingTimeMs,
-    });
-
-    // ── Fetch recommended hospitals if malignant ───────────────────────────
-    const urgencyLevel = computeUrgency(record);
-    let recommendedHospitals: Hospital[] = [];
-    if (isMalignant) {
-      recommendedHospitals = await Hospital.findAll({
-        where: { isActive: true },
-        include: [{ model: City, as: 'city' }],
-        limit: 3,
-        order: [['rating', 'DESC']],
-      });
-    }
-
-    res.status(201).json({
+    const queue = getAnalysisQueue();
+    await queue.add('analyse', { analysisId: record.id });
+    res.status(202).json({
       success: true,
-      message: 'Analysis complete',
-      data: {
-        result: { ...record.toJSON(), urgencyLevel },
-        urgencyLevel,
-        recommendedHospitals,
-        processingTimeMs,
-      },
+      message: 'Analysis queued',
+      data: { analysisId: record.id, status: 'pending' },
     });
   } catch (err) {
-    await record.update({ status: 'failed' });
-    console.error('AI service error:', err);
-    res.status(503).json({ success: false, message: 'AI service unavailable. Please try again.' });
+    console.warn('[Analysis] Queue unavailable, processing synchronously:', err);
+    try {
+      await processAnalysisSync(record);
+      const urgencyLevel = computeUrgency(record);
+      res.status(201).json({
+        success: true,
+        message: 'Analysis complete',
+        data: {
+          result: { ...record.toJSON(), urgencyLevel },
+          urgencyLevel,
+        },
+      });
+    } catch (syncErr) {
+      await record.update({ status: 'failed' });
+      console.error('[Analysis] Sync processing failed:', syncErr);
+      res.status(503).json({ success: false, message: 'AI service unavailable. Please try again.' });
+    }
   }
 }
 

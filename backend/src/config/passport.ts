@@ -6,7 +6,7 @@ import { Strategy as GoogleStrategy, Profile } from 'passport-google-oauth20';
 import User from '../models/User';
 import { JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
 
-const ACCESS_TOKEN_TTL = '7d';
+const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL = '30d';
 
 export function makeGoogleAccessToken(id: number) {

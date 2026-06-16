@@ -316,7 +316,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
             {loading ? (
               <SkeletonCards />
             ) : filtered.length > 0 ? (
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid gap-5 md:grid-cols-2 items-stretch">
                 {filtered.map((hospital) => (
                   <HospitalCard
                     key={hospital.id}

@@ -2,7 +2,7 @@
 //  Morgan's Hope — Axios API Client  (Professional Edition)
 // ─────────────────────────────────────────────────────────────
 import axios, { AxiosRequestConfig } from 'axios';
-import type { SafeUser, AnalysisResult, Hospital, City, UploadResponse, PaginatedResponse, ApiResponse } from '../types';
+import type { SafeUser, AnalysisResult, Hospital, City, UploadResponse, PaginatedResponse, ApiResponse, SignatureResponse, MediaRecord } from '../types';
 import { TokenService } from '../services/tokenService';
 import { API_BASE_URL } from './env';
 
@@ -175,6 +175,17 @@ export const chatApi = {
 
   getHistory: () =>
     api.get<ApiResponse<Array<{ role: 'user' | 'assistant'; content: string; createdAt: string }>>>('/chat/history'),
+};
+
+// ── Media (Cloudinary uploads) ──────────────────────────────────────────────
+export const mediaApi = {
+  requestSignature: (data: { mediaType: string; fileType: string; fileSize: number }) =>
+    api.post<ApiResponse<SignatureResponse>>('/media/request-signature', data),
+
+  confirmUpload: (data: {
+    publicId: string; secureUrl: string; resourceType: string;
+    fileSize: number; mimeType: string;
+  }) => api.post<ApiResponse<MediaRecord>>('/media/confirm-upload', data),
 };
 
 export default api;

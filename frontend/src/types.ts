@@ -96,3 +96,23 @@ export interface UploadResponse {
   recommendedHospitals: Hospital[];
   processingTimeMs: number;
 }
+
+export interface MediaRecord {
+  id: number;
+  userId: number;
+  publicId: string;
+  secureUrl: string;
+  resourceType: string;
+  fileSize: number;
+  mimeType: string;
+  createdAt: string;
+}
+
+export interface SignatureResponse {
+  signature: string;
+  publicId: string;
+  uploadUrl: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+}
