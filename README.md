@@ -75,26 +75,6 @@ MorgansHope/
 
 Morgan's Hope provides AI-assisted screening support only. Results are informational and research-oriented, not a final diagnosis. Users must consult a qualified physician, radiologist, pulmonologist, or oncologist before making medical decisions.
 
-## GitHub About Text
-
-Use this for the repository About section:
-
-```text
-AI-assisted chest CT and X-ray screening platform for lung cancer and major chest disease groups, with hospital guidance and a medical assistant.
-```
-
-Recommended website:
-
-```text
-https://morgans-hope.vercel.app
-```
-
-Recommended topics:
-
-```text
-medical-ai, chest-xray, ct-scan, lung-cancer, tuberculosis, healthcare, fastapi, nodejs, react, graduation-project
-```
-
 ## Contributing to Morgan's Hope
 
 1. Fork or clone the repository.
