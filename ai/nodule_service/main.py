@@ -60,8 +60,8 @@ def health():
 
 
 def estimate_size_mm(width_px: float, height_px: float) -> float:
-    # A conservative image-space estimate until DICOM spacing metadata is available.
-    return round(max(width_px, height_px), 2)
+    pixel_spacing_mm = float(os.environ.get("NODULE_PIXEL_SPACING_MM", "0.625"))
+    return round(max(width_px, height_px) * pixel_spacing_mm, 2)
 
 
 @app.post("/detect")
@@ -73,7 +73,9 @@ async def detect(file: UploadFile = File(...)) -> Dict:
         raise HTTPException(400, f"Cannot open image: {exc}")
 
     try:
-        results = get_model()(image)
+        conf = float(os.environ.get("NODULE_CONF_THRESHOLD", "0.25"))
+        iou = float(os.environ.get("NODULE_IOU_THRESHOLD", "0.45"))
+        results = get_model()(image, conf=conf, iou=iou)
     except Exception as exc:
         log.error("Nodule detection error: %s", exc)
         raise HTTPException(503, "Nodule detector unavailable.")

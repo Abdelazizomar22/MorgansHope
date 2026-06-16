@@ -15,7 +15,12 @@ services:
       XRAY_HF_REPO: ${XRAY_HF_REPO:-}
       TB_MODEL_PATH: /home/user/app/tb_model.pt
       TB_HF_REPO: ${TB_HF_REPO:-}
+      TB_LOCALIZER_MODEL_PATH: /home/user/app/tb_localizer.pt
+      TB_LOCALIZER_HF_REPO: ${TB_LOCALIZER_HF_REPO:-}
       TB_THRESHOLD: ${TB_THRESHOLD:-0.5}
+      TB_LOCALIZER_CONF: ${TB_LOCALIZER_CONF:-0.25}
+      TB_LOCALIZER_IOU: ${TB_LOCALIZER_IOU:-0.5}
+      ALLOW_TB_ONLY_FALLBACK: ${ALLOW_TB_ONLY_FALLBACK:-true}
 
   gate-service:
     build: ./gate_service
@@ -31,3 +36,6 @@ services:
       - "8003:7860"
     environment:
       NODULE_MODEL_PATH: /home/user/app/model.pt
+      NODULE_CONF_THRESHOLD: ${NODULE_CONF_THRESHOLD:-0.25}
+      NODULE_IOU_THRESHOLD: ${NODULE_IOU_THRESHOLD:-0.45}
+      NODULE_PIXEL_SPACING_MM: ${NODULE_PIXEL_SPACING_MM:-0.625}

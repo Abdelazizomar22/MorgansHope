@@ -4,7 +4,7 @@ Port: 8001  |  POST /predict/xray
 
 This service expects the new Chest X-Ray pipeline:
 - a multi-disease classifier that returns 6 clinical groups
-- an optional TB classifier for a dedicated tuberculosis signal
+- an optional TB pipeline with Stage 1 classification and Stage 2 lesion localization
 """
 import io
 import logging
@@ -12,7 +12,7 @@ import os
 import shutil
 import time
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -26,6 +26,8 @@ log = logging.getLogger("xray_service")
 IMAGE_SIZE = int(os.environ.get("XRAY_IMAGE_SIZE", "224"))
 XRAY_HF_REPO = os.environ.get("XRAY_HF_REPO", "")
 TB_HF_REPO = os.environ.get("TB_HF_REPO", "")
+TB_LOCALIZER_HF_REPO = os.environ.get("TB_LOCALIZER_HF_REPO", "")
+ALLOW_TB_ONLY_FALLBACK = os.environ.get("ALLOW_TB_ONLY_FALLBACK", "true").lower() == "true"
 
 CLINICAL_GROUPS = [
     "Pulmonary Infection",
@@ -56,6 +58,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 _xray_model = None
 _tb_model = None
+_tb_localizer = None
 
 
 def resolve_model_path(env_name: str, default_filename: str, repo_id: str = "") -> Optional[Path]:
@@ -107,8 +110,24 @@ def get_tb_model():
         return None
 
     _tb_model = load_torchscript(model_path)
-    log.info("TB classifier model ready.")
+    log.info("TB Stage 1 classifier model ready.")
     return _tb_model
+
+
+def get_tb_localizer():
+    global _tb_localizer
+    if _tb_localizer:
+        return _tb_localizer
+
+    model_path = resolve_model_path("TB_LOCALIZER_MODEL_PATH", "tb_localizer.pt", TB_LOCALIZER_HF_REPO)
+    if not model_path:
+        return None
+
+    from ultralytics import YOLO
+
+    _tb_localizer = YOLO(str(model_path))
+    log.info("TB Stage 2 localizer model ready.")
+    return _tb_localizer
 
 
 def predict_probabilities(model, tensor) -> Dict[str, float]:
@@ -124,24 +143,60 @@ def predict_probabilities(model, tensor) -> Dict[str, float]:
     return {label: round(float(probability), 6) for label, probability in zip(CLINICAL_GROUPS, probabilities)}
 
 
-def predict_tb(tensor) -> Optional[Dict[str, float | bool]]:
+def predict_tb(tensor) -> Optional[Dict[str, object]]:
     model = get_tb_model()
     if not model:
         return None
 
     with torch.no_grad():
         logits = model(tensor)
-        probabilities = torch.softmax(logits, dim=1)[0].tolist()
+        if isinstance(logits, (tuple, list)):
+            logits = logits[0]
+        if logits.ndim == 1:
+            logits = logits.unsqueeze(0)
 
-    if len(probabilities) == 1:
-        confidence = round(float(probabilities[0]), 6)
+    if logits.shape[1] == 1:
+        confidence = round(float(torch.sigmoid(logits)[0][0].item()), 6)
     else:
+        probabilities = torch.softmax(logits, dim=1)[0].tolist()
         confidence = round(float(probabilities[-1]), 6)
 
     return {
         "detected": confidence >= float(os.environ.get("TB_THRESHOLD", "0.5")),
         "confidence": confidence,
     }
+
+
+def localize_tb(image: Image.Image) -> Optional[List[Dict]]:
+    model = get_tb_localizer()
+    if not model:
+        return None
+
+    conf = float(os.environ.get("TB_LOCALIZER_CONF", "0.25"))
+    iou = float(os.environ.get("TB_LOCALIZER_IOU", "0.5"))
+    results = model(image, conf=conf, iou=iou)
+    detections: List[Dict] = []
+
+    for result in results:
+        boxes = getattr(result, "boxes", None)
+        if boxes is None:
+            continue
+        for box in boxes:
+            xyxy = box.xyxy[0].tolist()
+            confidence = float(box.conf[0].item()) if box.conf is not None else 0.0
+            x1, y1, x2, y2 = [float(value) for value in xyxy]
+            detections.append({
+                "bounding_box": {
+                    "x": round(x1, 2),
+                    "y": round(y1, 2),
+                    "width": round(max(0.0, x2 - x1), 2),
+                    "height": round(max(0.0, y2 - y1), 2),
+                },
+                "confidence": round(confidence, 4),
+            })
+
+    detections.sort(key=lambda item: item["confidence"], reverse=True)
+    return detections
 
 
 @app.on_event("startup")
@@ -154,7 +209,12 @@ async def startup():
     try:
         get_tb_model()
     except Exception as exc:
-        log.warning("TB model not ready: %s", exc)
+        log.warning("TB Stage 1 model not ready: %s", exc)
+
+    try:
+        get_tb_localizer()
+    except Exception as exc:
+        log.warning("TB Stage 2 localizer not ready: %s", exc)
 
 
 @app.get("/health")
@@ -163,7 +223,9 @@ def health():
         "status": "ok",
         "service": "cxr",
         "clinical_groups_model_loaded": _xray_model is not None,
-        "tb_model_loaded": _tb_model is not None,
+        "tb_stage1_model_loaded": _tb_model is not None,
+        "tb_stage2_localizer_loaded": _tb_localizer is not None,
+        "tb_only_fallback_enabled": ALLOW_TB_ONLY_FALLBACK,
         "classes": CLINICAL_GROUPS,
     }
 
@@ -178,11 +240,37 @@ async def predict_xray(file: UploadFile = File(...)) -> Dict:
 
     tensor = TRANSFORM(image).unsqueeze(0)
 
+    tb_result = None
+    try:
+        tb_result = predict_tb(tensor)
+        if tb_result and tb_result.get("detected"):
+            tb_result["localizations"] = localize_tb(image)
+    except Exception as exc:
+        log.warning("TB pipeline unavailable: %s", exc)
+
     try:
         probabilities = predict_probabilities(get_xray_model(), tensor)
-        tb_result = predict_tb(tensor)
     except Exception as exc:
-        raise HTTPException(503, f"CXR model unavailable: {exc}")
+        if not ALLOW_TB_ONLY_FALLBACK:
+            raise HTTPException(503, f"CXR model unavailable: {exc}")
+
+        confidence = float(tb_result["confidence"]) if tb_result else 0.0
+        detected = bool(tb_result and tb_result.get("detected"))
+        return {
+            "has_finding": detected,
+            "diagnosis": "Tuberculosis Screening Signal" if detected else "Chest X-Ray Review Needed",
+            "clinical_group": "Pulmonary Infection" if detected else None,
+            "confidence": confidence,
+            "tb_result": tb_result,
+            "next_step": (
+                "TB screening signal detected. Physician review and confirmatory testing are recommended."
+                if detected
+                else "NIH14 clinical-groups model is not configured yet. Physician review is recommended."
+            ),
+            "all_probs": {},
+            "model_output_type": "tb_only_pending_clinical_groups",
+            "processing_ms": int((time.time() - t0) * 1000),
+        }
 
     clinical_group = max(probabilities, key=probabilities.get)
     confidence = probabilities[clinical_group]

@@ -132,6 +132,7 @@ function normalizeXrayResult(aiData: Record<string, unknown>) {
     allProbabilities,
     tbDetected: tbResult?.detected ?? null,
     tbConfidence: tbResult?.confidence === undefined ? null : asNumber(tbResult.confidence, 0),
+    tbLocalizations: (tbResult as { localizations?: Array<Record<string, unknown>> } | null)?.localizations || null,
     nextStep: (aiData.next_step as string) || null,
   };
 }
@@ -220,6 +221,7 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
     let clinicalGroup: string | null = null;
     let tbDetected: boolean | null = null;
     let tbConfidence: number | null = null;
+    let tbLocalizations: Array<Record<string, unknown>> | null = null;
     let noduleBoundingBox: Record<string, number> | null = null;
     let noduleSizeMm: number | null = null;
     let noduleDetectionConfidence: number | null = null;
@@ -254,6 +256,7 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
       allProbabilities = normalized.allProbabilities;
       tbDetected = normalized.tbDetected;
       tbConfidence = normalized.tbConfidence;
+      tbLocalizations = normalized.tbLocalizations;
       nextStep = normalized.nextStep;
     }
 
@@ -270,6 +273,7 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
       allProbabilities,
       tbDetected,
       tbConfidence,
+      tbLocalizations,
       noduleBoundingBox,
       noduleSizeMm,
       noduleDetectionConfidence,

@@ -25,7 +25,7 @@ from torchvision import transforms
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-8s %(message)s")
 log = logging.getLogger("gate_service")
 
-CLASSES = ["Chest_XRay", "Chest_CT", "Other_Medical", "Non_Medical"]
+CLASSES = ["Chest_CT", "Chest_XRay", "Non_Medical", "Other_Medical"]
 IMAGE_SIZE = 224
 HF_REPO = os.environ.get("GATE_HF_REPO", "")
 
