@@ -1,0 +1,34 @@
+services:
+  ct-service:
+    build: ./ct_service
+    ports:
+      - "8000:7860"
+    environment:
+      CT_MODEL_PATH: /home/user/app/model.pt
+      CT_HF_REPO: ${CT_HF_REPO:-}
+
+  xray-service:
+    build: ./xray_service
+    ports:
+      - "8001:7860"
+    environment:
+      XRAY_MODEL_PATH: /home/user/app/model.pt
+      XRAY_HF_REPO: ${XRAY_HF_REPO:-}
+      TB_MODEL_PATH: /home/user/app/tb_model.pt
+      TB_HF_REPO: ${TB_HF_REPO:-}
+      TB_THRESHOLD: ${TB_THRESHOLD:-0.5}
+
+  gate-service:
+    build: ./gate_service
+    ports:
+      - "8002:7860"
+    environment:
+      GATE_MODEL_PATH: /home/user/app/model.pt
+      GATE_HF_REPO: ${GATE_HF_REPO:-}
+
+  nodule-service:
+    build: ./nodule_service
+    ports:
+      - "8003:7860"
+    environment:
+      NODULE_MODEL_PATH: /home/user/app/model.pt
