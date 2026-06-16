@@ -13,9 +13,9 @@ import {
   HiChatBubbleLeftRight,
   HiBars3,
   HiXMark,
-  HiGlobeAlt,
 } from 'react-icons/hi2';
 import { IconType } from 'react-icons';
+import LangSwitcher from './LangSwitcher';
 
 const NAV = [
   { path: '/', en: 'Home', ar: 'الرئيسية', Icon: HiHome },
@@ -44,7 +44,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [navMobileOpen, setNavMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [avatarFailed, setAvatarFailed] = useState(false);
@@ -72,7 +71,6 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
     logout();
     navigate('/login');
     setMenuOpen(false);
-    setLangMenuOpen(false);
     setNavMobileOpen(false);
   };
 
@@ -84,7 +82,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
       style={{
         background: 'var(--card-bg)',
         borderBottom: '1px solid var(--card-border)',
-        padding: isMobile ? '0 14px' : '0 32px',
+        padding: isMobile ? '0 14px 0 18px' : '0 32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -121,7 +119,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                   textDecoration: 'none',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 5,
+                  gap: 6,
                   padding: '0 11px',
                   height: 60,
                   fontSize: 13.5,
@@ -132,10 +130,8 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
                   whiteSpace: 'nowrap',
                 }}
               >
-								<span style={{ opacity: active ? 1 : 0.6 }}>
-									<Icon icon={NavIcon} className='w-3.5 h-3.5' />
-                </span>
-                {ar ? arLabel : en}
+								<Icon style={{ opacity: active ? 1 : 0.7 }} icon={NavIcon} className='w-4 h-4' />
+                <p className='translate-y-0.5'>{ar ? arLabel : en}</p>
               </Link>
             );
           })}
@@ -145,7 +141,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10 }}>
         {isMobile && (
           <button
-            onClick={() => { setNavMobileOpen(!navMobileOpen); setMenuOpen(false); setLangMenuOpen(false); }}
+            onClick={() => { setNavMobileOpen(!navMobileOpen); setMenuOpen(false); }}
             style={{
               background: 'transparent',
               border: 'none',
@@ -165,92 +161,12 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
           </button>
         )}
 
-        <div style={{ position: 'relative' }}>
-          <button
-            type="button"
-            onClick={() => { setLangMenuOpen(!langMenuOpen); setMenuOpen(false); }}
-            style={{
-              height: 34,
-              minWidth: 58,
-              borderRadius: 10,
-              border: '1px solid var(--card-border)',
-              background: 'var(--card-bg)',
-              color: 'var(--text-main)',
-              fontWeight: 700,
-              fontSize: 12.5,
-              padding: '0 10px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              boxShadow: '0 2px 8px var(--shadow-main)',
-            }}
-          >
-          	<HiGlobeAlt className="h-3.5 w-3.5" />
-            <span>{ar ? 'AR' : 'EN'}</span>
-          </button>
-          {langMenuOpen && (
-            <>
-              <div onClick={() => setLangMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100 }} />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 40,
-                  [ar ? 'left' : 'right']: 0,
-                  minWidth: 120,
-                  background: 'var(--card-bg)',
-                  border: '1px solid var(--card-border)',
-                  borderRadius: 10,
-                  boxShadow: '0 8px 24px var(--shadow-main)',
-                  zIndex: 202,
-                  overflow: 'hidden',
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => { if (ar) onLangToggle(); setLangMenuOpen(false); }}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--text-main)',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    textAlign: ar ? 'right' : 'left',
-                    padding: '10px 12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  English
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { if (!ar) onLangToggle(); setLangMenuOpen(false); }}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    borderTop: '1px solid var(--card-border)',
-                    background: 'transparent',
-                    color: 'var(--text-main)',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    textAlign: ar ? 'right' : 'left',
-                    padding: '10px 12px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  العربية
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <LangSwitcher ar={ar} onLangToggle={onLangToggle} />
 
         {user ? (
           <div style={{ position: 'relative' }}>
             <button
-              onClick={() => { setMenuOpen(!menuOpen); setLangMenuOpen(false); }}
+              onClick={() => { setMenuOpen(!menuOpen); }}
               style={{
                 width: 38,
                 height: 38,

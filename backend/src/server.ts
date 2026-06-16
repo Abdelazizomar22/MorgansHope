@@ -14,6 +14,9 @@ import { DataTypes } from 'sequelize';
 
 import sequelize from './config/database';
 import passport from './config/passport';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import swaggerConfig from './config/swagger';
 import User from './models/User';
 import './models/City';
 import './models/Hospital';
@@ -58,6 +61,36 @@ async function ensureUserAuthColumns() {
   await addIfMissing('phone_otp_expiry', { type: DataTypes.DATE, allowNull: true });
 }
 
+async function ensureHospitalColumns() {
+  const queryInterface = sequelize.getQueryInterface();
+  const table = await queryInterface.describeTable('hospitals');
+  const addIfMissing = async (name: string, definition: any) => {
+    if (!table[name]) {
+      await queryInterface.addColumn('hospitals', name, definition);
+      console.log(`[DB] Added hospitals.${name}`);
+    }
+  };
+
+  await addIfMissing('hospital_name_ar', { type: DataTypes.STRING(255), allowNull: true });
+  await addIfMissing('specialization_ar', { type: DataTypes.STRING(255), allowNull: true });
+  await addIfMissing('address_ar', { type: DataTypes.TEXT, allowNull: true });
+  await addIfMissing('latitude', { type: DataTypes.DECIMAL(10, 6), allowNull: true });
+  await addIfMissing('longitude', { type: DataTypes.DECIMAL(10, 6), allowNull: true });
+  await addIfMissing('established_year', { type: DataTypes.INTEGER, allowNull: true });
+  await addIfMissing('beds', { type: DataTypes.STRING(20), allowNull: true });
+  await addIfMissing('expertise', { type: DataTypes.JSON, allowNull: true });
+  await addIfMissing('services', { type: DataTypes.JSON, allowNull: true });
+  await addIfMissing('type', { type: DataTypes.STRING(20), allowNull: true });
+  await addIfMissing('booking_url', { type: DataTypes.STRING(500), allowNull: true });
+  await addIfMissing('about', { type: DataTypes.TEXT, allowNull: true });
+  await addIfMissing('about_ar', { type: DataTypes.TEXT, allowNull: true });
+  await addIfMissing('google_maps', { type: DataTypes.STRING(500), allowNull: true });
+  await addIfMissing('badge', { type: DataTypes.STRING(100), allowNull: true });
+  await addIfMissing('badge_color', { type: DataTypes.STRING(20), allowNull: true });
+  await addIfMissing('city_name', { type: DataTypes.STRING(100), allowNull: true });
+  await addIfMissing('city_name_ar', { type: DataTypes.STRING(100), allowNull: true });
+}
+
 async function initializeApp() {
   if (initPromise) {
     return initPromise;
@@ -67,12 +100,14 @@ async function initializeApp() {
     if (isVercel) {
       await sequelize.authenticate();
       await ensureUserAuthColumns();
+      await ensureHospitalColumns();
       console.log('Database connection verified for Vercel runtime.');
       return;
     }
 
     await sequelize.sync();
     await ensureUserAuthColumns();
+    await ensureHospitalColumns();
     console.log('Database tables synced.');
 
     const userCount = await User.count();
@@ -162,6 +197,16 @@ app.use((_req, res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ── Swagger API Docs ─────────────────────────────────────────
+const swaggerSpec = swaggerJsdoc(swaggerConfig);
+if (isDev) {
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: "Morgan's Hope API Docs",
+  }));
+}
+app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
+
 if (!isDev) {
   const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -179,8 +224,26 @@ if (!isDev) {
     message: { success: false, message: 'Too many auth requests, please try again later.' },
   });
 
+  const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many registration attempts, please try again later.' },
+  });
+
+  const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many upload requests, please try again later.' },
+  });
+
   app.use(globalLimiter);
   app.use('/api/auth', authLimiter);
+  app.use('/api/auth/register', registerLimiter);
+  app.use('/api/analysis/upload', uploadLimiter);
 }
 
 app.use(
@@ -240,9 +303,44 @@ const rootHandler = (_req: express.Request, res: express.Response) => {
   });
 };
 
-app.get('/', rootHandler);
+/**
+ * @openapi
+ * /api:
+ *   get:
+ *     tags: [Health]
+ *     summary: API root — list available endpoints
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Server info with endpoint list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
+if (isDev) app.get('/', rootHandler);
 app.get('/api', rootHandler);
-app.get('/health', healthHandler);
+
+/**
+ * @openapi
+ * /api/health:
+ *   get:
+ *     tags: [Health]
+ *     summary: Health check — server, database, and AI service status
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Health status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data: { $ref: '#/components/schemas/HealthData' }
+ */
+if (isDev) app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
 
 app.use(async (_req, _res, next) => {
@@ -254,13 +352,13 @@ app.use(async (_req, _res, next) => {
   }
 });
 
-app.use('/auth', authRoutes);
+if (isDev) app.use('/auth', authRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/analysis', analysisRoutes);
+if (isDev) app.use('/analysis', analysisRoutes);
 app.use('/api/analysis', analysisRoutes);
-app.use('/hospitals', hospitalRoutes);
+if (isDev) app.use('/hospitals', hospitalRoutes);
 app.use('/api/hospitals', hospitalRoutes);
-app.use('/chat', chatRoutes);
+if (isDev) app.use('/chat', chatRoutes);
 app.use('/api/chat', chatRoutes);
 
 app.use((_req, res) => {

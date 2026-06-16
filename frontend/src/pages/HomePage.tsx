@@ -14,7 +14,7 @@ import { SURVIVAL } from '../data/survival';
 import { EGYPT_CARDS } from '../data/eg-cards';
 import { FEATURES } from '../data/features';
 // Icons
-import { HiExclamationTriangle, HiDocumentText, HiCloudArrowUp, HiCpuChip, HiInformationCircle, HiChartBarSquare, HiClock, HiMagnifyingGlass } from 'react-icons/hi2';
+import { HiExclamationTriangle, HiDocumentText, HiCloudArrowUp, HiCpuChip, HiInformationCircle, HiChartBarSquare, HiClock } from 'react-icons/hi2';
 import { DONUT_DATA } from '../data/donut';
 
 // Interface for language
@@ -140,7 +140,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	
 	        {/* ══ STATS BAR ═════════════════════════════════════════════════════ */}
 	        <section ref={statsRef} style={{ background: 'var(--card-bg)', boxShadow: '0 2px 12px var(--shadow-main)', padding: isMobile ? '20px 16px' : '28px 40px', borderBottom: '1px solid var(--card-border)' }}>
-	          <div className='group' style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: isMobile || isTablet ? 24 : 0 }}>
+	          <div style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: isMobile || isTablet ? 24 : 0 }}>
 	            {[
 	              { val: '99.86%', label: t('CT Scan Accuracy', 'دقة CT Scan') },
 	              { val: '6', label: t('Cancer Types', 'أنواع السرطان') },
@@ -148,7 +148,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	              { val: '1,200+', label: t('Scans Analyzed', 'فحص تم تحليله') },
 	              { val: '<4s', label: t('Avg Analysis Time', 'متوسط وقت التحليل') },
 	            ].map((s, i) => (
-	              <div className='group-hover:scale-104 group-hover:-translate-y-[3px] transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
+	              <div className='group *:group-hover:scale-125 *:group-hover:-translate-y-2 *:transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
 	                <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', lineHeight: 1.1, letterSpacing: -0.5 }}>{s.val}</div>
 	                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 5, fontWeight: 700 }}>{s.label}</div>
 	              </div>
@@ -158,10 +158,10 @@ export default function HomePage({ lang }: HomePageProps) {
 		</div>
 		  {/* ══ EGYPT STATS & INSIGHTS ══════════════════════════════════════════ */}
 		  <section style={{
-			  position: 'relative', backgroundImage: 'url(images/home/stats-insights.jpeg)',
-			  backgroundRepeat: 'no-repeat', backgroundSize: isMobile ? 'cover' : 'contain',
-    		  backgroundPosition: 'top center', marginTop: "30px" }}>
-				<div className='absolute inset-0 bg-white/40' />
+			  position: 'relative', overflow: 'hidden', marginTop: "30px" }}>
+          <img src="images/home/stats-1.png" className='hidden md:block' style={{ position: 'absolute', left: -30, top: 130, width: '40%', height: '40%', objectFit: 'cover', zIndex: 0 }} />
+          <img src="images/home/stats-2.png" className='hidden md:block' style={{ position: 'absolute', right: 0, top: 150, width: '40%', height: '40%', objectFit: 'cover', zIndex: 0 }} />
+          <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'rgba(255,255,255,0.4)' }} />
 		    	<div style={{position: 'relative', padding: isMobile ? '40px 20px 10px' : '80px 40px 10px', zIndex: 10, maxWidth: 1100, margin: '0 auto'}}>
 
 				  <div style={{ textAlign: 'center', marginBottom: 50 }}>
@@ -205,72 +205,76 @@ export default function HomePage({ lang }: HomePageProps) {
 					  
 	          {/* Combined Insights: Survival + Distro */}
 	          <div ref={survivalRef} style={{ display: 'grid', gridTemplateColumns: isTablet ? '1fr' : '1.2fr 1fr', gap: 24, marginBottom: 32 }}>
-	            {/* Survival Column */}
-	            <div style={{ background: 'var(--card-bg)', borderRadius: 24, padding: '34px', border: '1px solid var(--card-border)', boxShadow: '0 4px 20px var(--shadow-main)' }}>
-	              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-	                <div style={{ padding: 10, background: 'var(--bg-main)', borderRadius: 12, color: 'var(--primary)' }}>
-	                  <HiChartBarSquare size={20} />
-	                </div>
-	                <div>
-	                  <h3 style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 17, margin: 0 }}>{t('Survival Rate by Stage', 'معدل البقاء حسب المرحلة')}</h3>
-	                  <div style={{ color: 'var(--text-muted)', fontSize: 11.5, marginTop: 2, fontWeight: 500 }}>{t('Source: Global IARC / SEER Database', 'المصدر: قاعدة بيانات IARC / SEER العالمية')}</div>
-	                </div>
-	              </div>
-	
-	              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-		              {SURVIVAL.map((s, i) => (
-		                <SurvivalBar key={i} {...s} label={ar ? s.ar : s.en} trigger={vTrig} />
-		              ))}
-	              </div>
-	
-	              <div className='bg-[var(--primar-light)]/60 border border-[var(--primary)] border-dashed text-[var(--text-main)] flex items-center gap-4' style={{ marginTop: 24, borderRadius: 14, padding: '16px 20px', position: 'relative', overflow: 'hidden' }}>
-	                <HiExclamationTriangle color={'var(--primary)'} size={30} />
-	                <p style={{ fontSize: 11, margin: 0, fontWeight: 600, lineHeight: 1.6, position: 'relative', zIndex: 1 }}>
-	                  {t('Stage I detection yields a 13× higher survival rate than Stage IV. Every scan is a chance for life.', 'اكتشاف المرحلة الأولى يحقق معدل بقاء أعلى بـ 13 مرة من الرابعة. كل فحص هو فرصة للحياة.')}
-	                </p>
-	                <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: 100, height: 100, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
-	              </div>
-	            </div>
-	
-	            {/* Distribution Column */}
-	            <div style={{ background: 'var(--card-bg)', borderRadius: 24, padding: '34px', border: '1px solid var(--card-border)', boxShadow: '0 4px 20px var(--shadow-main)' }}>
-	              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-	                <div style={{ padding: 10, background: 'var(--bg-main)', borderRadius: 12, color: 'var(--primary)' }}>
-	                  <HiClock size={20} />
-	                </div>
-	                <div>
-	                  <h3 style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 17, margin: 0 }}>{t('Global Histology', 'التوزيع النسيجي العالمي')}</h3>
-	                  <div style={{ color: 'var(--text-muted)', fontSize: 11.5, marginTop: 2, fontWeight: 500 }}>{t('Breakdown by lung cancer type', 'تقسيم حسب نوع سرطان الرئة')}</div>
-	                </div>
-	              </div>
-	
-	              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 16 : 32, marginTop: 10, flexDirection: isMobile ? 'column' : 'row' }}>
-	                <div style={{ position: 'relative', width: 140, height: 140, flexShrink: 0 }}>
-	                  <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
-	                    {slices.map((s, i) => (
-	                      <circle key={i} cx="50" cy="50" r={40} fill="none" stroke={s.color} strokeWidth={14}
-	                        strokeDasharray={`${s.dash} ${circ - s.dash}`} strokeDashoffset={-s.off}
-	                        style={{ transition: 'stroke-dasharray 2s cubic-bezier(0.4, 0, 0.2, 1)', strokeLinecap: 'round' }} />
-	                    ))}
-	                  </svg>
-	                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-	                    <div style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{t('Histology', 'الأنسجة')}</div>
-	                    <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--main-text)', marginTop: -2 }}>100%</div>
-	                  </div>
-	                </div>
-	                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-	                  {DONUT_DATA.map((d, i) => (
-	                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-	                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-	                        <div style={{ width: 8, height: 8, borderRadius: 2, background: d.color }} />
-	                        <span style={{ fontSize: 13, color: 'var(--text-main)', fontWeight: 600 }}>{ar ? d.labelAr : d.labelEn}</span>
-	                      </div>
-	                      <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--text-main)' }}>{d.pct}%</span>
-	                    </div>
-	                  ))}
-	                </div>
-	              </div>
-	            </div>
+            {/* Survival Column */}
+            <div style={{ background: 'var(--card-bg)', borderRadius: 24, padding: '34px', border: '1px solid var(--card-border)', boxShadow: '0 4px 20px var(--shadow-main)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                  <div style={{ padding: 10, background: 'var(--bg-main)', borderRadius: 12, color: 'var(--primary)' }}>
+                    <HiChartBarSquare size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 17, margin: 0 }}>{t('Survival Rate by Stage', 'معدل البقاء حسب المرحلة')}</h3>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 11.5, marginTop: 2, fontWeight: 500 }}>{t('Source: Global IARC / SEER Database', 'المصدر: قاعدة بيانات IARC / SEER العالمية')}</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {SURVIVAL.map((s, i) => (
+                    <SurvivalBar key={i} {...s} label={ar ? s.ar : s.en} trigger={vTrig} />
+                  ))}
+                </div>
+
+                <div className='bg-[var(--primar-light)]/60 border border-[var(--primary)] border-dashed text-[var(--text-main)] flex items-center gap-4' style={{ marginTop: 24, borderRadius: 14, padding: '16px 20px', position: 'relative', overflow: 'hidden' }}>
+                  <HiExclamationTriangle color={'var(--primary)'} size={30} />
+                  <p style={{ fontSize: 11, margin: 0, fontWeight: 600, lineHeight: 1.6, position: 'relative', zIndex: 1 }}>
+                    {t('Stage I detection yields a 13× higher survival rate than Stage IV. Every scan is a chance for life.', 'اكتشاف المرحلة الأولى يحقق معدل بقاء أعلى بـ 13 مرة من الرابعة. كل فحص هو فرصة للحياة.')}
+                  </p>
+                  <div style={{ position: 'absolute', top: '-50%', right: '-10%', width: 100, height: 100, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Distribution Column */}
+            <div style={{ background: 'var(--card-bg)', borderRadius: 24, padding: '34px', border: '1px solid var(--card-border)', boxShadow: '0 4px 20px var(--shadow-main)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                  <div style={{ padding: 10, background: 'var(--bg-main)', borderRadius: 12, color: 'var(--primary)' }}>
+                    <HiClock size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: 17, margin: 0 }}>{t('Global Histology', 'التوزيع النسيجي العالمي')}</h3>
+                    <div style={{ color: 'var(--text-muted)', fontSize: 11.5, marginTop: 2, fontWeight: 500 }}>{t('Breakdown by lung cancer type', 'تقسيم حسب نوع سرطان الرئة')}</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 16 : 32, marginTop: 10, flexDirection: isMobile ? 'column' : 'row' }}>
+                  <div style={{ position: 'relative', width: 140, height: 140, flexShrink: 0 }}>
+                    <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
+                      {slices.map((s, i) => (
+                        <circle key={i} cx="50" cy="50" r={40} fill="none" stroke={s.color} strokeWidth={14}
+                          strokeDasharray={`${s.dash} ${circ - s.dash}`} strokeDashoffset={-s.off}
+                          style={{ transition: 'stroke-dasharray 2s cubic-bezier(0.4, 0, 0.2, 1)', strokeLinecap: 'round' }} />
+                      ))}
+                    </svg>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{t('Histology', 'الأنسجة')}</div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: 'var(--main-text)', marginTop: -2 }}>100%</div>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {DONUT_DATA.map((d, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: 2, background: d.color }} />
+                          <span style={{ fontSize: 13, color: 'var(--text-main)', fontWeight: 600 }}>{ar ? d.labelAr : d.labelEn}</span>
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 900, color: 'var(--text-main)' }}>{d.pct}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
 	          </div>
 				
 		  {/* Optimized Call-to-Action Banner */}
@@ -325,10 +329,10 @@ export default function HomePage({ lang }: HomePageProps) {
 						  key={index}
 						  style={{ height: '100%', textAlign: 'center', background: 'var(--card-bg)', borderRadius: 16, padding: '20px 15px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
 	                  <div className='text-(--primary) flex items-center justify-center group-hover:-translate-y-[3px] group-hover:text-[var(--primary-dark)]'
-	                    style={{ backgroundImage: `url(${CURRENT_IMAGE})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 10, height: 130, marginBottom: 16, }}>
-							  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
-								  {s.Icon}
-							</div>
+				                 style={{ backgroundImage: `url(${CURRENT_IMAGE})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 10, height: 130, marginBottom: 16, }}>
+										  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
+											  {s.Icon}
+											</div>
 	                  </div>
 	                  <h3 className='group-hover:text-[var(--primary)] group-hover:-translate-y-[3px]' style={{ fontWeight: 800, margin: '0 0 10px', fontSize: 16 }}>{s.title}</h3>
 	                  <p className='text-[var(--text-muted)] group-hover:text-[var(--text-main)] group-hover:-translate-y-[3px]' style={{ fontSize: 13, lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
@@ -351,25 +355,21 @@ export default function HomePage({ lang }: HomePageProps) {
 	              const currentImage = CARDS_IMAGES[i%3];
 
 	              return (
-	                <div className='text-center' key={i} style={{ height: '100%', background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)', transition: 'box-shadow 0.2s, transform 0.2s' }}
-	                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 22px var(--shadow-hover)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-	                  onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 2px 8px var(--shadow-main)'; e.currentTarget.style.transform = 'none'; }}
-	                >
-						<div className='flex items-center justify-center' style={{
-						    backgroundImage: `url(${currentImage})`,
-						    backgroundSize: 'cover',
-							backgroundPosition: 'center',
-						    borderRadius: 10,
-						    height: 160,
-						    marginBottom: 16,
-						    color: 'var(--primary)',
-						}}>
-							  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
-								  <Icon size={29} />
-					 		  </div>
-						  </div>
-	                  <h4 style={{ fontWeight: 800, color: 'var(--text-main)', margin: '0 0 7px' }} className='text-md md:text-lg'>{ar ? title.ar : title.en}</h4>
-	                  <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.65, margin: 0 }}>{ar ? desc.ar : desc.en}</p>
+	                <div className='group-hover:scale-104 animate-card group *:transition-all *:duration-300 text-center' key={i} style={{ height: '100%', background: 'var(--card-bg)', borderRadius: 14, padding: '24px 20px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
+										<div className='text-(--primary) flex items-center justify-center group-hover:-translate-y-[3px] group-hover:text-[var(--primary-dark)]' style={{
+										    backgroundImage: `url(${currentImage})`,
+										    backgroundSize: 'cover',
+												backgroundPosition: 'center',
+										    borderRadius: 10,
+										    height: 160,
+										    marginBottom: 16,
+										}}>
+										  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
+											  <Icon size={29} />
+								 		  </div>
+								  	</div>
+	                  <h3 className='group-hover:text-[var(--primary)] group-hover:-translate-y-[3px]' style={{ fontWeight: 800, margin: '0 0 7px', fontSize: isMobile ? 15 : 17 }}>{ar ? title.ar : title.en}</h3>
+	                  <p className='text-[var(--text-muted)] group-hover:text-[var(--text-main)] group-hover:-translate-y-[3px]' style={{ fontSize: 13, lineHeight: 1.65, margin: 0 }}>{ar ? desc.ar : desc.en}</p>
 				    </div>
 	              )
               })}

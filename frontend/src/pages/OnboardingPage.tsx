@@ -2,11 +2,11 @@ import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../utils/api';
-import { HiUser, HiExclamationCircle } from 'react-icons/hi2';
-
-const IconUser = () => <HiUser size={22} />;
+import { HiExclamationCircle, HiPhone } from 'react-icons/hi2';
 
 const IconAlert = () => <HiExclamationCircle size={15} />;
+
+const IconPhone = () => <HiPhone size={15} />;
 
 export default function OnboardingPage() {
     const navigate = useNavigate();
@@ -159,15 +159,6 @@ export default function OnboardingPage() {
             <div style={{ width: '100%', maxWidth: 520 }}>
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: 36 }}>
-                    <div style={{
-                        width: 72, height: 72, borderRadius: 20,
-                        background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 20px',
-                        boxShadow: '0 16px 40px rgba(var(--primary-rgb),0.3)',
-                    }}>
-                        <IconUser />
-                    </div>
                     <h1 style={{ margin: '0 0 10px', color: 'var(--text-main)', fontSize: 'clamp(1.7rem, 4vw, 2.1rem)', fontWeight: 900, letterSpacing: '-0.04em' }}>
                         {t('Complete your profile', 'أكمل ملفك الشخصي')}
                     </h1>
@@ -228,14 +219,14 @@ export default function OnboardingPage() {
                         }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                                 <div style={{ width: 36, height: 36, borderRadius: 12, background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                    <IconAlert />
+                                    <IconPhone />
                                 </div>
                                 <div>
                                     <h3 style={{ margin: '0 0 4px', color: 'var(--text-main)', fontSize: '0.98rem', fontWeight: 850 }}>
                                         {t('Verify your phone', 'Verify your phone')}
                                     </h3>
                                     <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.6 }}>
-                                        {t('We will send a 6-digit code to your email to confirm your phone number, then enter it here to continue.', 'We will send a 6-digit code to your email to confirm your phone number, then enter it here to continue.')}{phoneTarget ? ' ' + phoneTarget : ''}
+                                        {t('We will send a 6-digit code to your email to confirm your phone number, then enter it here to continue.', 'We will send a 6-digit code to your email to confirm your phone number, then enter it here to continue.')}
                                     </p>
                                 </div>
                             </div>
@@ -359,7 +350,7 @@ export default function OnboardingPage() {
                             onClick={handleSkip}
                             style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                         >
-                            {t('Skip for now — I’ll do this later', 'تخطي الآن — سأفعل هذا لاحقًا')}
+                            {t('Skip for now, I’ll do this later', 'تخطي الآن — سأفعل هذا لاحقًا')}
                         </button>
                     </div>
                 </div>
@@ -381,7 +372,7 @@ export default function OnboardingPage() {
                     ))}
                 </div>
                 <p style={{ textAlign: 'center', marginTop: 10, color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-                    {t('Step 3 of 3 — Final step', 'الخطوة 3 من 3 — الخطوة الأخيرة')}
+                    {t('Step 3 of 3 - Final step', 'الخطوة 3 من 3 — الخطوة الأخيرة')}
                 </p>
             </div>
 

@@ -1,24 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MotionFade } from '../components/animations/MotionFade';
+import { MotionHoverScale } from '../components/animations/MotionHoverScale';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
-import { HiChevronDown } from 'react-icons/hi2';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Plus, X } from '@aliimam/icons';
 
 interface FAQsPageProps { lang: 'en' | 'ar'; }
-
-const ArrowIcon = ({ open }: { open: boolean }) => (
-    <HiChevronDown
-        size={20}
-        style={{
-            transition: 'transform 0.25s',
-            transform: open ? 'rotate(180deg)' : 'rotate(0deg)'
-        }}
-    />
-);
 
 export function FAQsPage({ lang }: FAQsPageProps) {
     const ar = lang === 'ar';
     const t = (en: string, arText: string) => ar ? arText : en;
-    const [open, setOpen] = useState<number | null>(0);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const FAQS = [
         {
@@ -55,81 +58,197 @@ export function FAQsPage({ lang }: FAQsPageProps) {
         <MotionPageTransition>
             <div
                 dir={ar ? 'rtl' : 'ltr'}
-                className={`bg-[#efefef] text-slate-950 ${ar ? "font-['Cairo',sans-serif]" : "font-['Sora',sans-serif]"}`}
+                style={{
+                    minHeight: '100vh',
+                    background: 'radial-gradient(circle at 12% 18%, rgba(var(--primary-rgb),0.08), transparent 22%), radial-gradient(circle at 88% 14%, rgba(var(--primary-rgb),0.06), transparent 20%), linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, var(--bg-main)) 0%, var(--bg-main) 100%)',
+                    color: 'var(--text-main)',
+                    padding: isMobile ? '52px 18px' : '90px 40px',
+                    fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif",
+                }}
             >
-                <main className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:py-20">
-                    <div className="grid gap-12 lg:grid-cols-[0.85fr_1.35fr] lg:gap-24">
+                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: isMobile ? '1fr' : '0.85fr 1.35fr',
+                            gap: isMobile ? 32 : 48,
+                            alignItems: 'start',
+                        }}
+                    >
                         <MotionFade direction="up" delay={0.05}>
-                            <aside className={`pt-2 ${ar ? 'lg:text-right' : 'lg:text-left'}`}>
-                                <p className="mb-5 inline-flex rounded-full border border-[#1B4D3E]/20 bg-white/90 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-[#1B4D3E]">
+                            <aside style={{ paddingTop: 8, textAlign: ar ? 'right' : 'left' }}>
+                                <div
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                        padding: '8px 14px',
+                                        borderRadius: 999,
+                                        background: 'color-mix(in srgb, var(--primary) 10%, var(--card-bg))',
+                                        color: 'var(--primary-dark)',
+                                        fontSize: 12,
+                                        fontWeight: 800,
+                                        letterSpacing: 0.5,
+                                        textTransform: 'uppercase',
+                                        marginBottom: 16,
+                                    }}
+                                >
                                     Morgan's Hope
-                                </p>
-                                <h1 className="max-w-[520px] text-4xl font-semibold leading-[1.05] tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[56px]">
+                                </div>
+                                <h1
+                                    style={{
+                                        maxWidth: 520,
+                                        fontSize: isMobile ? 32 : 48,
+                                        fontWeight: 800,
+                                        lineHeight: 1.05,
+                                        letterSpacing: '-0.04em',
+                                        color: 'var(--primary-dark)',
+                                        margin: 0,
+                                    }}
+                                >
                                     {t('Frequently asked questions', 'الأسئلة الشائعة')}
                                 </h1>
-                                <p className="mt-6 max-w-[450px] text-base leading-8 text-slate-600">
+                                <p
+                                    style={{
+                                        marginTop: 16,
+                                        maxWidth: 450,
+                                        fontSize: 16,
+                                        lineHeight: 1.85,
+                                        color: 'var(--text-muted)',
+                                    }}
+                                >
                                     {t("Everything you need to know about Morgan's Hope, AI scan analysis, privacy, accuracy, and reports.", 'كل ما تحتاج معرفته عن مورجان هوب، تحليل الأشعة بالذكاء الاصطناعي، الخصوصية، الدقة، والتقارير.')}
                                 </p>
                             </aside>
                         </MotionFade>
 
                         <section>
-                            <div className="h-px w-full bg-gradient-to-r from-[#c3c9c6] via-[#1B4D3E]/65 to-[#1B4D3E]/10" />
-                            <div className="border-b border-slate-900/35 bg-white/25">
-                                {FAQS.map((faq, i) => {
-                                    const isOpen = open === i;
+                            <div
+                                style={{
+                                    height: 1,
+                                    width: '100%',
+                                    background: 'linear-gradient(to right, color-mix(in srgb, var(--primary) 20%, transparent), color-mix(in srgb, var(--primary) 50%, transparent), color-mix(in srgb, var(--primary) 10%, transparent))',
+                                }}
+                            />
 
-                                    return (
-                                        <MotionFade key={i} direction="up" delay={i * 0.04}>
-                                            <article className="border-t border-slate-900/35">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setOpen(isOpen ? null : i)}
-                                                    className="flex w-full items-start justify-between gap-6 py-5 text-left md:py-6"
-                                                    style={{ textAlign: ar ? 'right' : 'left' }}
-                                                >
-                                                    <span className="text-[1.02rem] font-medium leading-7 tracking-[-0.01em] text-slate-950 sm:text-[1.06rem]">
-                                                        {faq.q}
-                                                    </span>
-                                                    <span className={`mt-1 shrink-0 text-slate-950 transition-colors ${isOpen ? 'text-[#1B4D3E]' : ''}`}>
-                                                        <ArrowIcon open={isOpen} />
-                                                    </span>
-                                                </button>
-
-                                                {isOpen && (
-                                                    <div className="pb-8 pt-1 md:pb-9">
-                                                        <p className="max-w-[760px] text-[0.95rem] leading-8 text-slate-700">
-                                                            {faq.a}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </article>
-                                        </MotionFade>
-                                    );
-                                })}
-                            </div>
+                            <Accordion type="single" collapsible className="w-full">
+                                {FAQS.map((faq, i) => (
+                                    <AccordionItem
+                                        key={i}
+                                        value={`item-${i}`}
+                                        className="border-b"
+                                        style={{ borderColor: 'var(--card-border)' }}
+                                    >
+                                        <AccordionTrigger
+                                            className="group [&>svg]:hidden"
+                                            style={{
+                                                width: '100%',
+                                                padding: isMobile ? '20px 0' : '24px 0',
+                                                textAlign: ar ? 'right' : 'left',
+                                                color: 'var(--text-main)',
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    fontSize: '1.02rem',
+                                                    fontWeight: 500,
+                                                    lineHeight: 1.75,
+                                                    letterSpacing: '-0.01em',
+                                                }}
+                                            >
+                                                {faq.q}
+                                            </span>
+                                            <div className="relative shrink-0 mt-1" style={{ marginInlineStart: 24 }}>
+                                                <Plus
+                                                    strokeWidth={2}
+                                                    className="h-5 w-5 transition-all duration-500 group-data-[state=open]:opacity-0 group-data-[state=open]:rotate-180"
+                                                    style={{ color: 'var(--primary)' }}
+                                                />
+                                                <X
+                                                    strokeWidth={2}
+                                                    className="absolute inset-0 h-5 w-5 transition-all duration-500 opacity-0 group-data-[state=open]:opacity-100 group-data-[state=open]:rotate-180"
+                                                    style={{ color: 'var(--primary)' }}
+                                                />
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent>
+                                            <div
+                                                style={{
+                                                    paddingBottom: 24,
+                                                    maxWidth: 760,
+                                                    fontSize: '0.95rem',
+                                                    lineHeight: 2,
+                                                    color: 'var(--text-muted)',
+                                                }}
+                                            >
+                                                {faq.a}
+                                            </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
 
                             <MotionFade direction="up" delay={0.35}>
-                                <div className="mt-10 flex flex-col gap-4 border-t border-[#1B4D3E]/25 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                                <div
+                                    style={{
+                                        marginTop: 40,
+                                        display: 'flex',
+                                        flexDirection: isMobile ? 'column' : 'row',
+                                        gap: 16,
+                                        // borderTop: '1px solid color-mix(in srgb, var(--primary) 25%, transparent)',
+                                        paddingTop: 24,
+                                        alignItems: isMobile ? 'flex-start' : 'center',
+                                        justifyContent: 'space-between',
+                                    }}
+                                >
                                     <div>
-                                        <p className="text-lg font-semibold text-slate-950">
+                                        <p
+                                            style={{
+                                                fontSize: 18,
+                                                fontWeight: 600,
+                                                color: 'var(--primary-dark)',
+                                                margin: 0,
+                                            }}
+                                        >
                                             {t("Still have questions?", "لا تزال لديك أسئلة؟")}
                                         </p>
-                                        <p className="mt-1 text-sm leading-6 text-slate-600">
+                                        <p
+                                            style={{
+                                                marginTop: 4,
+                                                fontSize: 14,
+                                                lineHeight: 1.5,
+                                                color: 'var(--text-muted)',
+                                            }}
+                                        >
                                             {t("Our team is happy to help.", "فريقنا سعيد بمساعدتك.")}
                                         </p>
                                     </div>
-                                    <a
-                                        href="/contact"
-                                        className="inline-flex w-fit items-center justify-center rounded-full bg-[#1B4D3E] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#12372d]"
-                                    >
-                                        {t('Contact Us', 'تواصل معنا')}
-                                    </a>
+                                    <MotionHoverScale>
+                                        <a
+                                            href="/contact"
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                borderRadius: 999,
+                                                background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
+                                                padding: isMobile ? '12px 24px' : '14px 32px',
+                                                fontSize: 14,
+                                                fontWeight: 700,
+                                                color: 'white',
+                                                textDecoration: 'none',
+                                                transition: 'all 0.2s',
+                                                boxShadow: '0 10px 24px rgba(var(--primary-rgb), 0.22)',
+                                            }}
+                                        >
+                                            {t('Contact Us', 'تواصل معنا')}
+                                        </a>
+                                    </MotionHoverScale>
                                 </div>
                             </MotionFade>
                         </section>
                     </div>
-                </main>
+                </div>
             </div>
         </MotionPageTransition>
     );
