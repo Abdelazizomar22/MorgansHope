@@ -18,6 +18,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 30.0626, lng: 31.2497 },
     beds: '750+', established: '1969', type: 'Government',
     services: ['Lung Cancer', 'Chemotherapy', 'Radiation', 'Surgery', 'Bone Marrow'],
+    servicesAr: ['سرطان الرئة', 'العلاج الكيميائي', 'العلاج الإشعاعي', 'الجراحة', 'نخاع العظم'],
     badge: 'Largest in Egypt', badgeColor: '#dc3545',
   },
   {
@@ -39,6 +40,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 30.0776, lng: 31.3187 },
     beds: '500+', established: '1948', type: 'Government',
     services: ['Lung Cancer', 'CT Biopsy', 'Chemotherapy', 'Radiation', 'Palliative Care'],
+    servicesAr: ['سرطان الرئة', 'خزعة بالتوجيه المقطعي', 'العلاج الكيميائي', 'العلاج الإشعاعي', 'الرعاية التلطيفية'],
     badge: 'University Hospital', badgeColor: '#0056b3',
   },
   {
@@ -60,6 +62,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 30.0589, lng: 31.2248 },
     beds: '300+', established: '1999', type: 'Private',
     services: ['VATS Surgery', 'PET-CT', 'Immunotherapy', 'Targeted Therapy', 'Palliative Care'],
+    servicesAr: ['جراحة الصدر بالمنظار', 'PET-CT', 'العلاج المناعي', 'العلاج المستهدف', 'الرعاية التلطيفية'],
     badge: 'JCI Accredited', badgeColor: '#16a34a',
   },
   {
@@ -81,6 +84,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 27.1783, lng: 31.1859 },
     beds: '280+', established: '1997', type: 'Government',
     services: ['Lung Cancer', 'Chemotherapy', 'Radiation', 'Nuclear Medicine', 'Surgery'],
+    servicesAr: ['سرطان الرئة', 'العلاج الكيميائي', 'العلاج الإشعاعي', 'الطب النووي', 'الجراحة'],
     badge: 'Serves Upper Egypt', badgeColor: '#6f42c1',
   },
   {
@@ -102,6 +106,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 31.0409, lng: 31.3785 },
     beds: '320+', established: '1985', type: 'Government',
     services: ['Bronchoscopy', 'CT Biopsy', 'Chemotherapy', 'Radiation', 'Surgery'],
+    servicesAr: ['تنظير القصبات', 'خزعة بالتوجيه المقطعي', 'العلاج الكيميائي', 'العلاج الإشعاعي', 'الجراحة'],
     badge: 'Delta Region Leader', badgeColor: '#2c7da0',
   },
   {
@@ -123,6 +128,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 31.1975, lng: 29.8925 },
     beds: '400+', established: '1942', type: 'Government',
     services: ['Thoracic Surgery', 'Pulmonology', 'Chemotherapy', 'Radiation', 'Endoscopy'],
+    servicesAr: ['جراحة الصدر', 'أمراض الرئة', 'العلاج الكيميائي', 'العلاج الإشعاعي', 'المنظار'],
     badge: 'North Egypt', badgeColor: '#0d3b2e',
   },
   {
@@ -144,6 +150,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 30.0613, lng: 31.3419 },
     beds: '380+', established: '1981', type: 'Private',
     services: ['PET-CT', 'MRI', 'Tumor Board', 'Chemotherapy', 'Immunotherapy'],
+    servicesAr: ['PET-CT', 'MRI', 'مجلس الأورام', 'العلاج الكيميائي', 'العلاج المناعي'],
     badge: 'Private Excellence', badgeColor: '#fd7e14',
   },
   {
@@ -165,6 +172,7 @@ export const REAL_HOSPITALS = [
     coordinates: { lat: 30.0338, lng: 31.2304 },
     beds: '1200+', established: '1837', type: 'Government',
     services: ['Thoracic Surgery', 'Pulmonology', 'CT Scan', 'Biopsy', 'Chemotherapy'],
+    servicesAr: ['جراحة الصدر', 'أمراض الرئة', 'الأشعة المقطعية', 'الخزعة', 'العلاج الكيميائي'],
     badge: 'Est. 1837', badgeColor: '#343a40',
   },
 ];
