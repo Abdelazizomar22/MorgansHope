@@ -10,16 +10,13 @@
     "start": "node dist/server.js",
     "migrate": "node dist/utils/migrate.js",
     "migrate:dev": "ts-node src/utils/migrate.ts",
-    "seed": "ts-node src/utils/seed.ts",
-    "worker": "ts-node src/worker.ts",
-    "worker:watch": "ts-node-dev --respawn --transpile-only src/worker.ts"
+    "seed": "ts-node src/utils/seed.ts"
   },
   "dependencies": {
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
-    "bullmq": "^5.78.0",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -30,7 +27,6 @@
     "firebase-admin": "^13.10.0",
     "form-data": "^4.0.0",
     "helmet": "^7.1.0",
-    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^8.0.7",

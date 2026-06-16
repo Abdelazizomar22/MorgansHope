@@ -35,11 +35,6 @@ ChatMessage.init(
     sequelize,
     tableName: 'chat_messages',
     underscored: true,
-    indexes: [
-      { name: 'idx_chat_user_id', fields: ['user_id'] },
-      { name: 'idx_chat_created_at', fields: ['created_at'] },
-      { name: 'idx_chat_user_created', fields: ['user_id', 'created_at'] },
-    ],
   },
 );
 
