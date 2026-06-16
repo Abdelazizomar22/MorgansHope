@@ -59,30 +59,40 @@ const summarizeAnalysis = (analysis?: InstanceType<typeof AnalysisResult> | null
   }
 
   const confidence = formatPercent(analysis.confidence) || (ar ? 'غير متاح' : 'not available');
+  const clinicalGroup = (analysis as any).clinicalGroup || null;
+  const tbDetected = (analysis as any).tbDetected;
+  const tbConfidence = formatPercent((analysis as any).tbConfidence);
+  const noduleSizeMm = (analysis as any).noduleSizeMm;
 
   if (ar) {
     return [
       `آخر تحليل: نوع الصورة ${analysis.imageType || 'غير محدد'}`,
       `التصنيف ${analysis.classification || 'غير متاح'}`,
+      clinicalGroup ? `المجموعة السريرية ${clinicalGroup}` : null,
       `الثقة ${confidence}`,
+      tbDetected !== null && tbDetected !== undefined ? `إشارة السل ${tbDetected ? 'موجودة' : 'غير ظاهرة'}${tbConfidence ? ` بثقة ${tbConfidence}` : ''}` : null,
+      noduleSizeMm ? `تقدير حجم العقدة ${noduleSizeMm} مم` : null,
       analysis.isMalignant
         ? 'الحالة تبدو عالية الخطورة وتحتاج متابعة سريعة'
         : analysis.hasFindings
           ? 'توجد ملاحظات تحتاج متابعة'
           : 'لا توجد ملاحظات خطيرة واضحة',
-    ].join('، ');
+    ].filter(Boolean).join('، ');
   }
 
   return [
     `Latest analysis: ${analysis.imageType || 'unspecified'} scan`,
     `classification ${analysis.classification || 'unavailable'}`,
+    clinicalGroup ? `clinical group ${clinicalGroup}` : null,
     `confidence ${confidence}`,
+    tbDetected !== null && tbDetected !== undefined ? `TB signal ${tbDetected ? 'detected' : 'not detected'}${tbConfidence ? ` at ${tbConfidence}` : ''}` : null,
+    noduleSizeMm ? `estimated nodule size ${noduleSizeMm} mm` : null,
     analysis.isMalignant
       ? 'the case looks high risk and needs prompt follow-up'
       : analysis.hasFindings
         ? 'there are findings that need follow-up'
         : 'there are no obvious high-risk findings',
-  ].join(', ');
+  ].filter(Boolean).join(', ');
 };
 
 const inferConversationMemory = (history: ChatTurn[], ar: boolean) => {
@@ -348,6 +358,8 @@ function buildSystemPrompt(
       '-- معلومات المنصة --',
       'الهدف: المنصة تهدف لتوفير فحص مبكر وسريع لأمراض الرئة (مثل السل، الالتهاب الرئوي، وسرطان الرئة) باستخدام الذكاء الاصطناعي.',
       'المتاح حالياً: يمكن للمريض رفع صور الأشعة (CT أو X-Ray) والحصول على تحليل فوري ذكي مع نسبة الثقة والتوصيات الطبية، وتلخيص التقارير هنا.',
+      'Current exact AI scope: CT uses the existing unchanged six-class lung cancer classifier: Normal, Benign, Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and Malignant General.',
+      'Current exact AI scope: The old binary CXR model has been removed. Chest X-Ray now screens clinical groups: Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, and Pleural Diseases, with optional TB signal when available.',
       'قريباً (Coming Soon): استشارات طبية عن بعد مع أطباء صدرية مختصين، حجز مواعيد، ومجتمع تفاعلي للمرضى.',
       'قصة التسمية (آرثر مورغان): المنصة مستوحاة من قصة "آرثر مورغان" بطل لعبة Red Dead Redemption 2 الذي عانى ومات بسبب مرض السل (Tuberculosis). المنصة اسمها "أمل مورغان" وتطمح لمعالجة أمراض الرئة حتى لا يعاني أحد كما عانى آرثر. إذا سُئلت عن آرثر أو سبب التسمية، اذكر هذه القصة الرائعة واربطها بهدف المنصة.',
       '-- قواعد المحادثة --',
@@ -374,6 +386,8 @@ function buildSystemPrompt(
     '-- Platform Context --',
     'Goal: The platform provides early and fast detection of lung diseases (like TB, Pneumonia, and Lung Cancer) using AI.',
     'Currently Available: Users can upload CT or X-Ray scans for instant AI analysis, confidence scores, and recommendations. You can also summarize their reports.',
+    'Current exact AI scope: CT uses the existing unchanged six-class lung cancer classifier: Normal, Benign, Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and Malignant General.',
+    'Current exact AI scope: The old binary CXR model has been removed. Chest X-Ray now screens clinical groups: Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, and Pleural Diseases, with optional TB signal when available.',
     'Coming Soon: Telemedicine consultations with specialist doctors, appointment booking, and a patient support community.',
     'Name Origin (Arthur Morgan): The platform is named "Morgan\'s Hope" inspired by Arthur Morgan from Red Dead Redemption 2, who tragically died of Tuberculosis (TB). The platform exists to fight lung diseases and give hope so no one shares his fate. If asked about Arthur, proudly share this backstory.',
     '-- Conversation Rules --',

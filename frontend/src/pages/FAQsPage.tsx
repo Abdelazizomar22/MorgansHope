@@ -30,7 +30,7 @@ export function FAQsPage({ lang }: FAQsPageProps) {
         },
         {
             q: t("What scan types are supported?", "ما أنواع الأشعة المدعومة؟"),
-            a: t("Currently we support Chest CT Scans (6-class classification: Normal, Benign, Adenocarcinoma, Squamous Cell, Large Cell, Small Cell) and Chest X-Rays (binary: Normal / Nodule-Mass). More scan types are planned for future updates.", "ندعم حالياً الأشعة المقطعية للصدر (6 تصنيفات: طبيعي، حميد، غدي، حرشفي، كبير الخلايا، صغير الخلايا) والأشعة السينية للصدر (تصنيف ثنائي). أنواع إضافية مخططة مستقبلاً.")
+            a: t("Currently we support Chest CT Scans with the existing 6-class lung cancer classifier: Normal, Benign, Adenocarcinoma, Squamous Cell Carcinoma, Large Cell Carcinoma, and Malignant General. Chest X-Ray support now uses clinical disease groups: Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, and Pleural Diseases, with an optional TB signal when available.", "ندعم حالياً الأشعة المقطعية للصدر بموديل CT الحالي المكوّن من 6 تصنيفات: طبيعي، حميد، سرطان غدي، سرطان حرشفي، سرطان كبير الخلايا، وخبيث عام. أما الأشعة السينية للصدر فتعمل الآن بمجموعات مرضية سريرية: عدوى/التهاب رئوي، ملاحظات مرتبطة بالانسداد الرئوي، أمراض التليف الرئوي، مؤشرات قلبية، مؤشرات اشتباه أورام، وأمراض الغشاء البلوري، مع إشارة اختيارية للسل عند توفر موديله.")
         },
         {
             q: t("How accurate is the AI model?", "ما مدى دقة نموذج الذكاء الاصطناعي؟"),

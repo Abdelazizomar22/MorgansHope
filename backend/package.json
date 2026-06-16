@@ -1,7 +1,7 @@
 {
   "name": "medtech-backend",
   "version": "3.1.0",
-  "description": "Morgan's Hope — AI Lung Cancer Detection API",
+  "description": "Morgan's Hope — AI Chest Screening API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node src/server.ts",

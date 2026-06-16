@@ -8,7 +8,7 @@ import {
 } from 'react-icons/hi2';
 
 export const FEATURES = [
-  { Icon: HiCpuChip,      title: { en: 'Dual AI Models',     ar: 'نموذجان AI'          }, desc: { en: 'Specialized algorithms for CT and X-Ray scans',        ar: 'خوارزميات مخصصة لصور CT والأشعة السينية'     } },
+  { Icon: HiCpuChip,      title: { en: 'CT + CXR AI Pipeline',     ar: 'مسار CT و CXR بالذكاء الاصطناعي'          }, desc: { en: 'CT lung cancer classes plus X-Ray clinical disease groups',        ar: 'تصنيفات سرطان الرئة في CT ومجموعات أمراض الصدر في الأشعة السينية'     } },
   { Icon: HiBolt,      title: { en: 'Batch Scanning',     ar: 'رفع متعدد'           }, desc: { en: 'Fast deep learning inference on multiple scans at once', ar: 'تحليل سريع لأكثر من صورة في نفس الوقت'       } },
   { Icon: HiDocumentText, title: { en: 'PDF Reports',        ar: 'تقارير PDF'          }, desc: { en: 'Detailed printable medical report',                     ar: 'تقرير طبي مفصّل قابل للطباعة'                } },
   { Icon: HiHome,    title: { en: 'Hospital Finder',    ar: 'مُوجِّه المستشفيات' }, desc: { en: 'Nearest oncology centers in Egypt',                     ar: 'أقرب مراكز الأورام في مصر'                   } },

@@ -100,7 +100,7 @@ export function AuthLayout({
               <p>
                 {isRtl
                   ? 'منصة بحثية متكاملة لدعم الكشف المبكر عن سرطان الرئة'
-                  : 'A comprehensive research platform for early lung cancer detection & support'}
+                  : 'A comprehensive research platform for AI-assisted chest screening & support'}
               </p>
             </div>
 
