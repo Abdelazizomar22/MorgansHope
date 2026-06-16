@@ -85,6 +85,12 @@ AnalysisResult.init(
     sequelize,
     tableName: 'analysis_results',
     underscored: true,
+    indexes: [
+      { name: 'idx_analysis_user_id', fields: ['user_id'] },
+      { name: 'idx_analysis_status', fields: ['status'] },
+      { name: 'idx_analysis_created_at', fields: ['created_at'] },
+      { name: 'idx_analysis_user_created', fields: ['user_id', 'created_at'] },
+    ],
   }
 );
 

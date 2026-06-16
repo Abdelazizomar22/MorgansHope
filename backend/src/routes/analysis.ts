@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import { authenticate } from '../middleware/auth';
+import { userRateLimiter } from '../middleware/rateLimiter';
 import upload from '../middleware/upload';
 import {
   upload as uploadAnalysis,
@@ -11,6 +12,9 @@ import {
 
 const router = Router();
 
+const analysisUploadLimit = userRateLimiter({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too many upload requests, please try again later.' });
+
+router.post('/upload',  authenticate, analysisUploadLimit, upload.single('image'), uploadAnalysis);
 /**
  * @openapi
  * /api/analysis/upload:
