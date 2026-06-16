@@ -2,9 +2,6 @@
 import { body, validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
-import crypto from 'crypto';
-import { generateOTP, hashOTP, verifyOTP } from '../utils/otp';
-import { sendOTPEmail } from '../utils/mailer';
 import * as authService from '../services/authService';
 
 const REFRESH_COOKIE = 'medtech_refresh';
@@ -18,34 +15,7 @@ const cookieOptions = (maxAgeMs: number) => {
     maxAge: maxAgeMs,
     path: '/',
   };
-}
-
-function makeAccessToken(id: number, ttl = ACCESS_TOKEN_TTL) {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: ttl as any });
-}
-
-function makeRefreshToken(id: number, rememberMe = false) {
-  return jwt.sign(
-    { id, rememberMe },
-    REFRESH_SECRET,
-    { expiresIn: (rememberMe ? REFRESH_TOKEN_LONG_TTL : REFRESH_TOKEN_TTL) as any },
-  );
-}
-
-const normalizeEmail = (value?: string) => value?.toLowerCase().trim() || '';
-const normalizePhone = (value?: string) => value?.replace(/[^\d+]/g, '').trim() || '';
-const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-const generateVerificationCode = () => {
-  const arr = new Uint32Array(1);
-  crypto.getRandomValues(arr);
-  return (100000 + (arr[0] % 900000)).toString();
 };
-
-function queueVerification(user: User, channel: 'email' | 'phone') {
-  const code = generateVerificationCode();
-  user.verificationCode = code;
-  user.verificationChannel = channel;
-  user.verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
 export const registerValidators = [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
@@ -166,19 +136,10 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     console.log('[Auth] Login attempt:', identifier);
   }
 
-  let user = isEmail(normalizedEmail)
-    ? await User.findOne({ where: { email: normalizedEmail, isActive: true } })
-    : null;
+  const result = await authService.loginUser(identifier, password, rememberMe);
 
-  if (!user) {
-    await bcrypt.compare(password, '$2b$12$invalidhashplaceholderxxxxxxxxxxxxxxx');
-    res.status(401).json({ success: false, message: 'Invalid email or password.' });
-    return;
-  }
-
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    res.status(401).json({ success: false, message: 'Invalid email or password.' });
+  if (result.success === false) {
+    res.status(401).json({ success: false, message: result.error + devHint });
     return;
   }
 
@@ -203,14 +164,7 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
     return;
   }
 
-  let payload: { id: number; rememberMe?: boolean };
-  try {
-    payload = jwt.verify(token, REFRESH_SECRET, { algorithms: ['HS256'] }) as { id: number; rememberMe?: boolean };
-  } catch {
-    res.clearCookie(REFRESH_COOKIE, { path: '/' });
-    res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
-    return;
-  }
+  const result = await authService.refreshUserToken(token);
 
   if (result.success === false) {
     res.clearCookie(REFRESH_COOKIE, { path: '/' });
@@ -232,24 +186,14 @@ export const me = asyncHandler(async (req: AuthRequest, res: Response) => {
 });
 
 export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const user = req.user!;
-  const { firstName, lastName, phone, currentPassword, newPassword, age, gender, smokingHistory, medicalHistory } = req.body;
-
-  if (currentPassword || newPassword) {
-    if (!currentPassword || !newPassword) {
-      res.status(400).json({ success: false, message: 'Both currentPassword and newPassword are required' });
-      return;
-    }
-    const match = await bcrypt.compare(currentPassword, user.password);
-    if (!match) {
-      res.status(400).json({ success: false, message: 'Current password is incorrect' });
-      return;
-    }
-    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      res.status(422).json({ success: false, message: 'New password must be at least 8 characters with uppercase, lowercase, and a number' });
-      return;
-    }
-    user.password = await bcrypt.hash(newPassword, 12);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(422).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array().map(e => ({ field: (e as any).path, message: e.msg })),
+    });
+    return;
   }
 
   const result = await authService.updateUserProfile(req.user!, {
@@ -303,26 +247,10 @@ export const resendVerification = asyncHandler(async (req: AuthRequest, res: Res
     return;
   }
 
-  if (channel === 'phone') {
-    if (!user.email || user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
-      res.status(400).json({ success: false, message: 'No email address is available to deliver the phone verification code.' });
-      return;
-    }
+  const result = await authService.resendUserVerification(req.user!, req.body.channel);
 
-    const otp = generateOTP();
-    user.phoneOtpHash = hashOTP(otp, user.id);
-    user.phoneOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
-    await sendOTPEmail(user.email, otp);
-
-    res.json({
-      success: true,
-      message: 'Phone verification code sent to your email.',
-      data: {
-        channel,
-        ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {}),
-      },
-    });
+  if (result.success === false) {
+    res.status(400).json({ success: false, message: result.error });
     return;
   }
 
@@ -341,12 +269,6 @@ export const sendPhoneOtp = asyncHandler(async (req: AuthRequest, res: Response)
     return;
   }
 
-  const otp = generateOTP();
-  user.phoneOtpHash = hashOTP(otp, user.id);
-  user.phoneOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-  await user.save();
-  await sendOTPEmail(user.email, otp);
-
   res.json({
     success: true,
     message: 'A phone verification code was sent to your email.',
@@ -364,8 +286,12 @@ export const verifyPhoneOtp = asyncHandler(async (req: AuthRequest, res: Respons
     });
     return;
   }
-  if (!verifyOTP(otp, user.phoneOtpHash, user.id)) {
-    res.status(400).json({ success: false, message: 'Invalid verification code.' });
+
+  const otp = (req.body.otp || '').toString().trim();
+  const result = await authService.verifyPhoneOtpForUser(req.user!, otp);
+
+  if (result.success === false) {
+    res.status(400).json({ success: false, message: result.error });
     return;
   }
 
@@ -387,4 +313,3 @@ export const uploadAvatar = asyncHandler(async (req: AuthRequest, res: Response)
 
   res.json({ success: true, message: 'Profile picture updated', data: result.data });
 });
-

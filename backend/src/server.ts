@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcryptjs';
 import { DataTypes } from 'sequelize';
 
 import sequelize from './config/database';
@@ -22,7 +23,6 @@ import './models/Hospital';
 import './models/AnalysisResult';
 import './models/ChatMessage';
 
-import { authenticate } from './middleware/auth';
 import authRoutes from './routes/auth';
 import analysisRoutes from './routes/analysis';
 import hospitalRoutes from './routes/hospitals';
@@ -109,6 +109,19 @@ async function initializeApp() {
     await ensureUserAuthColumns();
     await ensureHospitalColumns();
     console.log('Database tables synced.');
+
+    const userCount = await User.count();
+    if (userCount === 0) {
+      const hashed = await bcrypt.hash('Admin@123456', 12);
+      await User.create({
+        firstName: 'Admin',
+        lastName: 'MedTech',
+        email: 'admin@medtech.com',
+        password: hashed,
+        role: 'admin',
+      });
+      console.log('Admin created: admin@medtech.com / Admin@123456');
+    }
   })().catch((err) => {
     initPromise = null;
     console.error('Database sync failed:', err);
@@ -141,7 +154,7 @@ const configuredOrigins = Array.from(
 const vercelPreviewPattern = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 
 const isAllowedOrigin = (origin?: string) => {
-  if (!origin) return true;
+  if (!origin || isDev) return true;
   const normalizedOrigin = normalizeOrigin(origin);
   return configuredOrigins.includes(normalizedOrigin) || vercelPreviewPattern.test(normalizedOrigin);
 };
@@ -235,7 +248,6 @@ if (!isDev) {
 
 app.use(
   '/api/uploads',
-  authenticate,
   express.static(
     path.isAbsolute(process.env.UPLOAD_DIR || 'uploads')
       ? (process.env.UPLOAD_DIR as string)

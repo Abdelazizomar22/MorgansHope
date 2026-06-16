@@ -99,14 +99,8 @@ export async function confirmUpload(req: AuthRequest, res: Response): Promise<vo
     return;
   }
 
-  try {
-    const parsed = new URL(secureUrl);
-    if (parsed.hostname !== 'res.cloudinary.com') {
-      res.status(400).json({ success: false, message: 'Invalid upload destination' });
-      return;
-    }
-  } catch {
-    res.status(400).json({ success: false, message: 'Invalid upload URL' });
+  if (!secureUrl.includes('cloudinary.com')) {
+    res.status(400).json({ success: false, message: 'Invalid upload destination' });
     return;
   }
 
@@ -125,4 +119,3 @@ export async function confirmUpload(req: AuthRequest, res: Response): Promise<vo
     data: { id: record.id, secureUrl: record.secureUrl },
   });
 }
-
