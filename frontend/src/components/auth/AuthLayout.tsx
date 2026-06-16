@@ -1,4 +1,4 @@
-﻿import type { CSSProperties, ReactNode } from 'react';
+﻿import type { ReactNode } from 'react';
 
 interface FeatureItem {
   icon: ReactNode;
@@ -42,7 +42,6 @@ export function AuthLayout({
   featureItems = [],
 }: AuthLayoutProps) {
   const isRtl = dir === 'rtl';
-  const textAlign = isRtl ? 'right' : 'left';
   const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1101px)').matches;
 
   return (
@@ -126,7 +125,7 @@ export function AuthLayout({
 
       {/* ── Right Panel (Form) ── */}
       <section className="auth-form-panel">
-        <div className="auth-toolbar" style={{ [isRtl ? 'left' : 'right']: '24px' } as CSSProperties}>
+        <div className="auth-toolbar" style={{ insetInlineEnd: '24px' }}>
           <button
             type="button"
             onClick={onToggleTheme}
@@ -140,7 +139,7 @@ export function AuthLayout({
           </button>
         </div>
 
-        <div className="auth-form-card" style={{ maxWidth: formMaxWidth, textAlign }}>
+        <div className="auth-form-card" style={{ maxWidth: formMaxWidth, textAlign: 'start' }}>
           <header className="auth-form-header">
             {!hideFormBadge && formBadge && (
               <div className="auth-form-badge">{formBadge}</div>

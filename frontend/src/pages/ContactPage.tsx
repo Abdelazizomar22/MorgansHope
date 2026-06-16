@@ -110,7 +110,7 @@ export function ContactPage({ lang }: ContactPageProps) {
   return (
     <MotionPageTransition>
       <div
-        dir={ar ? 'rtl' : 'ltr'}
+
         style={{
           minHeight: '100vh',
           background:
@@ -349,7 +349,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                   </div>
                 ) : (
                   <>
-                    <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 30, textAlign: ar ? 'right' : isMobile ? 'center' : 'left' }}>
+                    <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 30, textAlign: isMobile ? 'center' : 'start' }}>
                       {t('Send us a message', 'أرسل لنا رسالة')}
                     </h2>
 

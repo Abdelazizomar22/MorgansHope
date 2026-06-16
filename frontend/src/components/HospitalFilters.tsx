@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { FilterOption, HospitalType } from '../types/hospital';
 
 interface HospitalFiltersProps {
+  lang: 'en' | 'ar';
   search: string;
   cityOptions: FilterOption[];
   typeOptions: FilterOption[];
@@ -60,6 +61,7 @@ function CheckboxRow({ label, count, checked, onChange }: CheckboxRowProps) {
 }
 
 export default function HospitalFilters({
+  lang,
   search,
   cityOptions,
   typeOptions,
@@ -75,16 +77,18 @@ export default function HospitalFilters({
   onClear,
   onClose,
 }: HospitalFiltersProps) {
+  const ar = lang === 'ar';
+  const t = (en: string, arText: string) => ar ? arText : en;
   return (
     <aside className="rounded-xl bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-sm font-black text-slate-950">Filter Hospitals</h2>
+        <h2 className="text-sm font-black text-slate-950">{t('Filter Hospitals', 'تصفية المستشفيات')}</h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-[#1B4D3E] hover:text-[#1B4D3E]"
-            aria-label="Close filters"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-[var(--primary-forest)] hover:text-[var(--primary-forest)]"
+            aria-label={t('Close filters', 'إغلاق التصفيات')}
           >
             <HiXMark className="h-4 w-4" />
           </button>
@@ -96,13 +100,13 @@ export default function HospitalFilters({
         <input
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search hospital or city..."
-          className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#1B4D3E] focus:bg-white focus:ring-2 focus:ring-[#1B4D3E]/10"
+          placeholder={t('Search hospital or city...', 'ابحث عن مستشفى أو مدينة...')}
+          className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[var(--primary-forest)] focus:bg-white focus:ring-2 focus:ring-[var(--primary-forest)]/10"
         />
       </div>
 
       <div className="space-y-5">
-        <FilterSection title="City">
+        <FilterSection title={t('City', 'المدينة')}>
           {cityOptions.map((option) => (
             <CheckboxRow
               key={option.value}
@@ -116,7 +120,7 @@ export default function HospitalFilters({
           ))}
         </FilterSection>
 
-        <FilterSection title="Hospital Type">
+        <FilterSection title={t('Hospital Type', 'نوع المستشفى')}>
           {typeOptions.map((option) => (
             <CheckboxRow
               key={option.value}
@@ -128,7 +132,7 @@ export default function HospitalFilters({
           ))}
         </FilterSection>
 
-        <FilterSection title="Specialization">
+        <FilterSection title={t('Specialization', 'التخصص')}>
           {specializationOptions.map((option) => (
             <CheckboxRow
               key={option.value}
@@ -147,7 +151,7 @@ export default function HospitalFilters({
           onClick={onClear}
           className="mt-5 w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-black text-red-500 transition hover:bg-red-50"
         >
-          Clear All Filters
+          {t('Clear All Filters', 'مسح جميع التصفيات')}
         </button>
       )}
     </aside>

@@ -71,7 +71,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	]
   return (
     <MotionPageTransition>
-      <div dir={ar ? 'rtl' : 'ltr'} style={{ fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", background: 'var(--bg-main)', minHeight: '100vh', color: 'var(--text-main)' }}>
+      <div style={{ fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", background: 'var(--bg-main)', minHeight: '100vh', color: 'var(--text-main)' }}>
 
         {/* ══ HERO ══════════════════════════════════════════════════════════ */}
         <div id='bla-bla' className='min-h-[calc(100vh-60px)] flex flex-col justify-between'>
@@ -85,11 +85,11 @@ export default function HomePage({ lang }: HomePageProps) {
 	                <span style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{t('Saves Lives', 'ينقذ الأرواح')}</span>
 	              </h1>
 	              <p style={{ fontSize: isMobile ? 13 : 14, color: 'var(--text-muted-alt)', fontStyle: 'italic', margin: '4px 0 14px', letterSpacing: 0.1 }}>
-	                {t('"Morgan\'s Hope: A Second Chance for Every Breath." — Inspired by a legend, built for reality.', '"مورجان هوب: فرصة ثانية لكل نَفَس." — مستوحى من أسطورة، ومبني للواقع.')}
+	                {t('"Morgan\'s Hope: A Second Chance for Every Breath." Inspired by a legend, built for reality.', '"مورجان هوب: فرصة ثانية لكل نَفَس." — مستوحى من أسطورة، ومبني للواقع.')}
 	              </p>
 	              <div style={{ marginTop: isMobile ? 22 : 28, marginBottom: isMobile ? 16 : 24 }}>
-	                <p style={{ fontSize: isMobile ? 15 : 16, color: 'var(--text-muted-alt)', margin: 0, lineHeight: 1.84, maxWidth: 620, marginLeft: 'auto', marginRight: 'auto', transform: 'translateY(0px)' }}>
-	                  {t('Like Arthur Morgan facing an invisible enemy, lung disease can be a quiet battle. Morgan’s Hope shifts the odds through earlier chest screening. Upload a chest CT or X-Ray and get AI-supported analysis across CT lung cancer classes and major CXR disease groups.', 'مثلما واجه آرثر مورجان عدوًا خفيًا، قد تكون أمراض الرئة معركة صامتة. Morgan’s Hope يرجّح الكفة عبر فحص الصدر المبكر. ارفع CT للصدر أو X-Ray واحصل على تحليل مدعوم بالذكاء الاصطناعي لتصنيفات سرطان الرئة في CT ومجموعات أمراض الصدر في الأشعة السينية.')}
+	                <p style={{ fontSize: isMobile ? 15 : 16, color: 'var(--text-muted-alt)', margin: '0 auto', lineHeight: 1.84, maxWidth: 620, transform: 'translateY(0px)' }}>
+	                  {t('Like Arthur Morgan facing an invisible enemy, lung disease can be a quiet battle. Morgan’s Hope shifts the odds through earlier detection. Upload your CT scan or X-Ray and get an AI-powered analysis in minutes.', 'مثلما واجه آرثر مورجان عدوًا خفيًا، قد يكون مرض الرئة معركة صامتة. Morgan’s Hope يرجّح الكفة عبر الكشف المبكر. ارفع صورة CT أو X-Ray واحصل على تحليل مدعوم بالذكاء الاصطناعي خلال دقائق.')}
 	                </p>
 	              </div>
 	              </div>
@@ -126,10 +126,10 @@ export default function HomePage({ lang }: HomePageProps) {
 	                      (e.currentTarget.querySelector('.fill') as HTMLElement).style.transform = 'translateX(0)';
 	                    }}
 	                    onMouseLeave={e => {
-	                      (e.currentTarget.querySelector('.fill') as HTMLElement).style.transform = 'translateX(-100%)';
+	                      (e.currentTarget.querySelector('.fill') as HTMLElement).style.transform = ar ? 'translateX(100%)' : 'translateX(-100%)';
 	                    }}
 	                  >
-	                    <span className="fill" style={{ position: 'absolute', inset: 0, background: 'var(--primary)', transform: 'translateX(-100%)', transition: 'transform 0.3s ease', borderRadius: 10 }} />
+	                    <span className="fill" style={{ position: 'absolute', inset: 0, background: 'var(--primary)', transform: ar ? 'translateX(100%)' : 'translateX(-100%)', transition: 'transform 0.3s ease', borderRadius: 10 }} />
 	                    <span style={{ position: 'relative', zIndex: 1 }}>{t('About Us', 'من نحن')}</span>
 	                  </Link>
 	                </MotionHoverScale>
@@ -148,7 +148,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	              { val: '1,200+', label: t('Scans Analyzed', 'فحص تم تحليله') },
 	              { val: '<4s', label: t('Avg Analysis Time', 'متوسط وقت التحليل') },
 	            ].map((s, i) => (
-	              <div className='group *:group-hover:scale-125 *:group-hover:-translate-y-2 *:transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderRight: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
+	              <div className='group *:group-hover:scale-125 *:group-hover:-translate-y-2 *:transition-transform' key={i} style={{ textAlign: 'center', padding: '0 16px', borderInlineEnd: (isMobile || isTablet) ? 'none' : (i < 4 ? '1px solid var(--card-border)' : 'none') }}>
 	                <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', lineHeight: 1.1, letterSpacing: -0.5 }}>{s.val}</div>
 	                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 5, fontWeight: 700 }}>{s.label}</div>
 	              </div>
@@ -184,7 +184,7 @@ export default function HomePage({ lang }: HomePageProps) {
 		              const formattedVal = c.format ? displayVal.toLocaleString() : displayVal;
 		
 		              return (
-		                <div key={i} className='animate-card group group-hover:*:text-white' style={{ padding: '40px 24px', textAlign: 'center', borderRight: (isMobile || isTablet) ? 'none' : (i < 3 ? '1px solid var(--card-border)' : 'none'), borderBottom: isMobile || (isTablet && i < 2) ? '1px solid var(--card-border)' : 'none', position: 'relative' }}
+		                <div key={i} className='animate-card group group-hover:*:text-white' style={{ padding: '40px 24px', textAlign: 'center', borderInlineEnd: (isMobile || isTablet) ? 'none' : (i < 3 ? '1px solid var(--card-border)' : 'none'), borderBottom: isMobile || (isTablet && i < 2) ? '1px solid var(--card-border)' : 'none', position: 'relative' }}
 		                >
 		                   {/*<div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--bg-main)', borderRadius: 12, color: 'var(--primary)', marginBottom: 20, boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}>
 		                    <c.icon width="20" height="20" />
@@ -278,7 +278,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	          </div>
 				
 		  {/* Optimized Call-to-Action Banner */}
-          <div style={{ background: 'var(--primary-dark)', borderRadius: 24, padding: isMobile ? '30px 20px' : '40px 50px', color: 'white', display: 'flex', alignItems: 'center', gap: isMobile ? 24 : 40, flexWrap: 'wrap', marginBottom: 100, border: '1px solid var(--primary)', position: 'relative', overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row', textAlign: isMobile ? 'center' : ar ? 'right' : 'left' }}>
+          <div style={{ background: 'var(--primary-dark)', borderRadius: 24, padding: isMobile ? '30px 20px' : '40px 50px', color: 'white', display: 'flex', alignItems: 'center', gap: isMobile ? 24 : 40, flexWrap: 'wrap', marginBottom: 100, border: '1px solid var(--primary)', position: 'relative', overflow: 'hidden', flexDirection: isMobile ? 'column' : 'row', textAlign: isMobile ? 'center' : 'start' as const }}>
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(45deg, transparent 0%, rgba(255,255,255,0.03) 100%)', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', bottom: '-45%', left: '-5%', width: 160, height: 160, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
             <div style={{ flexShrink: 0, position: 'relative', margin: isMobile ? '0 auto' : '0' }}>
@@ -304,51 +304,56 @@ export default function HomePage({ lang }: HomePageProps) {
        	</div>
 
         </section >
-        <div className='border-y-[#A0B8A4] border-y-4' style={{
+        <div style={{
 		      backgroundImage: "url('images/common/flowers-1.jpeg')",
-			  backgroundSize: 'contain',
+					backgroundSize: 'contain',
         }}>
         {/* ══ HOW IT WORKS ══════════════════════════════════════════════════ */}
-		  <section style={{
-			  padding: isMobile ? '0 20px 40px' : '0 40px 80px',
-		  }}>
-          <div style={{ maxWidth: 1040, margin: '0 auto' }}>
-            <div style={{ paddingTop: 64, textAlign: 'center', marginBottom: 48 }}>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t('How It Works', 'كيف يعمل النظام')}</h2>
-            </div>
+				  <section style={{
+					  padding: isMobile ? '0 20px 40px' : '0 40px 80px',
+				  }}>
+	          <div style={{ maxWidth: 1040, margin: '0 auto' }}>
+	            <div style={{ paddingTop: 64, textAlign: 'center', marginBottom: 48 }}>
+	              <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t('How It Works', 'كيف يعمل النظام')}</h2>
+	            </div>
+	
+		            <MotionStaggerList staggerDelay={0.15} style={{  display: 'grid', gridTemplateColumns: isTablet ? '1fr' : 'repeat(3,1fr)', gap: 22 }}>
+		              {[
+	                { Icon: <HiCloudArrowUp size={30} />, title: t('Upload Scan', 'رفع الصورة'), desc: t('CT or X-Ray image (JPG/PNG/WebP, max 10MB)', 'صورة CT أو أشعة سينية (JPG/PNG/WebP، حتى 10MB)') },
+	                { Icon: <HiCpuChip size={30} />, title: t('AI Analysis', 'التحليل بالذكاء الاصطناعي'), desc: t('Advanced deep learning model analyzes your scans quickly', 'نموذج ذكاء اصطناعي متقدم يحلل الصور بسرعة') },
+	                { Icon: <HiDocumentText size={30} />, title: t('Get Report', 'استلام التقرير'), desc: t('PDF report with urgency level & hospital guidance', 'تقرير PDF مع مستوى الخطورة وإرشادات المستشفيات') },
+		              ].map((s, index) => {
+						  const CURRENT_IMAGE = CARDS_IMAGES[index];
+	
+						  return <div className='group-hover:scale-104 animate-card group *:transition-all *:duration-300'
+							  key={index}
+							  style={{ height: '100%', textAlign: 'center', background: 'var(--card-bg)', borderRadius: 16, padding: '20px 15px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
+		                  <div className='text-primary flex items-center justify-center group-hover:-translate-y-[3px] group-hover:text-[var(--primary-dark)]'
+					                 style={{ backgroundImage: `url(${CURRENT_IMAGE})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 10, height: 130, marginBottom: 16, }}>
+											  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
+												  {s.Icon}
+												</div>
+		                  </div>
+		                  <h3 className='group-hover:text-[var(--primary)] group-hover:-translate-y-[3px]' style={{ fontWeight: 800, margin: '0 0 10px', fontSize: 16 }}>{s.title}</h3>
+		                  <p className='text-[var(--text-muted)] group-hover:text-[var(--text-main)] group-hover:-translate-y-[3px]' style={{ fontSize: 13, lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
+		                </div>
+		              })}
+		            </MotionStaggerList>
+	          </div>
+					</section >
+        </div>
 
-	            <MotionStaggerList staggerDelay={0.15} style={{  display: 'grid', gridTemplateColumns: isTablet ? '1fr' : 'repeat(3,1fr)', gap: 22 }}>
-	              {[
-                { Icon: <HiCloudArrowUp size={30} />, title: t('Upload Scan', 'رفع الصورة'), desc: t('Chest CT or Chest X-Ray image (JPG/PNG/WebP, max 10MB)', 'صورة CT للصدر أو أشعة سينية للصدر (JPG/PNG/WebP، حتى 10MB)') },
-                { Icon: <HiCpuChip size={30} />, title: t('AI Analysis', 'التحليل بالذكاء الاصطناعي'), desc: t('CT cancer classification and CXR clinical-group screening', 'تصنيف سرطان الرئة في CT وفحص مجموعات أمراض الصدر في الأشعة السينية') },
-                { Icon: <HiDocumentText size={30} />, title: t('Get Report', 'استلام التقرير'), desc: t('PDF report with urgency level & hospital guidance', 'تقرير PDF مع مستوى الخطورة وإرشادات المستشفيات') },
-	              ].map((s, index) => {
-					  const CURRENT_IMAGE = CARDS_IMAGES[index];
-
-					  return <div className='group-hover:scale-104 animate-card group *:transition-all *:duration-300'
-						  key={index}
-						  style={{ height: '100%', textAlign: 'center', background: 'var(--card-bg)', borderRadius: 16, padding: '20px 15px', border: '1px solid var(--primary-light)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
-	                  <div className='text-(--primary) flex items-center justify-center group-hover:-translate-y-[3px] group-hover:text-[var(--primary-dark)]'
-				                 style={{ backgroundImage: `url(${CURRENT_IMAGE})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 10, height: 130, marginBottom: 16, }}>
-										  <div style={{padding: 12}} className='bg-(--bg-main) rounded-full w-fit mx-auto'>
-											  {s.Icon}
-											</div>
-	                  </div>
-	                  <h3 className='group-hover:text-[var(--primary)] group-hover:-translate-y-[3px]' style={{ fontWeight: 800, margin: '0 0 10px', fontSize: 16 }}>{s.title}</h3>
-	                  <p className='text-[var(--text-muted)] group-hover:text-[var(--text-main)] group-hover:-translate-y-[3px]' style={{ fontSize: 13, lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
-	                </div>
-	              })}
-	            </MotionStaggerList>
-          </div>
-		</section >
-
-        {/* ══ FEATURES ══════════════════════════════════════════════════════ */}
+				{/* ══ FEATURES ══════════════════════════════════════════════════════ */}
+				<div className='mt-2' style={{
+			    backgroundImage: "url('images/common/flowers-1.jpeg')",
+					backgroundSize: 'contain',
+        }}>
 		  <section style={{
 			  padding: isMobile ? '40px 20px 40px' : '60px 40px 80px',
 		  }}>
           <div style={{ maxWidth: 1040, margin: '0 auto' }}>
             <div style={{ textAlign: 'center', marginBottom: 44 }}>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t("Why Morgan's Hope?", 'لماذا مورجان هوب؟')}</h2>
+              <h2 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-main)', margin: '0 0 8px', letterSpacing: -0.4 }}>{t("Why Morgan's Hope?", "لماذا Morgan's Hope ؟")}</h2>
             </div>
             <MotionStaggerList staggerDelay={0.1} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 18 }}>
 			  {FEATURES.map(({ Icon, title, desc }, i) => {
@@ -375,7 +380,7 @@ export default function HomePage({ lang }: HomePageProps) {
               })}
             </MotionStaggerList>
           </div>
-		</section>
+					</section>
         </div>
 
         {/* ══ CURRENT AI COVERAGE ════════════════════════════════════════════════ */}

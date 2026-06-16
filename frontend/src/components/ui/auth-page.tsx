@@ -15,7 +15,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
   const ar = lang === 'ar';
 
   return (
-    <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <main className="relative md:h-screen md:overflow-hidden lg:grid lg:grid-cols-2">
       {/* ── Brand panel ── */}
       <div className="relative hidden h-full flex-col border-r p-10 lg:flex" style={{ background: 'var(--panel-gradient)' }}>
         <div className="from-primary absolute inset-0 z-10 bg-gradient-to-t to-primary-dark opacity-20" />
@@ -62,7 +62,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
 	          <img
               src="/logo-v2.png"
               alt="Morgan's Hope Logo"
-              style={{ height: 30, width: 30, objectFit: 'contain', transform: 'scale(1.35) translateY(-2px)', marginRight: -8 }}
+              style={{ height: 30, width: 30, objectFit: 'contain', transform: 'scale(1.35) translateY(-2px)', marginInlineEnd: -8 }}
 						/>
 			      <div dir="ltr" className="lg:hidden flex items-center gap-1.5">
 		          <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)', letterSpacing: -0.5, lineHeight: 1 }}>Morgan&apos;s</span>
@@ -73,7 +73,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
 	          <LangSwitcher ar={ar} onLangToggle={onLangToggle} />
 					</div>
 				
-        <div className="hidden lg:block" style={{ position: 'absolute', top: 28, right: 20, zIndex: 10 }}>
+        <div className="hidden lg:block" style={{ position: 'absolute', top: 28, insetInlineEnd: 20, zIndex: 10 }}>
           <LangSwitcher ar={ar} onLangToggle={onLangToggle} />
         </div>
         	

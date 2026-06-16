@@ -20,7 +20,7 @@ export function AboutPage({ lang }: AboutPageProps) {
 
   return (
     <MotionPageTransition>
-      <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", position: 'relative', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif", position: 'relative', overflow: 'hidden' }}>
 
         {/* Hero */}
         <section className='section-bg-image page-header-padding'
@@ -116,7 +116,7 @@ export function AboutPage({ lang }: AboutPageProps) {
             
             {/* Text block */}
             <MotionFade direction="up" delay={0.2}>
-              <div style={{ padding: isMobile ? '32px 24px 48px' : '80px 60px', textAlign: isMobile ? 'center' : ar ? 'right' : 'left' }}>
+              <div style={{ padding: isMobile ? '32px 24px 48px' : '80px 60px', textAlign: isMobile ? 'center' : 'start' }}>
                 <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 900, color: 'var(--primary-dark)', margin: '0 0 20px', lineHeight: 1.2 }}>
                   {t('The Story Behind "Morgan\'s Hope"', 'القصة وراء "مورجان هوب"')}
                 </h2>
@@ -146,7 +146,7 @@ export function AboutPage({ lang }: AboutPageProps) {
 
             {/* Text block */}
             <MotionFade direction="up" delay={0.4}>
-              <div style={{ padding: isMobile ? '32px 24px 48px' : '80px 60px', textAlign: isMobile ? 'center' : ar ? 'left' : 'right' }}>
+              <div style={{ padding: isMobile ? '32px 24px 48px' : '80px 60px', textAlign: isMobile ? 'center' : 'end' }}>
                 <h2 style={{ fontSize: isMobile ? 26 : 32, fontWeight: 900, color: 'var(--primary-dark)', margin: '0 0 20px' }}>
                   {t('Our Vision', 'رؤيتنا')}
                 </h2>

@@ -83,7 +83,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
     return (
         <MotionPageTransition>
             <div
-                dir={ar ? 'rtl' : 'ltr'}
+
                 style={{
                     minHeight: '100vh',
                     background: 'radial-gradient(circle at 12% 18%, rgba(var(--primary-rgb),0.08), transparent 22%), radial-gradient(circle at 88% 14%, rgba(var(--primary-rgb),0.06), transparent 20%), linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, var(--bg-main)) 0%, var(--bg-main) 100%)',
@@ -146,7 +146,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                                                     fontWeight: isActive ? 700 : 500,
                                                     color: isActive ? 'var(--primary)' : 'var(--text-muted)',
                                                     padding: '6px 0 6px 12px',
-                                                    borderLeft: isActive ? `3px solid var(--primary)` : '3px solid transparent',
+                                                    borderInlineStart: isActive ? `3px solid var(--primary)` : '3px solid transparent',
                                                     transition: 'color 0.2s, border-color 0.2s, font-weight 0.2s',
                                                     lineHeight: 1.4,
                                                 }}
@@ -292,11 +292,14 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
                 blockquote {
                     margin: 16px 0;
                     padding: 8px 16px;
-                    border-left: 4px solid var(--primary);
+                    border-inline-start: 4px solid var(--primary);
                     font-style: italic;
                     color: var(--text-muted);
                     background: color-mix(in srgb, var(--primary) 4%, var(--bg-main));
-                    border-radius: 0 8px 8px 0;
+                    border-start-start-radius: 0;
+                    border-start-end-radius: 8px;
+                    border-end-end-radius: 8px;
+                    border-end-start-radius: 0;
                 }
             `}</style>
         </MotionPageTransition>

@@ -207,7 +207,7 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
     }).join('')}
           </div>
         </div>
-        ${r.nextStep ? `<div style="margin-top:14px;background:#f0fdf4;border-left:3px solid #16a34a;padding:10px 14px;border-radius:6px;font-size:12px;color:#166534">${r.nextStep}</div>` : ''}
+        ${r.nextStep ? `<div style="margin-top:14px;background:#f0fdf4;border-inline-start:3px solid #16a34a;padding:10px 14px;border-radius:6px;font-size:12px;color:#166534">${r.nextStep}</div>` : ''}
       </div>`;
   };
 
@@ -301,7 +301,7 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
   .logo-mark{width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;border:1px solid rgba(255,255,255,0.2)}
   .header-text h1{font-size:24px;font-weight:900;margin:0;letter-spacing:-0.5px}
   .header-text p{font-size:12px;opacity:0.8;margin-top:2px}
-  .report-meta{text-align:${ar ? 'left' : 'right'};font-size:11px;opacity:0.9}
+  .report-meta{text-align:end;font-size:11px;opacity:0.9}
   
   .section-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
   .section-title::after{content:'';flex:1;height:1px;background:#e2e8f0}
@@ -452,7 +452,7 @@ ${result.nextStep ? `
   const urg = result ? (URGENCY_CONFIG[result.urgencyLevel as UrgencyLevel] || URGENCY_CONFIG.none) : null;
 
   return (
-    <div dir={ar ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-main)', color: 'var(--text-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
       <div className='section-bg-image page-header-padding'>
@@ -466,7 +466,7 @@ ${result.nextStep ? `
 	            {tab === 'result' && result && (
 	              <button
 	                onClick={() => openReportModal([result])}
-	                style={{ marginLeft: 'auto', padding: '10px 20px', borderRadius: 10, border: 'none', background: 'white', color: 'var(--primary-dark)', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', transition: 'all 0.2s' }}
+	                style={{ marginInlineStart: 'auto', padding: '10px 20px', borderRadius: 10, border: 'none', background: 'white', color: 'var(--primary-dark)', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', transition: 'all 0.2s' }}
 	                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
 	                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
 	              >
@@ -589,8 +589,8 @@ ${result.nextStep ? `
                       { label: t('Processing', 'وقت المعالجة'), val: result.processingTimeMs ? `${result.processingTimeMs}ms` : 'N/A' },
                     ].map((row, i, arr) => (
                       <div key={i} style={{ display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid var(--card-border)' : 'none' }}>
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, paddingRight: 10 }}>{row.label}</span>
-                        <span style={{ fontSize: 13, color: 'var(--text-main)', fontWeight: 700, textAlign: ar ? 'left' : 'right', flex: 1, wordBreak: 'break-all' }}>{row.val}</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 600, paddingInlineEnd: 10 }}>{row.label}</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-main)', fontWeight: 700, textAlign: 'end', flex: 1, wordBreak: 'break-all' }}>{row.val}</span>
                       </div>
                     ))}
                   </div>
@@ -662,7 +662,7 @@ ${result.nextStep ? `
                     return (
                       <div key={group.id} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                         <div onClick={() => setExpandedSessions(p => ({ ...p, [group.id]: !p[group.id] }))}
-                          style={{ background: 'var(--card-bg)', borderRadius: 12, padding: '16px 20px', border: `1.5px solid var(--card-border)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s', boxShadow: '0 2px 6px var(--shadow-main)', borderLeft: `4px solid ${wu.color}` }}>
+                          style={{ background: 'var(--card-bg)', borderRadius: 12, padding: '16px 20px', border: `1.5px solid var(--card-border)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', transition: 'all 0.2s', boxShadow: '0 2px 6px var(--shadow-main)', borderInlineStart: `4px solid ${wu.color}` }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <div style={{ width: 42, height: 42, borderRadius: 10, background: 'var(--bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1.5px solid var(--card-border)`, color: 'var(--text-main)' }}>
                               <IconClock />
@@ -697,7 +697,7 @@ ${result.nextStep ? `
                           </div>
                         </div>
                         {isExpanded && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: ar ? 0 : 32, paddingRight: ar ? 32 : 0, marginTop: 4 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingInlineStart: 32, marginTop: 4 }}>
                             {group.items.map((item) => {
                               const u = URGENCY_CONFIG[item.urgencyLevel as UrgencyLevel] || URGENCY_CONFIG.none;
                               return (
@@ -713,7 +713,7 @@ ${result.nextStep ? `
                                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.imageType.toUpperCase()}</div>
                                     </div>
                                   </div>
-                                  <div style={{ textAlign: ar ? 'left' : 'right' }}>
+                                  <div style={{ textAlign: 'end' }}>
                                     <div style={{ fontSize: 12, fontWeight: 700, color: u.color }}>{ar ? u.label_ar : u.label_en}</div>
                                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{Math.round(item.confidence * 100)}%</div>
                                   </div>
@@ -744,7 +744,7 @@ ${result.nextStep ? `
                           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{item.imageType.toUpperCase()} · {formatDate(item.createdAt)}</div>
                         </div>
                       </div>
-                      <div style={{ textAlign: ar ? 'left' : 'right' }}>
+                      <div style={{ textAlign: 'end' }}>
                         <div style={{ fontSize: 13, fontWeight: 700, color: u.color }}>{ar ? u.label_ar : u.label_en}</div>
                         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{Math.round(item.confidence * 100)}% {t('confidence', 'ثقة')}</div>
                       </div>
