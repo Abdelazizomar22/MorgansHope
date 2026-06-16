@@ -10,6 +10,8 @@ Node.js + Express + TypeScript + Sequelize. Runs on port `3000`.
    - or external DB credentials if you do not want SQLite
    - `CT_SERVICE_URL`
    - `XRAY_SERVICE_URL`
+   - `GATE_SERVICE_URL`
+   - `NODULE_SERVICE_URL`
    - `GEMINI_API_KEY`
    - `FRONTEND_URL` for production CORS
 
@@ -52,3 +54,9 @@ npm run start
 - `src/utils/` - migrate, seed, asyncHandler, chatAgent
 
 Uploads are stored in `uploads/`. Chat memory is stored in the `chat_messages` table.
+
+## Current AI Scope
+
+- CT keeps the existing six-class lung cancer classifier.
+- CXR no longer uses the old binary model; it is prepared for six clinical groups plus optional TB signal.
+- The chat assistant prompt includes this scope so RAG-style answers stay aligned with the current platform.

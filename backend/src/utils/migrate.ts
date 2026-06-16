@@ -29,11 +29,25 @@ async function ensureUserAuthColumns() {
   await addIfMissing('phone_otp_expiry', { type: DataTypes.DATE, allowNull: true });
 }
 
+async function ensureAnalysisResultColumns() {
+  const queryInterface = sequelize.getQueryInterface();
+  const table = await queryInterface.describeTable('analysis_results');
+  const addIfMissing = async (name: string, definition: any) => {
+    if (!table[name]) {
+      await queryInterface.addColumn('analysis_results', name, definition);
+      console.log(`[DB] Added analysis_results.${name}`);
+    }
+  };
+
+  await addIfMissing('tb_localizations', { type: DataTypes.JSON, allowNull: true });
+}
+
 async function migrate() {
   try {
     console.log('Syncing database...');
     await sequelize.sync({ force: false });
     await ensureUserAuthColumns();
+    await ensureAnalysisResultColumns();
 
     if (sequelize.getDialect() === 'postgres') {
       try {

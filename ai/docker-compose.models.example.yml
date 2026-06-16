@@ -1,0 +1,13 @@
+services:
+  xray-service:
+    volumes:
+      - "${TB_STAGE1_MODEL_FILE:-./xray_service/tb_model.pt}:/home/user/app/tb_model.pt:ro"
+      - "${TB_STAGE2_MODEL_FILE:-./xray_service/tb_localizer.pt}:/home/user/app/tb_localizer.pt:ro"
+
+  gate-service:
+    volumes:
+      - "${GATE_MODEL_FILE:-./gate_service/model.pt}:/home/user/app/model.pt:ro"
+
+  nodule-service:
+    volumes:
+      - "${NODULE_MODEL_FILE:-./nodule_service/model.pt}:/home/user/app/model.pt:ro"

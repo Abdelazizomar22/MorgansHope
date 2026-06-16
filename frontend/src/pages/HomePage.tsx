@@ -143,7 +143,7 @@ export default function HomePage({ lang }: HomePageProps) {
 	          <div style={{ maxWidth: 1040, margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: isMobile || isTablet ? 24 : 0 }}>
 	            {[
 	              { val: '99.86%', label: t('CT Scan Accuracy', 'دقة CT Scan') },
-	              { val: '6', label: t('Cancer Types', 'أنواع السرطان') },
+	              { val: '6', label: t('CT Classes', 'تصنيفات CT') },
 	              { val: '15K+', label: t('Training Images', 'صورة تدريب') },
 	              { val: '1,200+', label: t('Scans Analyzed', 'فحص تم تحليله') },
 	              { val: '<4s', label: t('Avg Analysis Time', 'متوسط وقت التحليل') },
@@ -383,7 +383,7 @@ export default function HomePage({ lang }: HomePageProps) {
 					</section>
         </div>
 
-        {/* ══ FUTURE VISION ════════════════════════════════════════════════ */}
+        {/* ══ CURRENT AI COVERAGE ════════════════════════════════════════════════ */}
         <section className='min-h-[60vh] py-10 gap-10 md:gap-20 flex-col flex items-center justify-center'
 		  style={{
 			  padding: isMobile ? '30px 20px' : '0 40px'
@@ -394,22 +394,22 @@ export default function HomePage({ lang }: HomePageProps) {
             <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, var(--shadow-main) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'relative' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--card-bg)', border: '1px solid var(--card-border)', color: 'var(--text-main)', borderRadius: 99, padding: '5px 14px', fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' as const, marginBottom: 16 }}>
-                {t('Future Vision', 'الرؤية المستقبلية')}
+                {t('Current AI Coverage', 'التغطية الحالية للذكاء الاصطناعي')}
               </div>
               <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', margin: '0 0 12px', letterSpacing: -0.3 }}>
-                {t('Beyond Lung Cancer — A Complete Chest Diagnostic Platform', 'ما وراء سرطان الرئة — منصة تشخيص صدر متكاملة')}
+                {t('Chest CT + X-Ray Disease Screening', 'فحص أمراض الصدر عبر CT و X-Ray')}
               </h2>
               <p style={{ color: '#eee', fontSize: 14, lineHeight: 1.8, margin: '0 0 26px', maxWidth: 640 }}>
-                {t("Morgan's Hope currently focuses on lung cancer, but our vision is much bigger. Future versions will expand to cover all major chest and respiratory conditions.", "مورجان هوب تركز حالياً على سرطان الرئة، لكن رؤيتنا أكبر. ستتوسع الإصدارات القادمة لتغطي جميع أمراض الصدر والجهاز التنفسي الرئيسية.")}
+                {t("Morgan's Hope keeps the existing CT lung-cancer classifier and replaces the old binary CXR model with a broader chest X-Ray clinical-group pipeline covering major respiratory and chest findings.", "يحافظ Morgan's Hope على موديل CT الحالي لتصنيف سرطان الرئة، ويستبدل موديل الأشعة السينية الثنائي القديم بمسار أوسع يصنف مجموعات أمراض وملاحظات الصدر الرئيسية.")}
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {[
-                  { en: 'Lung Cancer (Current)', ar: 'سرطان الرئة (الحالي)', current: true },
-                  { en: 'Pneumonia Detection', ar: 'كشف الالتهاب الرئوي', current: false },
-                  { en: 'Tuberculosis', ar: 'مرض السل', current: false },
-                  { en: 'COPD Analysis', ar: 'الانسداد الرئوي', current: false },
-                  { en: 'Pulmonary Fibrosis', ar: 'التليف الرئوي', current: false },
-                  { en: 'Cardiac Conditions', ar: 'أمراض القلب', current: false },
+                  { en: 'CT Lung Cancer Classes', ar: 'تصنيفات سرطان الرئة في CT', current: true },
+                  { en: 'Pulmonary Infection', ar: 'عدوى/التهاب رئوي', current: true },
+                  { en: 'COPD-related Findings', ar: 'ملاحظات مرتبطة بالانسداد الرئوي', current: true },
+                  { en: 'Fibrotic Lung Disease', ar: 'أمراض التليف الرئوي', current: true },
+                  { en: 'Cardiac Conditions', ar: 'مؤشرات قلبية', current: true },
+                  { en: 'Pleural Diseases', ar: 'أمراض الغشاء البلوري', current: true },
                 ].map((c, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, background: c.current ? 'var(--card-bg)' : 'transparent', borderRadius: 99, padding: '7px 14px', border: `1.5px solid ${c.current ? 'var(--primary)' : '#ddd'}`, fontSize: 12.5, fontWeight: c.current ? 800 : 500, color: c.current ? 'var(--text-main)' : '#ddd', boxShadow: c.current ? '0 2px 8px var(--shadow-main)' : 'none' }}>
                     {ar ? c.ar : c.en}

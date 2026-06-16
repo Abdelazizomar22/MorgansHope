@@ -1,39 +1,67 @@
-# AI Services — Morgan's Hope
+# Morgan's Hope AI Services
 
-Two FastAPI services for medical image classification. No UI; called by the **backend** only.
+Morgan's Hope runs the AI pipeline as separate HTTP services. The Node.js backend calls these services through environment variables.
 
-| Service       | Folder         | Port | Task                          |
-|---------------|----------------|------|-------------------------------|
-| CT Scan       | `ct_service/`  | 8000 | 6-class CT classification     |
-| X-Ray         | `xray_service/`| 8001 | Binary: No Finding / Nodule+Mass |
+## Services
 
-## Common setup (per service)
+| Service | Folder | Port | Endpoint | Purpose |
+| --- | --- | --- | --- | --- |
+| CT classifier | `ct_service` | `8000` | `POST /predict` | Existing EfficientNet-B3 CT cancer classifier kept unchanged |
+| CXR classifier | `xray_service` | `8001` | `POST /predict/xray` | New Chest X-Ray multi-disease clinical group classifier plus optional TB signal |
+| Pre-classification gate | `gate_service` | `8002` | `POST /predict` | EfficientNet-B0 routing: Chest X-Ray, Chest CT, Other Medical, Non Medical |
+| CT nodule detector | `nodule_service` | `8003` | `POST /detect` | YOLO nodule localization after positive CT classifier output |
+
+## Required Model Files
+
+Each service expects a TorchScript/YOLO model file inside its own folder unless a remote Hugging Face repo or model path is configured.
+
+| Service | Local file | Optional env |
+| --- | --- | --- |
+| CT classifier | `ai/ct_service/model.pt` | `CT_MODEL_PATH` |
+| CXR classifier | `ai/xray_service/model.pt` | `XRAY_MODEL_PATH`, `XRAY_HF_REPO` |
+| TB classifier | `ai/xray_service/tb_model.pt` | `TB_MODEL_PATH`, `TB_HF_REPO` |
+| Gate classifier | `ai/gate_service/model.pt` | `GATE_MODEL_PATH`, `GATE_HF_REPO` |
+| Nodule detector | `ai/nodule_service/model.pt` | `NODULE_MODEL_PATH` |
+
+## Local Run
+
+From the `ai` folder:
 
 ```bash
-cd ct_service   # or xray_service
-pip install -r requirements.txt
+docker compose up --build
 ```
 
-Optional: set `CT_MODEL_PATH` / `XRAY_MODEL_PATH` to a local `.pt` file. Otherwise the service uses `model.pt` in the same folder or downloads from HuggingFace.
+Then configure the backend:
 
-## Run
-
-**CT (port 8000):**
-
-```bash
-cd ct_service
-uvicorn main:app --host 0.0.0.0 --port 8000
+```env
+CT_SERVICE_URL=http://localhost:8000
+XRAY_SERVICE_URL=http://localhost:8001
+GATE_SERVICE_URL=http://localhost:8002
+NODULE_SERVICE_URL=http://localhost:8003
 ```
 
-**X-Ray (port 8001):**
+## Backend Behavior
 
-```bash
-cd xray_service
-uvicorn main:app --host 0.0.0.0 --port 8001
-```
+The backend now stores:
 
-Health: `GET /health` on each service.
+- gate classification and confidence
+- X-Ray clinical group
+- TB detection and confidence when the TB model is available
+- CT nodule bounding box, estimated size, and confidence
 
-## Backend integration
+The CT classifier intentionally keeps the original service behavior. The old binary CXR model is no longer the documented target pipeline; CXR output should now follow the six clinical groups used by `xray_service`.
 
-Backend uses `CT_SERVICE_URL` and `XRAY_SERVICE_URL` (e.g. `http://localhost:8000`, `http://localhost:8001`). Upload flow: Frontend → Backend → AI service; result returned via Backend.
+## Deployment Options
+
+Recommended setup for a graduation/demo deployment:
+
+1. Keep the frontend on Vercel.
+2. Deploy the Node.js backend as a normal web service.
+3. Deploy each AI folder as a separate Docker service.
+
+Good hosting shapes:
+
+- Hugging Face Spaces Docker: best for AI demo endpoints and model hosting experiments. Each service can be deployed as one Docker Space exposing port `7860`.
+- Render/Railway/Fly.io: good when you want backend and AI services under one cloud dashboard. Create one web service per AI folder and point the backend env vars to their public URLs.
+
+Do not deploy the PyTorch model services directly inside the frontend app. They are heavier than a normal web frontend and need container-style hosting.

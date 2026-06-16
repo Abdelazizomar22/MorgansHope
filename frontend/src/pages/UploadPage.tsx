@@ -128,7 +128,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
 
   const sideCards = [
     { Icon: HiShieldCheck, title: t('Privacy First', 'خصوصيتك أولاً'), body: t('Your images are processed securely and never shared with third parties.', 'صورك تُعالج بأمان ولا تُشارك مع أطراف خارجية أبداً.'), source: '' },
-    { Icon: HiSparkles, title: t('AI Models', 'نماذج الذكاء الاصطناعي'), body: t('Accurate and reliable AI algorithms specialized for Chest CT and X-Ray analysis.', 'خوارزميات ذكاء اصطناعي دقيقة ومخصصة لتحليل صور الصدر.'), source: '' },
+    { Icon: HiSparkles, title: t('AI Models', 'نماذج الذكاء الاصطناعي'), body: t('Chest CT uses the existing lung-cancer classifier, while Chest X-Ray screens major clinical disease groups.', 'يستخدم CT للصدر موديل سرطان الرئة الحالي، بينما تفحص الأشعة السينية مجموعات أمراض الصدر الرئيسية.'), source: '' },
     { Icon: HiBolt, title: t('Fast Batch Processing', 'معالجة سريعة للدفعات'), body: t('Upload multiple scans at once. Results are processed quickly.', 'ارفع عدة صور دفعة واحدة. تتم المعالجة بسرعة وتظهر النتائج بشكل منظم.'), source: '' },
   ];
 
@@ -145,7 +145,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
 	            <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: -0.3 }}>{t('Upload & Analyze', 'رفع وتحليل')}</h1>
 	          </div>
 	          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
-	            {t('Upload your CT scan or X-Ray and get AI-powered analysis instantly.', 'ارفع صورة CT أو أشعة واحصل على تحليل فوري بالذكاء الاصطناعي.')}
+	            {t('Upload your Chest CT or Chest X-Ray and get AI-supported screening instantly.', 'ارفع CT للصدر أو أشعة سينية للصدر واحصل على فحص مدعوم بالذكاء الاصطناعي فوراً.')}
 	          </p>
 	      </div>
       </div>
