@@ -36,6 +36,8 @@ const isDev = process.env.NODE_ENV !== 'production';
 const isVercel = Boolean(process.env.VERCEL);
 const CT_URL = process.env.CT_SERVICE_URL || 'http://localhost:8000';
 const XRAY_URL = process.env.XRAY_SERVICE_URL || 'http://localhost:8001';
+const GATE_URL = process.env.GATE_SERVICE_URL || '';
+const NODULE_URL = process.env.NODULE_SERVICE_URL || '';
 
 let initPromise: Promise<void> | null = null;
 
@@ -91,6 +93,26 @@ async function ensureHospitalColumns() {
   await addIfMissing('city_name_ar', { type: DataTypes.STRING(100), allowNull: true });
 }
 
+async function ensureAnalysisColumns() {
+  const queryInterface = sequelize.getQueryInterface();
+  const table = await queryInterface.describeTable('analysis_results');
+  const addIfMissing = async (name: string, definition: any) => {
+    if (!table[name]) {
+      await queryInterface.addColumn('analysis_results', name, definition);
+      console.log(`[DB] Added analysis_results.${name}`);
+    }
+  };
+
+  await addIfMissing('gate_classification', { type: DataTypes.STRING(50), allowNull: true });
+  await addIfMissing('gate_confidence', { type: DataTypes.DECIMAL(5, 4), allowNull: true });
+  await addIfMissing('clinical_group', { type: DataTypes.STRING(100), allowNull: true });
+  await addIfMissing('tb_detected', { type: DataTypes.BOOLEAN, allowNull: true });
+  await addIfMissing('tb_confidence', { type: DataTypes.DECIMAL(5, 4), allowNull: true });
+  await addIfMissing('nodule_bounding_box', { type: DataTypes.JSON, allowNull: true });
+  await addIfMissing('nodule_size_mm', { type: DataTypes.DECIMAL(8, 2), allowNull: true });
+  await addIfMissing('nodule_detection_confidence', { type: DataTypes.DECIMAL(5, 4), allowNull: true });
+}
+
 async function initializeApp() {
   if (initPromise) {
     return initPromise;
@@ -101,6 +123,7 @@ async function initializeApp() {
       await sequelize.authenticate();
       await ensureUserAuthColumns();
       await ensureHospitalColumns();
+      await ensureAnalysisColumns();
       console.log('Database connection verified for Vercel runtime.');
       return;
     }
@@ -108,6 +131,7 @@ async function initializeApp() {
     await sequelize.sync();
     await ensureUserAuthColumns();
     await ensureHospitalColumns();
+    await ensureAnalysisColumns();
     console.log('Database tables synced.');
 
     const userCount = await User.count();
@@ -274,14 +298,25 @@ const healthHandler = async (_req: express.Request, res: express.Response) => {
     }
   };
 
-  const [ctStatus, xrayStatus, dbStatus] = await Promise.all([check(CT_URL), check(XRAY_URL), checkDb()]);
+  const [ctStatus, xrayStatus, gateStatus, noduleStatus, dbStatus] = await Promise.all([
+    check(CT_URL),
+    check(XRAY_URL),
+    GATE_URL ? check(GATE_URL) : Promise.resolve('not_configured'),
+    NODULE_URL ? check(NODULE_URL) : Promise.resolve('not_configured'),
+    checkDb(),
+  ]);
 
   res.json({
     success: true,
     data: {
       server: 'online',
       database: dbStatus,
-      ai: { ctService: ctStatus, xrayService: xrayStatus },
+      ai: {
+        ctService: ctStatus,
+        xrayService: xrayStatus,
+        gateService: gateStatus,
+        noduleService: noduleStatus,
+      },
       timestamp: new Date().toISOString(),
     },
   });

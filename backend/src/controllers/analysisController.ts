@@ -35,7 +35,11 @@ export const upload = asyncHandler(async (req: AuthRequest, res: Response) => {
 
   if (result.success === false) {
     try { fs.unlinkSync(file.path); } catch { }
-    const status = result.error.startsWith('imageType') ? 400 : 503;
+    const isClientUploadError =
+      result.error.startsWith('imageType') ||
+      result.error.startsWith('Image appears') ||
+      result.error.startsWith('Uploaded file');
+    const status = isClientUploadError ? 400 : 503;
     res.status(status).json({ success: false, message: result.error });
     return;
   }

@@ -17,7 +17,7 @@ log = logging.getLogger("ct_service")
 CLASSES = {0:"Adenocarcinoma",1:"Benign",2:"Large_Cell_Carcinoma",3:"Malignant_General",4:"Normal",5:"Squamous_Cell_Carcinoma"}
 MALIGNANT = {"Adenocarcinoma","Large_Cell_Carcinoma","Squamous_Cell_Carcinoma","Malignant_General"}
 IMAGE_SIZE = 300
-HF_REPO = "Abooz65/medtech-ct-model"
+HF_REPO = os.environ.get("CT_HF_REPO", "Abooz65/medtech-ct-model")
 NEXT_STEPS = {
     "Normal":"No signs of cancer. Continue routine screenings.",
     "Benign":"Benign tissue. Follow up with your physician in 6 months.",
@@ -79,8 +79,8 @@ async def predict(file: UploadFile = File(...)) -> Dict:
         pred_idx = int(torch.argmax(class_logits,dim=1).item())
         cancer_prob = float(torch.sigmoid(cancer_logit)[0][0].item())
     except Exception as e:
-        log.error(f"Inference error: {e}"); log.warning("Returning MOCK result")
-        probs=[0.001,0.001,0.001,0.001,0.995,0.001]; pred_idx=4; cancer_prob=0.005
+        log.error(f"Inference error: {e}")
+        raise HTTPException(503, "CT model unavailable.")
     diagnosis=CLASSES[pred_idx]; confidence=probs[pred_idx]; is_malignant=diagnosis in MALIGNANT
     return {
         "has_cancer":cancer_prob>0.5,"cancer_prob":round(cancer_prob,4),"diagnosis":diagnosis,
