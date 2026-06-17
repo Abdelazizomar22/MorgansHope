@@ -30,6 +30,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [validatingFiles, setValidatingFiles] = useState(false);
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState(0);
   const [error, setError] = useState('');
@@ -51,11 +52,12 @@ export default function UploadPage({ lang }: UploadPageProps) {
     return <img src={`/images/icons/ct-scan${selected ? '-selected' : ''}.png`} alt="CT Scan" width={isMobile ? 25 : 35} height={isMobile ? 25 : 35} style={{ objectFit: 'contain' }} />;
   };
   
-  const handleFiles = (newFiles: FileList | null) => {
+  const handleFiles = async (newFiles: FileList | null) => {
     if (!newFiles) return;
-    const validFiles: File[] = [];
-    const validPreviews: string[] = [];
+    const acceptedFiles: File[] = [];
+    const acceptedPreviews: string[] = [];
     let errorMsg = '';
+    const locallyValidFiles: File[] = [];
 
     Array.from(newFiles).forEach(f => {
       if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(f.type)) {
@@ -63,19 +65,42 @@ export default function UploadPage({ lang }: UploadPageProps) {
       } else if (f.size > 10 * 1024 * 1024) {
         errorMsg = t('File size must not exceed 10MB.', 'حجم الملف يجب أن لا يتجاوز 10MB.');
       } else {
-        validFiles.push(f);
-        validPreviews.push(URL.createObjectURL(f));
+        locallyValidFiles.push(f);
       }
     });
 
-    if (errorMsg && validFiles.length === 0) {
+    if (errorMsg && locallyValidFiles.length === 0) {
       setError(errorMsg);
-    } else {
-      if (errorMsg) setError(errorMsg); // Show error for invalid files but still add valid ones
-      else setError('');
-      setFiles(prev => [...prev, ...validFiles]);
-      setPreviews(prev => [...prev, ...validPreviews]);
+      return;
     }
+
+    if (locallyValidFiles.length === 0) return;
+
+    setValidatingFiles(true);
+
+    for (const file of locallyValidFiles) {
+      try {
+        await analysisApi.validate(file, scanType);
+        acceptedFiles.push(file);
+        acceptedPreviews.push(URL.createObjectURL(file));
+      } catch (err: any) {
+        errorMsg = err?.response?.data?.message
+          || t(
+            'This image could not be validated. Please upload a chest CT or chest X-ray.',
+            'تعذر التحقق من هذه الصورة. يرجى رفع أشعة صدر CT أو X-Ray.'
+          );
+      }
+    }
+
+    setValidatingFiles(false);
+
+    if (acceptedFiles.length > 0) {
+      setFiles(prev => [...prev, ...acceptedFiles]);
+      setPreviews(prev => [...prev, ...acceptedPreviews]);
+    }
+
+    if (errorMsg) setError(errorMsg);
+    else setError('');
   };
 
   const removeFile = (index: number) => {
@@ -89,7 +114,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setDragging(false);
     handleFiles(e.dataTransfer.files);
-  }, []);
+  }, [scanType]);
 
   const animateProgress = (from: number, to: number, duration: number) =>
     new Promise<void>((resolve) => {
@@ -172,11 +197,15 @@ export default function UploadPage({ lang }: UploadPageProps) {
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
-              onClick={() => !loading && inputRef.current?.click()}
-              style={{ border: `2px dashed ${dragging ? 'var(--primary)' : 'var(--card-border)'}`, borderRadius: 16, minHeight: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: loading ? 'default' : 'pointer', background: dragging ? 'rgba(var(--primary-rgb), 0.08)' : 'var(--card-bg)', transition: 'all 0.2s', position: 'relative', overflow: 'hidden', marginBottom: 16 }}>
+              onClick={() => !loading && !validatingFiles && inputRef.current?.click()}
+              style={{ border: `2px dashed ${dragging ? 'var(--primary)' : 'var(--card-border)'}`, borderRadius: 16, minHeight: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: loading || validatingFiles ? 'default' : 'pointer', background: dragging ? 'rgba(var(--primary-rgb), 0.08)' : 'var(--card-bg)', transition: 'all 0.2s', position: 'relative', overflow: 'hidden', marginBottom: 16 }}>
               <div style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'center' }}><IconCloudUpload size={52} /></div>
-                <p style={{ fontWeight: 700, color: 'var(--text-main)', margin: '0 0 7px', fontSize: 15 }}>{t('Drag & Drop or Click to Upload', 'اسحب وأفلت أو اضغط للرفع')}</p>
+                <p style={{ fontWeight: 700, color: 'var(--text-main)', margin: '0 0 7px', fontSize: 15 }}>
+                  {validatingFiles
+                    ? t('Validating scan type...', 'جارٍ التحقق من نوع الأشعة...')
+                    : t('Drag & Drop or Click to Upload', 'اسحب وأفلت أو اضغط للرفع')}
+                </p>
                 <p style={{ color: 'var(--text-muted)', fontSize: 12.5, margin: 0 }}>{t('JPG, PNG, WebP — Max 10MB per file', 'JPG, PNG, WebP — حتى 10MB لكل ملف')}</p>
               </div>
               <input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }} style={{ display: 'none' }} />
@@ -224,9 +253,11 @@ export default function UploadPage({ lang }: UploadPageProps) {
             )}
 
             {/* Submit */}
-            <button onClick={handleSubmit} disabled={loading || files.length === 0} style={{ width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: loading || files.length === 0 ? 'var(--card-border)' : 'var(--primary)', color: loading || files.length === 0 ? 'var(--text-muted)' : 'white', fontWeight: 700, fontSize: 15, cursor: loading || files.length === 0 ? 'default' : 'pointer', boxShadow: loading || files.length === 0 ? 'none' : '0 4px 18px var(--shadow-hover)', fontFamily: 'inherit', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button onClick={handleSubmit} disabled={loading || validatingFiles || files.length === 0} style={{ width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: loading || validatingFiles || files.length === 0 ? 'var(--card-border)' : 'var(--primary)', color: loading || validatingFiles || files.length === 0 ? 'var(--text-muted)' : 'white', fontWeight: 700, fontSize: 15, cursor: loading || validatingFiles || files.length === 0 ? 'default' : 'pointer', boxShadow: loading || validatingFiles || files.length === 0 ? 'none' : '0 4px 18px var(--shadow-hover)', fontFamily: 'inherit', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               {loading
                 ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" /></path></svg>{t('Analyzing...', 'جاري التحليل...')}</>
+                : validatingFiles
+                  ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" /></path></svg>{t('Validating...', 'جارٍ التحقق...')}</>
                 : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>{t(`Analyze ${files.length > 1 ? files.length + ' Scans' : 'Scan'}`, `تحليل ${files.length > 1 ? files.length + ' صور' : 'الصورة'}`)}</>}
             </button>
 

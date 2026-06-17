@@ -14,7 +14,7 @@ Model weights are intentionally not committed to Git because they are large bina
 
 2. CT cancer classifier (`ct-service`, port `8000`)
    - Existing CT model remains unchanged.
-   - If the CT result is not `Normal` or `Benign`, the backend calls the nodule detector.
+   - If the CT result is anything other than `Normal`, the backend calls the nodule detector.
 
 3. CT nodule detector (`nodule-service`, port `8003`)
    - Detects suspicious nodules and returns bounding box, size estimate, and confidence.

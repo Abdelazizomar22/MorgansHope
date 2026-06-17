@@ -7,7 +7,7 @@ Morgan's Hope runs the AI pipeline as separate HTTP services. The Node.js backen
 | Service | Folder | Port | Endpoint | Purpose |
 | --- | --- | --- | --- | --- |
 | CT classifier | `ct_service` | `8000` | `POST /predict` | Existing EfficientNet-B3 CT cancer classifier kept unchanged |
-| CXR classifier | `xray_service` | `8001` | `POST /predict/xray` | New Chest X-Ray multi-disease clinical group classifier plus optional TB signal |
+| CXR classifier | `xray_service` | `8001` | `POST /predict/xray` | 7-class Chest X-Ray clinical groups classifier plus TB decision layer and optional TB localization |
 | Pre-classification gate | `gate_service` | `8002` | `POST /predict` | EfficientNet-B0 routing: Chest X-Ray, Chest CT, Other Medical, Non Medical |
 | CT nodule detector | `nodule_service` | `8003` | `POST /detect` | YOLO nodule localization after positive CT classifier output |
 
@@ -49,7 +49,7 @@ The backend now stores:
 - TB detection and confidence when the TB model is available
 - CT nodule bounding box, estimated size, and confidence
 
-The CT classifier intentionally keeps the original service behavior. The old binary CXR model is no longer the documented target pipeline; CXR output should now follow the six clinical groups used by `xray_service`.
+The CT classifier intentionally keeps the original service behavior. The old binary CXR model is no longer the documented target pipeline; CXR output should now follow the 7-class logic used by `xray_service`, with TB allowed to override when its confidence is stronger than competing X-ray group predictions.
 
 ## Deployment Options
 

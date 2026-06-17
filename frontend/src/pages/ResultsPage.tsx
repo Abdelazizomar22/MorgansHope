@@ -39,6 +39,90 @@ function formatDate(d: string) {
   return new Date(d).toLocaleString('en-GB', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
+function normalizeNoduleBoundingBox(bbox?: Record<string, number> | null) {
+  if (!bbox) return null;
+
+  const x = Number(bbox.x);
+  const y = Number(bbox.y);
+  const width = Number(bbox.width);
+  const height = Number(bbox.height);
+
+  if (![x, y, width, height].every(Number.isFinite)) return null;
+  if (width <= 0 || height <= 0) return null;
+
+  return { x, y, width, height };
+}
+
+function extractTbBoundingBox(localizations?: Array<Record<string, unknown>> | null) {
+  if (!localizations?.length) return null;
+  const first = localizations[0];
+  const bbox = (first.bounding_box || first.bbox) as Record<string, number> | undefined;
+  return normalizeNoduleBoundingBox(bbox || null);
+}
+
+function ScanImageWithBoundingBox({
+  imageUrl,
+  bbox,
+  alt,
+  label = 'Focus',
+}: {
+  imageUrl: string;
+  bbox?: Record<string, number> | null;
+  alt: string;
+  label?: string;
+}) {
+  const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
+  const normalizedBox = normalizeNoduleBoundingBox(bbox);
+
+  return (
+    <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', background: '#f8fafc', border: '1px solid var(--card-border)' }}>
+      <img
+        src={imageUrl}
+        alt={alt}
+        onLoad={(event) => {
+          const img = event.currentTarget;
+          setNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+        }}
+        style={{ width: '100%', height: 'auto', display: 'block', maxHeight: 420, objectFit: 'contain', background: '#f8fafc' }}
+      />
+
+      {normalizedBox && naturalSize && (
+        <div
+          style={{
+            position: 'absolute',
+            left: `${(normalizedBox.x / naturalSize.width) * 100}%`,
+            top: `${(normalizedBox.y / naturalSize.height) * 100}%`,
+            width: `${(normalizedBox.width / naturalSize.width) * 100}%`,
+            height: `${(normalizedBox.height / naturalSize.height) * 100}%`,
+            border: '3px solid #ef4444',
+            borderRadius: 10,
+            boxShadow: '0 0 0 9999px rgba(239, 68, 68, 0.08)',
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: -30,
+              left: 0,
+              background: '#ef4444',
+              color: 'white',
+              borderRadius: 999,
+              padding: '4px 10px',
+              fontSize: 11,
+              fontWeight: 800,
+              letterSpacing: 0.2,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {label}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ResultsPage({ lang }: ResultsPageProps) {
   const [params] = useSearchParams();
   const { user } = useAuth();
@@ -151,6 +235,13 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
     r.imagePath
       ? `${apiOrigin}/api/uploads/${r.imagePath.split(/[\\/]/).pop()}`
       : '';
+
+  const selectedImageUrl = result ? buildImageURL(result) : '';
+  const selectedTbBoundingBox = result ? extractTbBoundingBox(result.tbLocalizations || null) : null;
+  const previewBoundingBox = result?.imageType === 'ct'
+    ? (result.noduleBoundingBox || null)
+    : selectedTbBoundingBox;
+  const previewLabel = result?.imageType === 'ct' ? 'Nodule focus' : 'TB focus';
 
   const imageUrlToDataUrl = async (url: string): Promise<string | null> => {
     try {
@@ -532,6 +623,86 @@ ${result.nextStep ? `
                       <div style={{ width: `${Math.round(result.confidence * 100)}%`, height: '100%', background: urg!.color, borderRadius: 99, transition: 'width 0.8s' }} />
                     </div>
                   </div>
+
+                  {selectedImageUrl && (
+                    <div style={{ background: 'var(--card-bg)', borderRadius: 14, padding: '20px 22px', marginBottom: 18, border: '1px solid var(--card-border)', boxShadow: '0 2px 8px var(--shadow-main)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+                        <div>
+                          <h3 style={{ fontWeight: 800, color: 'var(--text-main)', margin: 0, fontSize: 14.5 }}>
+                            {t('Analyzed Scan Preview', 'معاينة الأشعة المحللة')}
+                          </h3>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                            {result.imageType.toUpperCase()} · {result.originalFilename}
+                          </div>
+                        </div>
+                        {result.imageType === 'ct' && result.noduleBoundingBox && (
+                          <div style={{ padding: '7px 12px', borderRadius: 999, background: 'rgba(239,68,68,0.08)', color: '#b91c1c', border: '1px solid rgba(239,68,68,0.18)', fontSize: 11.5, fontWeight: 800 }}>
+                            {t('Potential nodule localized', 'تم تحديد موضع العقدة المحتملة')}
+                          </div>
+                        )}
+                        {result.imageType === 'xray' && selectedTbBoundingBox && (
+                          <div style={{ padding: '7px 12px', borderRadius: 999, background: 'rgba(239,68,68,0.08)', color: '#b91c1c', border: '1px solid rgba(239,68,68,0.18)', fontSize: 11.5, fontWeight: 800 }}>
+                            {t('Potential TB area localized', 'تم تحديد موضع اشتباه الدرن')}
+                          </div>
+                        )}
+                      </div>
+
+                      <ScanImageWithBoundingBox
+                        imageUrl={selectedImageUrl}
+                        bbox={previewBoundingBox}
+                        alt={result.originalFilename || 'scan preview'}
+                        label={previewLabel}
+                      />
+
+                      {result.imageType === 'ct' && result.noduleBoundingBox && (
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10, marginTop: 14 }}>
+                          <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: '12px 14px' }}>
+                            <div style={{ fontSize: 11, color: '#9a3412', fontWeight: 700, marginBottom: 4 }}>{t('Detector Status', 'حالة الكاشف')}</div>
+                            <div style={{ fontSize: 13.5, color: '#7c2d12', fontWeight: 800 }}>{t('Box generated', 'تم إنشاء الصندوق')}</div>
+                          </div>
+                          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 14px' }}>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>{t('Detection Confidence', 'ثقة الكاشف')}</div>
+                            <div style={{ fontSize: 13.5, color: 'var(--text-main)', fontWeight: 800 }}>
+                              {result.noduleDetectionConfidence !== null && result.noduleDetectionConfidence !== undefined
+                                ? `${Math.round(result.noduleDetectionConfidence * 100)}%`
+                                : 'N/A'}
+                            </div>
+                          </div>
+                          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 14px' }}>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>{t('Estimated Size', 'الحجم التقديري')}</div>
+                            <div style={{ fontSize: 13.5, color: 'var(--text-main)', fontWeight: 800 }}>
+                              {result.noduleSizeMm !== null && result.noduleSizeMm !== undefined
+                                ? `${result.noduleSizeMm} mm`
+                                : 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {result.imageType === 'xray' && selectedTbBoundingBox && (
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: 10, marginTop: 14 }}>
+                          <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: '12px 14px' }}>
+                            <div style={{ fontSize: 11, color: '#9a3412', fontWeight: 700, marginBottom: 4 }}>{t('TB Localizer', 'كاشف موضع الدرن')}</div>
+                            <div style={{ fontSize: 13.5, color: '#7c2d12', fontWeight: 800 }}>{t('Box generated', 'تم إنشاء الصندوق')}</div>
+                          </div>
+                          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 14px' }}>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>{t('TB Confidence', 'ثقة الدرن')}</div>
+                            <div style={{ fontSize: 13.5, color: 'var(--text-main)', fontWeight: 800 }}>
+                              {result.tbConfidence !== null && result.tbConfidence !== undefined
+                                ? `${Math.round(result.tbConfidence * 100)}%`
+                                : 'N/A'}
+                            </div>
+                          </div>
+                          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 14px' }}>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>{t('Localized Areas', 'المواضع المحددة')}</div>
+                            <div style={{ fontSize: 13.5, color: 'var(--text-main)', fontWeight: 800 }}>
+                              {result.tbLocalizations?.length || 0}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Probability breakdown */}
                   {Object.keys(result.allProbabilities || {}).length > 0 && (

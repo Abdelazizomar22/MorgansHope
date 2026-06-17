@@ -51,6 +51,55 @@ export const upload = asyncHandler(async (req: AuthRequest, res: Response) => {
   });
 });
 
+export const validateScan = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(422).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array().map(e => ({ field: (e as any).path, message: e.msg })),
+    });
+    return;
+  }
+
+  const file = req.file;
+  if (!file) {
+    res.status(400).json({ success: false, message: 'No image file provided' });
+    return;
+  }
+
+  const imageType = (req.body.imageType as string).toLowerCase() as 'xray' | 'ct';
+
+  const result = await analysisService.validateUploadedScan(
+    file.path,
+    file.originalname,
+    imageType,
+  );
+
+  try { fs.unlinkSync(file.path); } catch { }
+
+  if (result.success === false) {
+    const status = result.error.startsWith('imageType') ? 400 : 503;
+    res.status(status).json({ success: false, message: result.error });
+    return;
+  }
+
+  if (!result.data.valid) {
+    res.status(400).json({
+      success: false,
+      message: result.data.message,
+      data: result.data,
+    });
+    return;
+  }
+
+  res.json({
+    success: true,
+    message: 'Scan validated',
+    data: result.data,
+  });
+});
+
 export const getHistory = asyncHandler(async (req: AuthRequest, res: Response) => {
   const page = Math.max(1, parseInt(req.query.page as string) || 1);
   const limit = Math.max(1, parseInt(req.query.limit as string) || 10);

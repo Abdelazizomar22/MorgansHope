@@ -4,6 +4,7 @@ import { authenticate } from '../middleware/auth';
 import upload from '../middleware/upload';
 import {
   upload as uploadAnalysis,
+  validateScan,
   getHistory,
   getById,
   deleteAnalysis,
@@ -59,6 +60,10 @@ router.post('/upload', authenticate, upload.single('image'), [
   body('imageType').isIn(['xray', 'ct']).withMessage('imageType must be "xray" or "ct"'),
   body('sessionId').optional().isString().trim(),
 ], uploadAnalysis);
+
+router.post('/validate', authenticate, upload.single('image'), [
+  body('imageType').isIn(['xray', 'ct']).withMessage('imageType must be "xray" or "ct"'),
+], validateScan);
 
 /**
  * @openapi
