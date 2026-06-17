@@ -136,6 +136,20 @@ export const authApi = {
 
 // ── Analysis ────────────────────────────────────────────────────────────────
 export const analysisApi = {
+  validate: (file: File, imageType: 'xray' | 'ct') => {
+    const form = new FormData();
+    form.append('image', file);
+    form.append('imageType', imageType);
+    return api.post<ApiResponse<{
+      valid: boolean;
+      classification: 'Chest_XRay' | 'Chest_CT' | 'Other_Medical' | 'Non_Medical';
+      confidence: number | null;
+      detectedImageType: 'xray' | 'ct' | null;
+      message: string | null;
+    }>>('/analysis/validate', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
   upload: (file: File, imageType: 'xray' | 'ct', sessionId?: string) => {
     const form = new FormData();
     form.append('image', file);

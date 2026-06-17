@@ -23,6 +23,14 @@ interface GateResult {
   rejectedMessage: string | null;
 }
 
+interface ValidationResult {
+  valid: boolean;
+  classification: GateClassification;
+  confidence: number | null;
+  detectedImageType: 'xray' | 'ct' | null;
+  message: string | null;
+}
+
 function computeUrgency(r: AnalysisResult): UrgencyLevel {
   if (!r.hasFindings) return 'none';
   if (!r.hasCancer) return 'low';
@@ -90,6 +98,29 @@ async function runGate(input: UploadInput): Promise<GateResult> {
   };
 }
 
+function buildGateValidationMessage(
+  selectedImageType: 'xray' | 'ct',
+  gate: Pick<GateResult, 'classification' | 'routedImageType' | 'rejectedMessage'>,
+) {
+  if (gate.rejectedMessage || !gate.routedImageType) {
+    if (gate.classification === 'Other_Medical') {
+      return 'This appears to be a medical image, but not a chest lung scan. Please upload a chest CT or chest X-ray focused on the lungs.';
+    }
+
+    return 'This file does not appear to be a medical chest scan. Please upload a chest CT or chest X-ray image.';
+  }
+
+  if (selectedImageType === gate.routedImageType) {
+    return null;
+  }
+
+  if (selectedImageType === 'xray' && gate.routedImageType === 'ct') {
+    return 'This image looks like a chest CT scan, but you selected X-Ray. Please switch to CT Scan or upload a chest X-ray.';
+  }
+
+  return 'This image looks like a chest X-ray, but you selected CT Scan. Please switch to X-Ray or upload a chest CT scan.';
+}
+
 async function runNoduleDetection(input: UploadInput) {
   if (!NODULE_URL) return null;
 
@@ -118,6 +149,7 @@ function normalizeXrayResult(aiData: Record<string, unknown>) {
   const confidence = asNumber(aiData.confidence, top?.[1] || 0);
   const hasFindings =
     Boolean(aiData.has_finding) ||
+    Boolean(tbResult?.detected) ||
     !['Normal', 'No Finding', 'Unknown'].includes(classification);
   const potentialMalignancy = /malignancy|nodule|mass/i.test(`${classification} ${clinicalGroup || ''}`);
 
@@ -152,6 +184,39 @@ export interface UploadResult {
   processingTimeMs: number;
 }
 
+export async function validateUploadedScan(
+  filePath: string,
+  originalFilename: string,
+  imageType: 'xray' | 'ct',
+): Promise<Result<ValidationResult>> {
+  if (!['xray', 'ct'].includes(imageType)) {
+    return Err('imageType must be "xray" or "ct"');
+  }
+
+  try {
+    const gate = await runGate({
+      userId: 0,
+      filePath,
+      originalFilename,
+      imageType,
+      sessionId: null,
+    });
+
+    const message = buildGateValidationMessage(imageType, gate);
+
+    return Ok({
+      valid: !message,
+      classification: gate.classification,
+      confidence: gate.confidence,
+      detectedImageType: gate.routedImageType,
+      message,
+    });
+  } catch (err) {
+    console.error('Gate validation error:', err);
+    return Err('Validation service unavailable. Please try again.');
+  }
+}
+
 export async function uploadAndAnalyze(input: UploadInput): Promise<Result<UploadResult>> {
   if (!['xray', 'ct'].includes(input.imageType)) {
     try { fs.unlinkSync(input.filePath); } catch { }
@@ -181,14 +246,16 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
       imageType: gate.routedImageType || input.imageType,
     });
 
-    if (gate.rejectedMessage || !gate.routedImageType) {
+    const validationMessage = buildGateValidationMessage(input.imageType, gate);
+
+    if (validationMessage || !gate.routedImageType) {
       await record.update({
         classification: gate.classification,
         confidence: gate.confidence || 0,
         status: 'failed',
         processingTimeMs: Date.now() - startTime,
       });
-      return Err(gate.rejectedMessage || 'Unsupported scan type.');
+      return Err(validationMessage || 'Unsupported scan type.');
     }
 
     const routedImageType = gate.routedImageType;
@@ -236,7 +303,7 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
       allProbabilities = (aiData.all_probs as Record<string, number>) || {};
       nextStep = (aiData.next_step as string) || null;
 
-      if (!['Normal', 'Benign'].includes(classification)) {
+      if (classification !== 'Normal') {
         const nodule = await runNoduleDetection(input);
         if (nodule) {
           noduleBoundingBox = nodule.boundingBox;
