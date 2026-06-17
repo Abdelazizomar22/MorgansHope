@@ -25,12 +25,15 @@ Model weights are intentionally not committed to Git because they are large bina
 
 4. Chest X-Ray service (`xray-service`, port `8001`)
    - The old CXR binary model is removed from the product direction.
-   - The future main CXR model is the NIH14 clinical-groups classifier.
-   - Until that file is added, the service supports a TB-only fallback so uploads do not break.
+   - The current main CXR model is the deployed NIH ChestX-ray14 7-class multi-label classifier.
    - Current TB Stage 1 classifier:
      `G:/MODELS/Tb models pipline/stage1/densenet121_tb_torchscript.pt`
    - Current TB Stage 2 localizer:
      `G:/MODELS/Tb models pipline/stage2/yolov8m_tb_best.pt`
+   - Current NIH14 7-class TorchScript model:
+     `G:/MODELS/Nih14-7classes/models/convnext_tiny_7class_torchscript.pt`
+   - Current NIH14 7-class config:
+     `G:/MODELS/Nih14-7classes/models/config_7class.json`
 
 ## Local Docker Run With External Models
 
@@ -65,28 +68,9 @@ GATE_SERVICE_URL=http://localhost:8002
 NODULE_SERVICE_URL=http://localhost:8003
 ```
 
-## Adding the NIH14 Clinical-Groups X-Ray Model Later
+## Current NIH14 X-Ray Outputs
 
-When the NIH14 groups model is available:
-
-1. Add the file outside Git, for example:
-   `G:/MODELS/xray nih14 groups/model.pt`
-2. Add this mount to `ai/docker-compose.models.example.yml` under `xray-service.volumes`:
-
-```yaml
-- "${XRAY_MODEL_FILE}:/home/user/app/model.pt:ro"
-```
-
-3. Add this env var to `ai/.env.models`:
-
-```env
-XRAY_MODEL_FILE=G:/MODELS/xray nih14 groups/model.pt
-ALLOW_TB_ONLY_FALLBACK=false
-```
-
-4. Restart the X-Ray service.
-
-The service expects the NIH14 model to return exactly these six groups:
+The NIH14 7-class model currently returns these labels:
 
 - Pulmonary Infection
 - COPD-related Findings
@@ -94,6 +78,7 @@ The service expects the NIH14 model to return exactly these six groups:
 - Cardiac Conditions
 - Potential Malignancy Findings
 - Pleural Diseases
+- No Finding
 
 ## Production Deployment Notes
 
@@ -101,7 +86,10 @@ The service expects the NIH14 model to return exactly these six groups:
 - Use platform-supported persistent storage, object storage download, or private Hugging Face model repos.
 - Set the same model paths inside the deployment container:
   - `GATE_MODEL_PATH=/home/user/app/model.pt`
-  - `NODULE_MODEL_PATH=/home/user/app/model.pt`
+  - `XRAY_MODEL_PATH=/home/user/app/xray_model.pt`
+  - `XRAY_CONFIG_PATH=/home/user/app/xray_config_7class.json`
   - `TB_MODEL_PATH=/home/user/app/tb_model.pt`
   - `TB_LOCALIZER_MODEL_PATH=/home/user/app/tb_localizer.pt`
-- Keep `ALLOW_TB_ONLY_FALLBACK=true` only while the NIH14 model is missing.
+  - `NODULE_MODEL_PATH=/home/user/app/model.pt`
+- The current deployed combined Space is:
+  `https://abooz65-morgans-hope-ai-services.hf.space`
