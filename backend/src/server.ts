@@ -108,6 +108,7 @@ async function ensureAnalysisColumns() {
   await addIfMissing('clinical_group', { type: DataTypes.STRING(100), allowNull: true });
   await addIfMissing('tb_detected', { type: DataTypes.BOOLEAN, allowNull: true });
   await addIfMissing('tb_confidence', { type: DataTypes.DECIMAL(5, 4), allowNull: true });
+  await addIfMissing('tb_localizations', { type: DataTypes.JSON, allowNull: true });
   await addIfMissing('nodule_bounding_box', { type: DataTypes.JSON, allowNull: true });
   await addIfMissing('nodule_size_mm', { type: DataTypes.DECIMAL(8, 2), allowNull: true });
   await addIfMissing('nodule_detection_confidence', { type: DataTypes.DECIMAL(5, 4), allowNull: true });
