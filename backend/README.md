@@ -15,6 +15,14 @@ Node.js + Express + TypeScript + Sequelize. Runs on port `3000`.
    - `GEMINI_API_KEY`
    - `FRONTEND_URL` for production CORS
 
+Current deployed AI base URL for gate + X-ray + nodule:
+
+```env
+XRAY_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
+GATE_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
+NODULE_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
+```
+
 Install dependencies and prepare the database:
 
 ```bash
@@ -58,5 +66,6 @@ Uploads are stored in `uploads/`. Chat memory is stored in the `chat_messages` t
 ## Current AI Scope
 
 - CT keeps the existing six-class lung cancer classifier.
-- CXR no longer uses the old binary model; it is prepared for six clinical groups plus optional TB signal.
+- CXR now uses the deployed NIH ChestX-ray14 7-class multi-label model plus the dedicated TB pipeline.
+- Current X-ray outputs are: Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, Pleural Diseases, and No Finding.
 - The chat assistant prompt includes this scope so RAG-style answers stay aligned with the current platform.

@@ -23,9 +23,9 @@ For suspicious CT results, the platform is prepared to call a CT nodule detectio
 
 ### Chest X-Ray
 
-The old binary CXR model has been removed from the project direction. The CXR pipeline is now prepared around clinical chest-disease groups instead of a simple Normal / Nodule-Mass output.
+The old binary CXR model has been removed from the project direction. The current CXR pipeline now uses the deployed NIH ChestX-ray14 7-class multi-label model, alongside the dedicated TB pipeline.
 
-The current CXR clinical groups are:
+The current CXR outputs are:
 
 - Pulmonary Infection
 - COPD-related Findings
@@ -33,8 +33,9 @@ The current CXR clinical groups are:
 - Cardiac Conditions
 - Potential Malignancy Findings
 - Pleural Diseases
+- No Finding
 
-The CXR service is also prepared for an optional TB signal, allowing a dedicated tuberculosis classifier to run alongside the multi-disease CXR classifier when the model artifact is available.
+The CXR service also runs the dedicated TB signal and TB lesion localization pipeline. In practice, the X-ray response can now include multi-label group probabilities, threshold-based positive groups, and the TB screening result together.
 
 ## AI Pipeline
 
@@ -42,7 +43,7 @@ The backend coordinates the scan workflow through separate AI services:
 
 - Pre-classification gate: checks whether the uploaded image is a chest X-ray, chest CT, other medical image, or non-medical image.
 - CT classifier: keeps the original CT cancer model behavior.
-- CXR classifier: uses the new clinical-group CXR pipeline.
+- CXR classifier: uses the deployed NIH 7-class multi-label pipeline plus the TB signal.
 - CT nodule detector: optional follow-up service for suspicious CT results.
 
 This service-based design keeps the frontend stable while allowing each model to be deployed, replaced, or scaled independently.
