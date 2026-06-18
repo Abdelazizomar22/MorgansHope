@@ -1,12 +1,24 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
+import { randomUUID } from 'crypto';
 import axios from 'axios';
 import FormData from 'form-data';
 import AnalysisResult from '../models/AnalysisResult';
+import AnalysisJob from '../models/AnalysisJob';
 import Hospital from '../models/Hospital';
 import City from '../models/City';
 import type { Result } from '../types/result';
 import { Ok, Err } from '../types/result';
+import {
+  createPrivateReadUrl,
+  createPrivateUpload,
+  downloadPrivateObject,
+  isSupabaseStorageConfigured,
+  removePrivateObject,
+} from '../infrastructure/storage/supabaseStorage';
+import { env } from '../config/env';
+import { enqueueAnalysis, isQstashConfigured } from '../infrastructure/queue/qstash';
 
 const CT_URL = process.env.CT_SERVICE_URL || 'http://localhost:8000';
 const XRAY_URL = process.env.XRAY_SERVICE_URL || 'http://localhost:8001';
@@ -54,6 +66,14 @@ function topProbability(probabilities: Record<string, number>) {
   return Object.entries(probabilities).sort((a, b) => b[1] - a[1])[0] || null;
 }
 
+function sanitizeFilename(filename: string) {
+  return filename.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-120);
+}
+
+function createTempFilePath(analysisId: number, filename: string) {
+  return path.join(os.tmpdir(), `morgans-hope-${analysisId}-${Date.now()}-${sanitizeFilename(filename)}`);
+}
+
 async function runGate(input: UploadInput): Promise<GateResult> {
   if (!GATE_URL) {
     return {
@@ -66,7 +86,10 @@ async function runGate(input: UploadInput): Promise<GateResult> {
 
   const form = createForm(input.filePath, input.originalFilename);
   const response = await axios.post(`${GATE_URL}/predict`, form, {
-    headers: form.getHeaders(),
+    headers: {
+      ...form.getHeaders(),
+      ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
+    },
     timeout: 60_000,
   });
 
@@ -126,7 +149,10 @@ async function runNoduleDetection(input: UploadInput) {
 
   const form = createForm(input.filePath, input.originalFilename);
   const response = await axios.post(`${NODULE_URL}/detect`, form, {
-    headers: form.getHeaders(),
+    headers: {
+      ...form.getHeaders(),
+      ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
+    },
     timeout: 120_000,
   });
 
@@ -169,6 +195,26 @@ function normalizeXrayResult(aiData: Record<string, unknown>) {
   };
 }
 
+async function fetchRecommendedHospitals(isMalignant: boolean | null) {
+  if (!isMalignant) return [];
+  return Hospital.findAll({
+    where: { isActive: true },
+    include: [{ model: City, as: 'city' }],
+    limit: 3,
+    order: [['rating', 'DESC']],
+  });
+}
+
+async function withImageUrl<T extends Record<string, unknown>>(record: T & { storageKey?: string | null; storageBucket?: string | null; imagePath?: string }) {
+  if (record.storageKey && record.storageBucket && isSupabaseStorageConfigured()) {
+    return {
+      ...record,
+      imageUrl: await createPrivateReadUrl(record.storageBucket, record.storageKey),
+    };
+  }
+  return record;
+}
+
 export interface UploadInput {
   userId: number;
   filePath: string;
@@ -184,59 +230,26 @@ export interface UploadResult {
   processingTimeMs: number;
 }
 
-export async function validateUploadedScan(
-  filePath: string,
-  originalFilename: string,
-  imageType: 'xray' | 'ct',
-): Promise<Result<ValidationResult>> {
-  if (!['xray', 'ct'].includes(imageType)) {
-    return Err('imageType must be "xray" or "ct"');
-  }
-
-  try {
-    const gate = await runGate({
-      userId: 0,
-      filePath,
-      originalFilename,
-      imageType,
-      sessionId: null,
-    });
-
-    const message = buildGateValidationMessage(imageType, gate);
-
-    return Ok({
-      valid: !message,
-      classification: gate.classification,
-      confidence: gate.confidence,
-      detectedImageType: gate.routedImageType,
-      message,
-    });
-  } catch (err) {
-    console.error('Gate validation error:', err);
-    return Err('Validation service unavailable. Please try again.');
-  }
+export interface UploadIntentResult {
+  analysisId: number;
+  objectPath: string;
+  bucket: string;
+  token: string;
+  signedUrl: string;
 }
 
-export async function uploadAndAnalyze(input: UploadInput): Promise<Result<UploadResult>> {
-  if (!['xray', 'ct'].includes(input.imageType)) {
-    try { fs.unlinkSync(input.filePath); } catch { }
-    return Err('imageType must be "xray" or "ct"');
-  }
+export interface AnalysisStatusResult {
+  analysisId: number;
+  status: AnalysisResult['status'];
+  jobId?: string | null;
+  jobStatus?: AnalysisJob['status'] | null;
+  errorMessage?: string | null;
+  result?: Record<string, unknown>;
+  recommendedHospitals?: Hospital[];
+}
 
+async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Promise<Result<UploadResult>> {
   const startTime = Date.now();
-
-  const record = await AnalysisResult.create({
-    userId: input.userId,
-    sessionId: input.sessionId,
-    imageType: input.imageType,
-    imagePath: input.filePath.split('/').pop() || input.filePath,
-    originalFilename: input.originalFilename,
-    classification: 'Pending',
-    confidence: 0,
-    hasFindings: false,
-    allProbabilities: {},
-    status: 'pending',
-  });
 
   try {
     const gate = await runGate(input);
@@ -247,7 +260,6 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
     });
 
     const validationMessage = buildGateValidationMessage(input.imageType, gate);
-
     if (validationMessage || !gate.routedImageType) {
       await record.update({
         classification: gate.classification,
@@ -259,19 +271,25 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
     }
 
     const routedImageType = gate.routedImageType;
-
     let aiData: Record<string, unknown>;
+
     if (routedImageType === 'ct') {
       const form = createForm(input.filePath, input.originalFilename);
       const response = await axios.post(`${CT_URL}/predict`, form, {
-        headers: form.getHeaders(),
+        headers: {
+          ...form.getHeaders(),
+          ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
+        },
         timeout: 120_000,
       });
       aiData = response.data;
     } else {
       const form = createForm(input.filePath, input.originalFilename);
       const response = await axios.post(`${XRAY_URL}/predict/xray`, form, {
-        headers: form.getHeaders(),
+        headers: {
+          ...form.getHeaders(),
+          ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
+        },
         timeout: 120_000,
       });
       aiData = response.data;
@@ -350,18 +368,10 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
     });
 
     const urgencyLevel = computeUrgency(record);
-    let recommendedHospitals: Hospital[] = [];
-    if (isMalignant) {
-      recommendedHospitals = await Hospital.findAll({
-        where: { isActive: true },
-        include: [{ model: City, as: 'city' }],
-        limit: 3,
-        order: [['rating', 'DESC']],
-      });
-    }
+    const recommendedHospitals = await fetchRecommendedHospitals(isMalignant);
 
     return Ok({
-      result: { ...record.toJSON(), urgencyLevel },
+      result: await withImageUrl({ ...record.toJSON(), urgencyLevel }),
       urgencyLevel,
       recommendedHospitals,
       processingTimeMs,
@@ -370,7 +380,246 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
     await record.update({ status: 'failed' });
     console.error('AI service error:', err);
     return Err('AI service unavailable. Please try again.');
+  } finally {
+    try { fs.unlinkSync(input.filePath); } catch {}
   }
+}
+
+export async function validateUploadedScan(
+  filePath: string,
+  originalFilename: string,
+  imageType: 'xray' | 'ct',
+): Promise<Result<ValidationResult>> {
+  if (!['xray', 'ct'].includes(imageType)) {
+    return Err('imageType must be "xray" or "ct"');
+  }
+
+  try {
+    const gate = await runGate({
+      userId: 0,
+      filePath,
+      originalFilename,
+      imageType,
+      sessionId: null,
+    });
+
+    const message = buildGateValidationMessage(imageType, gate);
+
+    return Ok({
+      valid: !message,
+      classification: gate.classification,
+      confidence: gate.confidence,
+      detectedImageType: gate.routedImageType,
+      message,
+    });
+  } catch (err) {
+    console.error('Gate validation error:', err);
+    return Err('Validation service unavailable. Please try again.');
+  }
+}
+
+export async function uploadAndAnalyze(input: UploadInput): Promise<Result<UploadResult>> {
+  if (!['xray', 'ct'].includes(input.imageType)) {
+    try { fs.unlinkSync(input.filePath); } catch {}
+    return Err('imageType must be "xray" or "ct"');
+  }
+
+  const record = await AnalysisResult.create({
+    userId: input.userId,
+    sessionId: input.sessionId,
+    imageType: input.imageType,
+    imagePath: path.basename(input.filePath),
+    originalFilename: input.originalFilename,
+    classification: 'Pending',
+    confidence: 0,
+    hasFindings: false,
+    allProbabilities: {},
+    status: 'pending',
+  });
+
+  return finalizeAnalysis(record, input);
+}
+
+export async function createUploadIntent(params: {
+  userId: number;
+  originalFilename: string;
+  imageType: 'xray' | 'ct';
+  mimeType: string;
+  fileSizeBytes: number;
+  sessionId?: string | null;
+}): Promise<Result<UploadIntentResult>> {
+  if (!isSupabaseStorageConfigured()) {
+    return Err('Private storage is not configured yet.');
+  }
+
+  const bucket = env.medicalScansBucket;
+  const record = await AnalysisResult.create({
+    userId: params.userId,
+    sessionId: params.sessionId || null,
+    imageType: params.imageType,
+    imagePath: '',
+    originalFilename: params.originalFilename,
+    classification: 'Pending',
+    confidence: 0,
+    hasFindings: false,
+    allProbabilities: {},
+    status: 'pending',
+    mimeType: params.mimeType,
+    fileSizeBytes: params.fileSizeBytes,
+  });
+
+  const objectPath = `users/${params.userId}/analysis/${record.id}/${Date.now()}-${sanitizeFilename(params.originalFilename)}`;
+  const upload = await createPrivateUpload(bucket, objectPath);
+
+  await record.update({
+    storageBucket: bucket,
+    storageKey: objectPath,
+    imagePath: objectPath,
+  });
+
+  return Ok({
+    analysisId: record.id,
+    objectPath,
+    bucket,
+    token: upload.token,
+    signedUrl: upload.signedUrl,
+  });
+}
+
+export async function submitAnalysis(userId: number, analysisId: number): Promise<Result<{ analysisId: number; jobId: string; status: string }>> {
+  const analysis = await AnalysisResult.findOne({ where: { id: analysisId, userId } });
+  if (!analysis) {
+    return Err('Analysis not found');
+  }
+
+  if (!analysis.storageKey || !analysis.storageBucket) {
+    return Err('No uploaded scan was found for this analysis.');
+  }
+
+  let job = await AnalysisJob.findOne({ where: { analysisId: analysis.id, userId } });
+  if (!job) {
+    job = await AnalysisJob.create({
+      id: randomUUID(),
+      analysisId: analysis.id,
+      userId,
+      status: 'queued',
+    });
+  } else if (['completed', 'processing'].includes(job.status)) {
+    return Ok({ analysisId: analysis.id, jobId: job.id, status: job.status });
+  } else {
+    await job.update({ status: 'queued', lastError: null });
+  }
+
+  if (env.enableAsyncAnalysis && isQstashConfigured()) {
+    await enqueueAnalysis(job.id, analysis.id);
+    return Ok({ analysisId: analysis.id, jobId: job.id, status: 'queued' });
+  }
+
+  await processAnalysisJob(job.id);
+  const refreshedJob = await AnalysisJob.findByPk(job.id);
+  return Ok({ analysisId: analysis.id, jobId: job.id, status: refreshedJob?.status || 'completed' });
+}
+
+export async function processAnalysisJob(jobId: string): Promise<Result<UploadResult>> {
+  const job = await AnalysisJob.findByPk(jobId);
+  if (!job) {
+    return Err('Analysis job not found');
+  }
+
+  const analysis = await AnalysisResult.findByPk(job.analysisId);
+  if (!analysis) {
+    await job.update({ status: 'failed', lastError: 'Analysis record not found.' });
+    return Err('Analysis record not found.');
+  }
+
+  if (!analysis.storageBucket || !analysis.storageKey) {
+    await job.update({ status: 'failed', lastError: 'Storage reference is missing.' });
+    return Err('Storage reference is missing.');
+  }
+
+  await job.update({
+    status: 'processing',
+    attempts: job.attempts + 1,
+    lockedAt: new Date(),
+    lastError: null,
+  });
+  const currentAttempt = job.attempts + 1;
+
+  const tempPath = createTempFilePath(analysis.id, analysis.originalFilename);
+  try {
+    const buffer = await downloadPrivateObject(analysis.storageBucket, analysis.storageKey);
+    fs.writeFileSync(tempPath, buffer);
+
+    const result = await finalizeAnalysis(analysis, {
+      userId: analysis.userId,
+      filePath: tempPath,
+      originalFilename: analysis.originalFilename,
+      imageType: analysis.imageType,
+      sessionId: analysis.sessionId,
+    });
+
+    if (result.success === false) {
+      await job.update({
+        status: job.attempts + 1 >= job.maxAttempts ? 'dead_letter' : 'failed',
+        lastError: result.error,
+        completedAt: new Date(),
+        lockedAt: null,
+      });
+      return result;
+    }
+
+    await job.update({
+      status: 'completed',
+      completedAt: new Date(),
+      lockedAt: null,
+      lastError: null,
+    });
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Analysis processing failed.';
+    await analysis.update({ status: 'failed' });
+    await job.update({
+      status: currentAttempt >= job.maxAttempts ? 'dead_letter' : 'failed',
+      lastError: message,
+      completedAt: new Date(),
+      lockedAt: null,
+    });
+    return Err(message);
+  } finally {
+    try { fs.unlinkSync(tempPath); } catch {}
+  }
+}
+
+export async function getAnalysisStatus(
+  userId: number,
+  analysisId: number,
+): Promise<Result<AnalysisStatusResult>> {
+  const analysis = await AnalysisResult.findOne({ where: { id: analysisId, userId } });
+  if (!analysis) {
+    return Err('Analysis not found');
+  }
+
+  const job = await AnalysisJob.findOne({ where: { analysisId: analysis.id, userId } });
+
+  if (analysis.status === 'completed') {
+    const recommendedHospitals = await fetchRecommendedHospitals(analysis.isMalignant);
+    return Ok({
+      analysisId: analysis.id,
+      status: analysis.status,
+      jobId: job?.id || null,
+      jobStatus: job?.status || null,
+      result: await withImageUrl({ ...analysis.toJSON(), urgencyLevel: computeUrgency(analysis) }),
+      recommendedHospitals,
+    });
+  }
+
+  return Ok({
+    analysisId: analysis.id,
+    status: analysis.status,
+    jobId: job?.id || null,
+    jobStatus: job?.status || null,
+    errorMessage: job?.lastError || (analysis.status === 'failed' ? 'Analysis failed. Please try again.' : null),
+  });
 }
 
 export interface HistoryResult {
@@ -397,7 +646,7 @@ export async function getAnalysisHistory(
     offset,
   });
 
-  const data = rows.map(r => ({ ...r.toJSON(), urgencyLevel: computeUrgency(r) }));
+  const data = await Promise.all(rows.map(async (r) => withImageUrl({ ...r.toJSON(), urgencyLevel: computeUrgency(r) })));
 
   return Ok({
     data,
@@ -422,7 +671,7 @@ export async function getAnalysisById(
     return Err('Analysis not found');
   }
 
-  return Ok({ ...result.toJSON(), urgencyLevel: computeUrgency(result) });
+  return Ok(await withImageUrl({ ...result.toJSON(), urgencyLevel: computeUrgency(result) }));
 }
 
 export async function deleteAnalysisById(
@@ -437,15 +686,26 @@ export async function deleteAnalysisById(
     return Err('Analysis not found');
   }
 
-  try {
-    const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
-    const uploadPath = path.isAbsolute(uploadsRoot)
-      ? uploadsRoot
-      : path.join(process.cwd(), uploadsRoot);
-    const filePath = path.join(uploadPath, result.imagePath);
-    fs.unlinkSync(filePath);
-  } catch { }
+  if (result.storageBucket && result.storageKey && isSupabaseStorageConfigured()) {
+    try {
+      await removePrivateObject(result.storageBucket, result.storageKey);
+    } catch {
+      // Ignore storage cleanup errors and continue deleting DB record.
+    }
+  } else if (result.imagePath) {
+    try {
+      const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
+      const uploadPath = path.isAbsolute(uploadsRoot)
+        ? uploadsRoot
+        : path.join(process.cwd(), uploadsRoot);
+      const filePath = path.join(uploadPath, path.basename(result.imagePath));
+      fs.unlinkSync(filePath);
+    } catch {
+      // Ignore missing local files.
+    }
+  }
 
+  await AnalysisJob.destroy({ where: { analysisId: result.id } });
   await result.destroy();
   return Ok(undefined);
 }

@@ -3,6 +3,7 @@ import fs from 'fs';
 import pg from 'pg';
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import { env } from './env';
 dotenv.config();
 
 const useSqlite =
@@ -10,6 +11,8 @@ const useSqlite =
   (process.env.USE_SQLITE === '1' ||
     process.env.USE_SQLITE === 'true' ||
     process.env.USE_SQLITE === undefined);
+
+export const usingSqlite = useSqlite;
 
 let sequelize: Sequelize;
 
@@ -27,11 +30,7 @@ if (useSqlite) {
     console.log('[DB] Using SQLite:', storage);
   }
 } else {
-  sequelize = new Sequelize(
-    process.env.DB_NAME || 'morgans_hope',
-    process.env.DB_USER || 'root',
-    process.env.DB_PASSWORD || '',
-    {
+  const commonOptions = {
       host: process.env.DB_HOST || 'localhost',
       port: Number(process.env.DB_PORT) || 5432,
       dialect: 'postgres',
@@ -41,10 +40,24 @@ if (useSqlite) {
           : {},
       dialectModule: pg,
       logging: false,
-      pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
+      pool: {
+        max: Number(process.env.DB_POOL_MAX) || (process.env.VERCEL ? 2 : 5),
+        min: 0,
+        acquire: 15000,
+        idle: 5000,
+        evict: 10000,
+      },
       define: { underscored: true, timestamps: true },
-    }
-  );
+  } as const;
+
+  sequelize = env.databaseUrl
+    ? new Sequelize(env.databaseUrl, commonOptions as any)
+    : new Sequelize(
+      process.env.DB_NAME || 'morgans_hope',
+      process.env.DB_USER || 'root',
+      process.env.DB_PASSWORD || '',
+      commonOptions as any,
+    );
 }
 
 export default sequelize;

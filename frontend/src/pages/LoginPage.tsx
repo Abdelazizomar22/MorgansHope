@@ -47,7 +47,6 @@ export default function LoginPage() {
   // Handle Google OAuth callback
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const socialToken = params.get('token');
     const googleAuth = params.get('googleAuth');
     const socialError = params.get('message');
     const authError = params.get('authError');
@@ -75,9 +74,9 @@ export default function LoginPage() {
       return;
     }
 
-    if (googleAuth === 'success' && socialToken) {
+    if (googleAuth === 'success') {
       setLoading(true);
-      completeSocialLogin(socialToken)
+      completeSocialLogin()
         .catch(() => {
           setError(t('Google sign-in could not be completed. Please try again.', 'تعذر إكمال تسجيل الدخول عبر Google. حاول مرة أخرى.'));
         })
@@ -86,7 +85,7 @@ export default function LoginPage() {
           window.history.replaceState({}, document.title, window.location.pathname);
         });
     }
-  }, [completeSocialLogin]);
+  }, [completeSocialLogin, t]);
 
   const handleSubmit = async () => {
     if (!identifier || !pass) {

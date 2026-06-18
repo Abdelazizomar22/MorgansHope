@@ -11,7 +11,7 @@ const swaggerConfig: Options = {
     },
     servers: [
       { url: 'http://localhost:3000', description: 'Development' },
-      { url: 'https://morgans-hope-backend.vercel.app', description: 'Production' },
+      { url: 'https://morgans-hope.vercel.app/api', description: 'Production' },
     ],
     tags: [
       { name: 'Health', description: 'Server health and status' },
@@ -22,11 +22,11 @@ const swaggerConfig: Options = {
     ],
     components: {
       securitySchemes: {
-        BearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-          description: 'Paste your Bearer access token here. Get one by registering or logging in via /api/auth/login.',
+        SessionCookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'morgans_hope_access',
+          description: 'Authenticated requests use the secure session cookie set by /api/auth/login or Google OAuth callback.',
         },
       },
       schemas: {

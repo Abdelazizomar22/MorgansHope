@@ -13,7 +13,7 @@ const router = Router();
  *     summary: Send a message to the AI medical assistant
  *     description: The assistant has context of the user's profile, latest analysis results, and conversation history. Supports bilingual English/Arabic responses.
  *     security:
- *       - BearerAuth: []
+ *       - SessionCookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -57,7 +57,7 @@ router.post(
  *     summary: Get chat message history
  *     description: Returns up to 100 most recent messages in chronological order.
  *     security:
- *       - BearerAuth: []
+ *       - SessionCookieAuth: []
  *     responses:
  *       200:
  *         description: Chat history retrieved

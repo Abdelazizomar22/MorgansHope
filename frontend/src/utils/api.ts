@@ -1,76 +1,103 @@
-// ─────────────────────────────────────────────────────────────
-//  Morgan's Hope — Axios API Client  (Professional Edition)
-// ─────────────────────────────────────────────────────────────
-import axios, { AxiosRequestConfig } from 'axios';
-import type { SafeUser, AnalysisResult, Hospital, City, UploadResponse, PaginatedResponse, ApiResponse } from '../types';
-import { TokenService } from '../services/tokenService';
+import axios from 'axios';
+import type {
+  SafeUser,
+  AnalysisResult,
+  Hospital,
+  City,
+  UploadResponse,
+  UploadIntentResponse,
+  AnalysisSubmitResponse,
+  AnalysisStatusResponse,
+  PaginatedResponse,
+  ApiResponse,
+} from '../types';
 import { API_BASE_URL } from './env';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 120_000,
-  withCredentials: true, // send HttpOnly refresh cookie on every request
+  withCredentials: true,
 });
 
-// ── Request interceptor: attach access token ──────────────────────────────────
-api.interceptors.request.use((config) => {
-  const token = TokenService.getToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-// ── Silent refresh logic ──────────────────────────────────────────────────────
+let csrfToken: string | null = null;
+let csrfPromise: Promise<string> | null = null;
 let isRefreshing = false;
-// Queue of resolve/reject pairs for requests that arrived while a refresh was in flight
-let refreshQueue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = [];
+let refreshQueue: Array<{ resolve: () => void; reject: (err: unknown) => void }> = [];
 
-function processQueue(error: unknown, token: string | null = null) {
+function processQueue(error?: unknown) {
   refreshQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
-    else resolve(token!);
+    else resolve();
   });
   refreshQueue = [];
 }
 
-// ── Response interceptor: handle 401 → silent refresh → retry ────────────────
+async function fetchCsrfToken() {
+  const response = await api.get<ApiResponse<{ csrfToken: string }>>('/auth/csrf');
+  const nextToken = response.data.data?.csrfToken;
+  if (!nextToken) {
+    throw new Error('CSRF token was not returned by the server.');
+  }
+  csrfToken = nextToken;
+  return nextToken;
+}
+
+export async function ensureCsrfToken(force = false) {
+  if (!force && csrfToken) return csrfToken;
+  if (!force && csrfPromise) return csrfPromise;
+
+  csrfPromise = fetchCsrfToken().finally(() => {
+    csrfPromise = null;
+  });
+
+  return csrfPromise;
+}
+
+api.interceptors.request.use(async (config) => {
+  const method = (config.method || 'get').toUpperCase();
+  const needsCsrf = !['GET', 'HEAD', 'OPTIONS'].includes(method);
+
+  if (needsCsrf) {
+    const token = await ensureCsrfToken();
+    config.headers = config.headers || {};
+    config.headers['X-CSRF-Token'] = token;
+  }
+
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const original = error.config as AxiosRequestConfig & { _retry?: boolean };
+    const original = error.config as typeof error.config & { _retry?: boolean };
+    const status = error.response?.status;
+    const url = String(original?.url || '');
+    const isAuthEndpoint = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/csrf'].some((segment) => url.includes(segment));
 
-    // Only attempt refresh for 401s NOT coming from auth endpoints themselves
-    const isAuthEndpoint = original.url?.includes('/auth/login')
-      || original.url?.includes('/auth/register')
-      || original.url?.includes('/auth/refresh');
+    if (status === 403 && error.response?.data?.message?.includes('CSRF')) {
+      csrfToken = null;
+    }
 
-    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
+    if (status === 401 && original && !original._retry && !isAuthEndpoint) {
       if (isRefreshing) {
-        // Another refresh is in progress — queue this request
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
-        }).then((token) => {
-          original.headers = original.headers || {};
-          (original.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-          return api(original);
-        });
+        }).then(() => api(original));
       }
 
       original._retry = true;
       isRefreshing = true;
 
       try {
-        const { data } = await api.post<ApiResponse<{ token: string; user: SafeUser }>>('/auth/refresh');
-        const newToken = data.data!.token;
-        TokenService.setToken(newToken, TokenService.isPersistent());
-        processQueue(null, newToken);
-
-        original.headers = original.headers || {};
-        (original.headers as Record<string, string>)['Authorization'] = `Bearer ${newToken}`;
+        const token = await ensureCsrfToken(status === 403);
+        await api.post<ApiResponse<{ user: SafeUser }>>('/auth/refresh', undefined, {
+          headers: { 'X-CSRF-Token': token },
+        });
+        processQueue();
         return api(original);
       } catch (refreshError) {
-        processQueue(refreshError, null);
-        // Refresh failed — truly expired, log out cleanly
-        TokenService.removeToken();
+        processQueue(refreshError);
+        csrfToken = null;
         window.dispatchEvent(new CustomEvent('auth:logout'));
         return Promise.reject(refreshError);
       } finally {
@@ -79,38 +106,47 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
-// ── Auth ────────────────────────────────────────────────────────────────────
 export const authApi = {
   register: (data: {
-    firstName: string; lastName: string; email: string;
-    password: string; confirmPassword: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
     acceptedDisclaimer: boolean;
     age?: number;
     gender?: 'male' | 'female' | 'other';
     smokingHistory?: 'never' | 'former' | 'current';
     medicalHistory?: string;
     role?: 'user' | 'admin';
-  }) => api.post<ApiResponse<{ user: SafeUser; token: string; verification?: { required: boolean; channel: 'email' | 'phone'; devCode?: string } }>>('/auth/register', data),
+  }) => api.post<ApiResponse<{
+    user: SafeUser;
+    verification?: { required: boolean; channel: 'email' | 'phone'; devCode?: string };
+  }>>('/auth/register', data),
 
   login: (data: { email?: string; identifier?: string; password: string; rememberMe?: boolean }) =>
-    api.post<ApiResponse<{ user: SafeUser; token: string }>>('/auth/login', data),
+    api.post<ApiResponse<{ user: SafeUser }>>('/auth/login', data),
 
   logout: () => api.post<ApiResponse>('/auth/logout'),
 
-  refresh: () => api.post<ApiResponse<{ token: string; user: SafeUser }>>('/auth/refresh'),
+  refresh: () => api.post<ApiResponse<{ user: SafeUser }>>('/auth/refresh'),
 
   me: () => api.get<ApiResponse<SafeUser>>('/auth/me'),
 
   updateProfile: (data: {
-    firstName?: string; lastName?: string; phone?: string;
-    age?: number; gender?: 'male' | 'female' | 'other';
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    age?: number;
+    gender?: 'male' | 'female' | 'other';
     smokingHistory?: 'never' | 'former' | 'current';
     medicalHistory?: string;
     onboardingCompleted?: boolean;
-    currentPassword?: string; newPassword?: string;
+    currentPassword?: string;
+    newPassword?: string;
   }) => api.put<ApiResponse<SafeUser>>('/auth/profile', data),
 
   verifyContact: (code: string) =>
@@ -123,7 +159,7 @@ export const authApi = {
     api.post<ApiResponse<SafeUser>>('/auth/verify-phone-otp', { otp }),
 
   resendVerification: (channel?: 'email' | 'phone') =>
-    api.post<ApiResponse<{ channel: 'email' | 'phone'; smsSent?: boolean; to?: string; devCode?: string }>>('/auth/resend-verification', { channel }),
+    api.post<ApiResponse<{ channel: 'email' | 'phone'; devCode?: string }>>('/auth/resend-verification', { channel }),
 
   uploadAvatar: (file: File) => {
     const form = new FormData();
@@ -134,7 +170,6 @@ export const authApi = {
   },
 };
 
-// ── Analysis ────────────────────────────────────────────────────────────────
 export const analysisApi = {
   validate: (file: File, imageType: 'xray' | 'ct') => {
     const form = new FormData();
@@ -159,6 +194,24 @@ export const analysisApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+  createUploadIntent: (data: {
+    originalFilename: string;
+    imageType: 'xray' | 'ct';
+    mimeType: string;
+    fileSizeBytes: number;
+    sessionId?: string;
+  }) => api.post<ApiResponse<UploadIntentResponse>>('/analysis/upload-intent', data),
+  uploadToSignedUrl: (signedUrl: string, file: File, mimeType: string) =>
+    axios.put(signedUrl, file, {
+      headers: {
+        'Content-Type': mimeType,
+        'x-upsert': 'false',
+      },
+    }),
+  submit: (analysisId: number) =>
+    api.post<ApiResponse<AnalysisSubmitResponse>>(`/analysis/${analysisId}/submit`),
+  getStatus: (analysisId: number) =>
+    api.get<ApiResponse<AnalysisStatusResponse>>(`/analysis/${analysisId}/status`),
   getHistory: (page = 1, limit = 10) =>
     api.get<PaginatedResponse<AnalysisResult>>('/analysis/history', { params: { page, limit } }),
   getById: (id: number) =>
@@ -167,7 +220,6 @@ export const analysisApi = {
     api.delete<ApiResponse>(`/analysis/${id}`),
 };
 
-// ── Hospitals ───────────────────────────────────────────────────────────────
 export const hospitalsApi = {
   getAll: (params?: { city?: string; specialization?: string; search?: string; page?: number; limit?: number }) =>
     api.get<PaginatedResponse<Hospital>>('/hospitals', { params }),
@@ -177,7 +229,6 @@ export const hospitalsApi = {
     api.get<ApiResponse<Hospital>>(`/hospitals/${id}`),
 };
 
-// ── Health ──────────────────────────────────────────────────────────────────
 export const healthApi = {
   check: () =>
     api.get<ApiResponse<{ server: string; ai: { ctService: string; xrayService: string }; timestamp: string }>>('/health'),
@@ -189,6 +240,11 @@ export const chatApi = {
 
   getHistory: () =>
     api.get<ApiResponse<Array<{ role: 'user' | 'assistant'; content: string; createdAt: string }>>>('/chat/history'),
+};
+
+export const contactApi = {
+  send: (data: { name: string; email: string; phone?: string; message: string }) =>
+    api.post<ApiResponse>('/contact', data),
 };
 
 export default api;

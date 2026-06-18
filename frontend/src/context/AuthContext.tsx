@@ -3,8 +3,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { authApi } from '../utils/api';
-import { TokenService } from '../services/tokenService';
+import { authApi, ensureCsrfToken } from '../utils/api';
 import type { SafeUser } from '../types';
 
 interface AuthContextType {
@@ -13,7 +12,7 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   login: (identifier: string, password: string, rememberMe?: boolean) => Promise<void>;
-  completeSocialLogin: (token: string) => Promise<void>;
+  completeSocialLogin: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: SafeUser) => void;
@@ -40,7 +39,6 @@ export const VERIFICATION_NOTICE_KEY = 'morgans_hope_verification_notice';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
-  const [token, setToken] = useState<string | null>(TokenService.getToken() || null);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -52,37 +50,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true;
 
     const bootstrapAuth = async () => {
-      const stored = TokenService.getToken();
-
-      if (stored) {
-        setToken(stored);
-      }
-
       try {
-        if (stored) {
-          const res = await authApi.me();
+        await ensureCsrfToken();
+
+        try {
+          const meResponse = await authApi.me();
           if (!active) return;
-          setUser(res.data.data ?? null);
-          return;
+          setUser(meResponse.data.data ?? null);
+        } catch {
+          try {
+            await authApi.refresh();
+            const meResponse = await authApi.me();
+            if (!active) return;
+            setUser(meResponse.data.data ?? null);
+          } catch {
+            if (!active) return;
+            setUser(null);
+          }
         }
-
-        const res = await authApi.refresh();
-        const restoredToken = res.data.data?.token ?? null;
-        const restoredUser = res.data.data?.user ?? null;
-
-        if (!active) return;
-
-        if (restoredToken) {
-          TokenService.setToken(restoredToken, TokenService.isPersistent());
-          setToken(restoredToken);
-        }
-
-        setUser(restoredUser);
-      } catch {
-        TokenService.removeToken();
-        if (!active) return;
-        setToken(null);
-        setUser(null);
       } finally {
         if (active) setLoading(false);
       }
@@ -98,8 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleForcedLogout = () => {
       setUser(null);
-      setToken(null);
-      TokenService.removeToken();
       sessionStorage.removeItem(REDIRECT_KEY);
       navigate('/', { replace: true });
     };
@@ -115,10 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (identifier: string, password: string, rememberMe = false) => {
     const res = await authApi.login({ identifier, password, rememberMe });
-    const { user: nextUser, token: nextToken } = res.data.data!;
+    const nextUser = res.data.data?.user ?? null;
 
-    TokenService.setToken(nextToken, rememberMe);
-    setToken(nextToken);
     setUser(nextUser);
 
     const redirectTo = resolvePostLoginPath(nextUser);
@@ -126,10 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate(redirectTo, { replace: true });
   };
 
-  const completeSocialLogin = async (incomingToken: string) => {
-    TokenService.setToken(incomingToken, true);
-    setToken(incomingToken);
-
+  const completeSocialLogin = async () => {
+    await ensureCsrfToken();
     const res = await authApi.me();
     const currentUser = res.data.data ?? null;
     setUser(currentUser);
@@ -141,10 +120,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (data: RegisterData) => {
     const res = await authApi.register(data);
-    const { user: nextUser, token: nextToken, verification } = res.data.data!;
+    const nextUser = res.data.data?.user ?? null;
+    const verification = res.data.data?.verification;
 
-    TokenService.setToken(nextToken, false);
-    setToken(nextToken);
     setUser(nextUser);
 
     if (verification?.required) {
@@ -164,8 +142,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Ignore logout transport errors and clear local auth state anyway.
     }
 
-    TokenService.removeToken();
-    setToken(null);
     setUser(null);
     sessionStorage.removeItem(REDIRECT_KEY);
     navigate('/', { replace: true });
@@ -188,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [location, user, loading]);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isAdmin, login, completeSocialLogin, register, logout, updateUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, token: null, loading, isAdmin, login, completeSocialLogin, register, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

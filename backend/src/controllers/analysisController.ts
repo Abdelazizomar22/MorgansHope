@@ -11,7 +11,7 @@ export const upload = asyncHandler(async (req: AuthRequest, res: Response) => {
     res.status(422).json({
       success: false,
       message: 'Validation failed',
-      errors: errors.array().map(e => ({ field: (e as any).path, message: e.msg })),
+      errors: errors.array().map((e) => ({ field: (e as any).path, message: e.msg })),
     });
     return;
   }
@@ -34,11 +34,12 @@ export const upload = asyncHandler(async (req: AuthRequest, res: Response) => {
   });
 
   if (result.success === false) {
-    try { fs.unlinkSync(file.path); } catch { }
+    try { fs.unlinkSync(file.path); } catch {}
     const isClientUploadError =
       result.error.startsWith('imageType') ||
       result.error.startsWith('Image appears') ||
-      result.error.startsWith('Uploaded file');
+      result.error.startsWith('Uploaded file') ||
+      result.error.startsWith('This image');
     const status = isClientUploadError ? 400 : 503;
     res.status(status).json({ success: false, message: result.error });
     return;
@@ -51,13 +52,75 @@ export const upload = asyncHandler(async (req: AuthRequest, res: Response) => {
   });
 });
 
+export const createUploadIntent = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(422).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errors.array().map((e) => ({ field: (e as any).path, message: e.msg })),
+    });
+    return;
+  }
+
+  const result = await analysisService.createUploadIntent({
+    userId: req.user!.id,
+    originalFilename: req.body.originalFilename,
+    imageType: req.body.imageType,
+    mimeType: req.body.mimeType,
+    fileSizeBytes: Number(req.body.fileSizeBytes),
+    sessionId: req.body.sessionId || null,
+  });
+
+  if (result.success === false) {
+    res.status(503).json({ success: false, message: result.error });
+    return;
+  }
+
+  res.status(201).json({
+    success: true,
+    message: 'Upload intent created',
+    data: result.data,
+  });
+});
+
+export const submitAnalysis = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const result = await analysisService.submitAnalysis(req.user!.id, Number(req.params.id));
+  if (result.success === false) {
+    const status = result.error === 'Analysis not found' ? 404 : 400;
+    res.status(status).json({ success: false, message: result.error });
+    return;
+  }
+
+  res.status(202).json({
+    success: true,
+    message: 'Analysis job accepted',
+    data: result.data,
+  });
+});
+
+export const getAnalysisStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const result = await analysisService.getAnalysisStatus(req.user!.id, Number(req.params.id));
+  if (result.success === false) {
+    const status = result.error === 'Analysis not found' ? 404 : 400;
+    res.status(status).json({ success: false, message: result.error });
+    return;
+  }
+
+  res.json({
+    success: true,
+    message: 'Analysis status retrieved',
+    data: result.data,
+  });
+});
+
 export const validateScan = asyncHandler(async (req: AuthRequest, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     res.status(422).json({
       success: false,
       message: 'Validation failed',
-      errors: errors.array().map(e => ({ field: (e as any).path, message: e.msg })),
+      errors: errors.array().map((e) => ({ field: (e as any).path, message: e.msg })),
     });
     return;
   }
@@ -69,14 +132,9 @@ export const validateScan = asyncHandler(async (req: AuthRequest, res: Response)
   }
 
   const imageType = (req.body.imageType as string).toLowerCase() as 'xray' | 'ct';
+  const result = await analysisService.validateUploadedScan(file.path, file.originalname, imageType);
 
-  const result = await analysisService.validateUploadedScan(
-    file.path,
-    file.originalname,
-    imageType,
-  );
-
-  try { fs.unlinkSync(file.path); } catch { }
+  try { fs.unlinkSync(file.path); } catch {}
 
   if (result.success === false) {
     const status = result.error.startsWith('imageType') ? 400 : 503;
@@ -125,12 +183,12 @@ export const getById = asyncHandler(async (req: AuthRequest, res: Response) => {
     res.status(422).json({
       success: false,
       message: 'Invalid analysis ID',
-      errors: errors.array().map(e => ({ field: (e as any).path, message: e.msg })),
+      errors: errors.array().map((e) => ({ field: (e as any).path, message: e.msg })),
     });
     return;
   }
 
-  const result = await analysisService.getAnalysisById(req.user!.id, req.params.id as unknown as number);
+  const result = await analysisService.getAnalysisById(req.user!.id, Number(req.params.id));
 
   if (result.success === false) {
     res.status(404).json({ success: false, message: result.error });
@@ -150,12 +208,12 @@ export const deleteAnalysis = asyncHandler(async (req: AuthRequest, res: Respons
     res.status(422).json({
       success: false,
       message: 'Invalid analysis ID',
-      errors: errors.array().map(e => ({ field: (e as any).path, message: e.msg })),
+      errors: errors.array().map((e) => ({ field: (e as any).path, message: e.msg })),
     });
     return;
   }
 
-  const result = await analysisService.deleteAnalysisById(req.user!.id, req.params.id as unknown as number);
+  const result = await analysisService.deleteAnalysisById(req.user!.id, Number(req.params.id));
 
   if (result.success === false) {
     res.status(404).json({ success: false, message: result.error });

@@ -1,18 +1,15 @@
-import { useState, useEffect } from 'react';
-import emailjs from '@emailjs/browser';
+import { useEffect, useState } from 'react';
 import { MotionFade } from '../components/animations/MotionFade';
 import { MotionHoverScale } from '../components/animations/MotionHoverScale';
 import { MotionPageTransition } from '../components/animations/MotionPageTransition';
 import { HiPhone, HiEnvelope, HiMapPin, HiCheck } from 'react-icons/hi2';
+import { contactApi } from '../utils/api';
 
 interface ContactPageProps { lang: 'en' | 'ar'; }
 
 const IconPhone = () => <HiPhone size={24} />;
-
 const IconMail = () => <HiEnvelope size={24} />;
-
 const IconMapPin = () => <HiMapPin size={24} />;
-
 const IconCheck = () => <HiCheck size={28} />;
 
 export function ContactPage({ lang }: ContactPageProps) {
@@ -34,52 +31,23 @@ export function ContactPage({ lang }: ContactPageProps) {
   const handleSend = async () => {
     if (!form.name || !form.email || !form.message) return;
 
-    const serviceId = (import.meta.env.VITE_EMAILJS_SERVICE_ID || '').trim();
-    const templateId = (import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '').trim();
-    const publicKey = (import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '').trim();
-
-    if (!serviceId || !templateId || !publicKey) {
-      setError(
-        t(
-          'Contact email is not configured yet. Please add EmailJS environment variables.',
-          'بريد التواصل غير مُعد بعد. أضف متغيرات EmailJS البيئية أولًا.'
-        )
-      );
-      return;
-    }
-
     try {
       setLoading(true);
       setError('');
-      emailjs.init({ publicKey });
-
-      const trimmedName = form.name.trim();
-      const trimmedEmail = form.email.trim();
-      const trimmedPhone = form.phone.trim();
-      const trimmedMessage = form.message.trim();
-      const submittedAt = new Date().toLocaleString();
-
-      await emailjs.send(serviceId, templateId, {
-        name: trimmedName,
-        from_name: trimmedName,
-        email: trimmedEmail,
-        from_email: trimmedEmail,
-        phone: trimmedPhone || 'Not provided',
-        message: trimmedMessage,
-        reply_to: trimmedEmail,
-        subject: `Morgan's Hope contact form - ${trimmedName}`,
-        submitted_at: submittedAt,
-        submittedAt,
+      await contactApi.send({
+        name: form.name.trim(),
+        phone: form.phone.trim() || undefined,
+        email: form.email.trim(),
+        message: form.message.trim(),
       });
-
       setSent(true);
       setForm({ name: '', phone: '', email: '', message: '' });
     } catch (err: any) {
-      const details = err?.text || err?.message || err?.status;
+      const details = err?.response?.data?.message || err?.message;
       setError(
         details
           ? `Failed to send your message. ${String(details)}`
-          : t('Failed to send your message. Please try again.', 'فشل إرسال رسالتك. حاول مرة أخرى.')
+          : t('Failed to send your message. Please try again.', 'فشل إرسال رسالتك. حاول مرة أخرى.'),
       );
     } finally {
       setLoading(false);
@@ -104,13 +72,11 @@ export function ContactPage({ lang }: ContactPageProps) {
     },
   ];
 
-  const inputStyle = `w-full placeholder:text-[var(--text-muted)] outline-none border-[var(--input-border)] border-1 transition-colors duration:300
-  focus:border-[var(--input-focus)]`;
+  const inputClass = 'w-full placeholder:text-[var(--text-muted)] outline-none border-[var(--input-border)] border transition-colors duration-300 focus:border-[var(--input-focus)]';
 
   return (
     <MotionPageTransition>
       <div
-
         style={{
           minHeight: '100vh',
           background:
@@ -121,14 +87,7 @@ export function ContactPage({ lang }: ContactPageProps) {
         }}
       >
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div
-            style={{
-              textAlign: 'center',
-              marginBottom: isMobile ? 32 : 42,
-              maxWidth: 760,
-              marginInline: 'auto',
-            }}
-          >
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 42, maxWidth: 760, marginInline: 'auto' }}>
             <div
               style={{
                 display: 'inline-flex',
@@ -145,7 +104,7 @@ export function ContactPage({ lang }: ContactPageProps) {
                 marginBottom: 16,
               }}
             >
-              {t('Contact Morgan\'s Hope', 'تواصل مع Morgan\'s Hope')}
+              {t("Contact Morgan's Hope", "تواصل مع Morgan's Hope")}
             </div>
             <h1 style={{ fontSize: isMobile ? 32 : 46, fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--primary-dark)', margin: 0 }}>
               {t('Reach the Right Team, Fast', 'تواصل مع الفريق المناسب بسرعة')}
@@ -153,21 +112,14 @@ export function ContactPage({ lang }: ContactPageProps) {
             <p style={{ margin: '14px auto 0', maxWidth: 700, color: 'var(--text-muted)', fontSize: isMobile ? 15 : 18, lineHeight: 1.85 }}>
               {t(
                 'Questions, feedback, or follow-up after a result? Send us a message and we will get back to you as soon as possible.',
-                'هل لديك سؤال أو ملاحظة أو متابعة بعد نتيجة؟ أرسل لنا رسالتك وسنرد عليك في أقرب وقت ممكن.'
+                'هل لديك سؤال أو ملاحظة أو متابعة بعد نتيجة؟ أرسل لنا رسالتك وسنرد عليك في أقرب وقت ممكن.',
               )}
             </p>
           </div>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-              gap: 24,
-              marginBottom: 44,
-            }}
-          >
-            {contactCards.map((card, i) => (
-              <MotionFade key={i} direction="up" delay={i * 0.08}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginBottom: 44 }}>
+            {contactCards.map((card, index) => (
+              <MotionFade key={index} direction="up" delay={index * 0.08}>
                 <div
                   style={{
                     background: 'linear-gradient(180deg, color-mix(in srgb, var(--primary) 4%, var(--card-bg)) 0%, var(--card-bg) 100%)',
@@ -178,20 +130,9 @@ export function ContactPage({ lang }: ContactPageProps) {
                     flexDirection: 'column',
                     alignItems: 'center',
                     textAlign: 'center',
-                    minHeight: '190px',
+                    minHeight: 190,
                     justifyContent: 'center',
                     boxShadow: '0 12px 34px var(--shadow-main)',
-                    transition: 'transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary) 28%, var(--card-border))';
-                    e.currentTarget.style.boxShadow = '0 18px 40px var(--shadow-main)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.borderColor = 'var(--card-border)';
-                    e.currentTarget.style.boxShadow = '0 12px 34px var(--shadow-main)';
                   }}
                 >
                   <div
@@ -227,220 +168,156 @@ export function ContactPage({ lang }: ContactPageProps) {
             ))}
           </div>
 
-          <div style={{ width: '100%' }}>
-            <MotionFade direction="up">
-              <div
-                style={{
-                  background: 'var(--card-bg)',
-                  borderRadius: 32,
-                  padding: isMobile ? '28px 18px' : '44px',
-                  boxShadow: '0 18px 40px var(--shadow-main)',
-                  border: '1px solid var(--card-border)',
-                  width: '100%',
-                }}
-              >
-                {sent ? (
+          <MotionFade direction="up">
+            <div
+              style={{
+                background: 'var(--card-bg)',
+                borderRadius: 32,
+                padding: isMobile ? '28px 18px' : '44px',
+                boxShadow: '0 18px 40px var(--shadow-main)',
+                border: '1px solid var(--card-border)',
+              }}
+            >
+              {sent ? (
+                <div
+                  style={{
+                    borderRadius: 28,
+                    border: '1px solid color-mix(in srgb, var(--primary) 18%, var(--card-border))',
+                    background: 'linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, var(--card-bg)) 0%, var(--card-bg) 100%)',
+                    padding: isMobile ? '34px 20px' : '44px 42px',
+                    textAlign: 'center',
+                  }}
+                >
                   <div
                     style={{
-                      position: 'relative',
-                      overflow: 'hidden',
-                      borderRadius: 28,
-                      border: '1px solid color-mix(in srgb, var(--primary) 18%, var(--card-border))',
-                      background: 'linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, var(--card-bg)) 0%, var(--card-bg) 100%)',
-                      padding: isMobile ? '34px 20px' : '44px 42px',
-                      textAlign: 'center',
+                      width: 74,
+                      height: 74,
+                      margin: '0 auto 18px',
+                      borderRadius: '50%',
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
+                      color: '#fff',
+                      boxShadow: '0 16px 30px rgba(var(--primary-rgb),0.28)',
                     }}
                   >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: -70,
-                        bottom: -90,
-                        width: 220,
-                        height: 220,
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(var(--primary-rgb),0.14), transparent 68%)',
-                        pointerEvents: 'none',
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        right: -70,
-                        top: -70,
-                        width: 180,
-                        height: 180,
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(var(--primary-rgb),0.1), transparent 70%)',
-                        pointerEvents: 'none',
-                      }}
-                    />
-
-                    <div
-                      style={{
-                        width: 74,
-                        height: 74,
-                        margin: '0 auto 18px',
-                        borderRadius: '50%',
-                        display: 'grid',
-                        placeItems: 'center',
-                        background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-                        color: '#fff',
-                        boxShadow: '0 16px 30px rgba(var(--primary-rgb),0.28)',
-                      }}
-                    >
-                      <IconCheck />
-                    </div>
-
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        marginBottom: 14,
-                        padding: '7px 12px',
-                        borderRadius: 999,
-                        background: 'color-mix(in srgb, var(--primary) 10%, var(--card-bg))',
-                        color: 'var(--primary-dark)',
-                        fontSize: 12,
-                        fontWeight: 800,
-                        letterSpacing: 0.4,
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {t('Message delivered', 'تم تسليم الرسالة')}
-                    </div>
-
-                    <h2 style={{ fontSize: isMobile ? 28 : 34, fontWeight: 900, color: 'var(--primary-dark)', marginBottom: 12, letterSpacing: '-0.03em' }}>
-                      {t('Message Sent!', 'تم الإرسال بنجاح!')}
-                    </h2>
-
-                    <p
-                      style={{
-                        color: 'var(--text-muted)',
-                        margin: '0 auto 22px',
-                        fontSize: isMobile ? 15 : 17,
-                        lineHeight: 1.8,
-                        maxWidth: 640,
-                      }}
-                    >
-                      {t(
-                        "Your message has been delivered to the Morgan's Hope inbox. We'll review it and get back to you as soon as possible.",
-                        "وصلت رسالتك إلى بريد Morgan's Hope بنجاح. سنراجعها ونرد عليك في أقرب وقت ممكن."
-                      )}
-                    </p>
-
-                    <button
-                      onClick={() => setSent(false)}
-                      style={{
-                        background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-                        color: 'white',
-                        border: 'none',
-                        padding: isMobile ? '14px 24px' : '15px 34px',
-                        borderRadius: 16,
-                        fontWeight: 800,
-                        fontSize: 16,
-                        cursor: 'pointer',
-                        boxShadow: '0 14px 28px rgba(var(--primary-rgb),0.22)',
-                      }}
-                    >
-                      {t('Send Another Message', 'إرسال رسالة أخرى')}
-                    </button>
+                    <IconCheck />
                   </div>
-                ) : (
-                  <>
-                    <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 30, textAlign: isMobile ? 'center' : 'start' }}>
-                      {t('Send us a message', 'أرسل لنا رسالة')}
-                    </h2>
+                  <h2 style={{ fontSize: isMobile ? 28 : 34, fontWeight: 900, color: 'var(--primary-dark)', marginBottom: 12, letterSpacing: '-0.03em' }}>
+                    {t('Message Sent!', 'تم الإرسال بنجاح!')}
+                  </h2>
+                  <p style={{ color: 'var(--text-muted)', margin: '0 auto 22px', fontSize: isMobile ? 15 : 17, lineHeight: 1.8, maxWidth: 640 }}>
+                    {t(
+                      "Your message has been delivered to the Morgan's Hope inbox. We'll review it and get back to you as soon as possible.",
+                      "وصلت رسالتك إلى بريد Morgan's Hope بنجاح. سنراجعها ونرد عليك في أقرب وقت ممكن.",
+                    )}
+                  </p>
+                  <button
+                    onClick={() => setSent(false)}
+                    style={{
+                      background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
+                      color: 'white',
+                      border: 'none',
+                      padding: isMobile ? '14px 24px' : '15px 34px',
+                      borderRadius: 16,
+                      fontWeight: 800,
+                      fontSize: 16,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t('Send Another Message', 'إرسال رسالة أخرى')}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 30, textAlign: isMobile ? 'center' : 'start' }}>
+                    {t('Send us a message', 'أرسل لنا رسالة')}
+                  </h2>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: isMobile ? 20 : 30 }}>
-                      <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
-                          {t('Name*', 'الاسم*')}
-                        </label>
-                        <input
-                          type="text"
-                          placeholder={t('Enter your full name', 'أدخل اسمك الكامل')}
-                          value={form.name}
-                          className={inputStyle}
-                          onChange={(e) => setForm({ ...form, name: e.target.value })}
-                          style={{ padding: '16px 20px', borderRadius: 14 }}
-                        />
-                      </div>
-
-                      <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
-                          {t('Phone Number', 'رقم الهاتف')}
-                        </label>
-                        <input
-                          type="tel"
-                          className={inputStyle}
-                          placeholder={t('Enter your phone number', 'أدخل رقم هاتفك')}
-                          value={form.phone}
-                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                          style={{ padding: '16px 20px', borderRadius: 14, fontSize: 15, outline: 'none' }}
-                        />
-                      </div>
-
-                      <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
-                          {t('Email*', 'البريد الإلكتروني*')}
-                        </label>
-                        <input
-                          type="email"
-                          placeholder={t('Enter your email address', 'أدخل بريدك الإلكتروني')}
-                          value={form.email}
-                          onChange={(e) => setForm({ ...form, email: e.target.value })}
-                          className={inputStyle}
-                          style={{ padding: '16px 20px', borderRadius: 14, fontSize: 15, outline: 'none' }}
-                        />
-                      </div>
-
-                      <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
-                          {t('Message*', 'الرسالة*')}
-                        </label>
-                        <textarea
-                          rows={5}
-                          placeholder={t('Enter your message here', 'اكتب رسالتك هنا')}
-                          value={form.message}
-                          className={inputStyle}
-                          onChange={(e) => setForm({ ...form, message: e.target.value })}
-                          style={{ padding: '16px 20px', borderRadius: 14, fontSize: 15, resize: 'none' }}
-                        />
-                      </div>
-
-                      <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: ar ? 'flex-start' : 'flex-end', gap: 10 }}>
-                        {error && <div style={{ color: '#dc3545', fontSize: 13, fontWeight: 700 }}>{error}</div>}
-                        <MotionHoverScale>
-                          <button
-                            onClick={handleSend}
-                            disabled={loading || !form.name || !form.email || !form.message}
-                            style={{
-                              background: loading ? '#9ca3af' : 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-                              color: 'white',
-                              border: 'none',
-                              padding: '18px 60px',
-                              borderRadius: 16,
-                              fontWeight: 800,
-                              fontSize: 16,
-                              cursor: loading ? 'not-allowed' : 'pointer',
-                              transition: 'all 0.2s',
-                              boxShadow: loading ? 'none' : '0 10px 24px rgba(var(--primary-rgb),0.22)',
-                            }}
-                            onMouseEnter={(e) => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
-                            onMouseLeave={(e) => !loading && (e.currentTarget.style.transform = 'translateY(0)')}
-                          >
-                            {loading ? t('Sending...', 'جارٍ الإرسال...') : t('Submit Message', 'إرسال الرسالة')}
-                          </button>
-                        </MotionHoverScale>
-                      </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: isMobile ? 20 : 30 }}>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        {t('Name*', 'الاسم*')}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={t('Enter your full name', 'أدخل اسمك الكامل')}
+                        value={form.name}
+                        className={inputClass}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        style={{ padding: '16px 20px', borderRadius: 14 }}
+                      />
                     </div>
-                  </>
-                )}
-              </div>
-            </MotionFade>
-          </div>
+
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        {t('Phone Number', 'رقم الهاتف')}
+                      </label>
+                      <input
+                        type="tel"
+                        className={inputClass}
+                        placeholder={t('Enter your phone number', 'أدخل رقم هاتفك')}
+                        value={form.phone}
+                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        style={{ padding: '16px 20px', borderRadius: 14, fontSize: 15, outline: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        {t('Email*', 'البريد الإلكتروني*')}
+                      </label>
+                      <input
+                        type="email"
+                        placeholder={t('Enter your email address', 'أدخل بريدك الإلكتروني')}
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        className={inputClass}
+                        style={{ padding: '16px 20px', borderRadius: 14, fontSize: 15, outline: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--primary-dark)', marginBottom: 8 }}>
+                        {t('Message*', 'الرسالة*')}
+                      </label>
+                      <textarea
+                        rows={5}
+                        placeholder={t('Enter your message here', 'اكتب رسالتك هنا')}
+                        value={form.message}
+                        className={inputClass}
+                        onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        style={{ padding: '16px 20px', borderRadius: 14, fontSize: 15, resize: 'none' }}
+                      />
+                    </div>
+
+                    <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: ar ? 'flex-start' : 'flex-end', gap: 10 }}>
+                      {error && <div style={{ color: '#dc3545', fontSize: 13, fontWeight: 700 }}>{error}</div>}
+                      <MotionHoverScale>
+                        <button
+                          onClick={handleSend}
+                          disabled={loading || !form.name || !form.email || !form.message}
+                          style={{
+                            background: loading ? '#9ca3af' : 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
+                            color: 'white',
+                            border: 'none',
+                            padding: '18px 60px',
+                            borderRadius: 16,
+                            fontWeight: 800,
+                            fontSize: 16,
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            boxShadow: loading ? 'none' : '0 10px 24px rgba(var(--primary-rgb),0.22)',
+                          }}
+                        >
+                          {loading ? t('Sending...', 'جارٍ الإرسال...') : t('Submit Message', 'إرسال الرسالة')}
+                        </button>
+                      </MotionHoverScale>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </MotionFade>
         </div>
       </div>
     </MotionPageTransition>

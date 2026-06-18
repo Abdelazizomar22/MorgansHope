@@ -1,32 +1,8 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import passport from 'passport';
 import { Strategy as GoogleStrategy, Profile } from 'passport-google-oauth20';
 import User from '../models/User';
-import { JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
-
-const ACCESS_TOKEN_TTL = '7d';
-const REFRESH_TOKEN_TTL = '30d';
-
-export function makeGoogleAccessToken(id: number) {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL as any });
-}
-
-export function makeGoogleRefreshToken(id: number) {
-  return jwt.sign({ id, rememberMe: true }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL as any });
-}
-
-export function authCookieOptions(maxAgeMs: number) {
-  const isProd = process.env.NODE_ENV === 'production';
-  return {
-    httpOnly: true,
-    sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
-    secure: isProd,
-    maxAge: maxAgeMs,
-    path: '/',
-  };
-}
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';

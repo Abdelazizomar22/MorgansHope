@@ -232,9 +232,13 @@ export default function ResultsPage({ lang }: ResultsPageProps) {
   const apiOrigin = API_BASE_URL.replace(/\/api\/?$/, '') || window.location.origin;
 
   const buildImageURL = (r: AnalysisResult) =>
+    r.imageUrl
+      ? r.imageUrl
+      : (
     r.imagePath
       ? `${apiOrigin}/api/uploads/${r.imagePath.split(/[\\/]/).pop()}`
-      : '';
+      : ''
+      );
 
   const selectedImageUrl = result ? buildImageURL(result) : '';
   const selectedTbBoundingBox = result ? extractTbBoundingBox(result.tbLocalizations || null) : null;

@@ -1,48 +1,24 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import path from 'path';
 import User from '../models/User';
-import { JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
-import { generateOTP, hashOTP, verifyOTP } from '../utils/otp';
-import { sendOTPEmail, sendVerificationCodeEmail } from '../utils/mailer';
 import type { Result } from '../types/result';
 import { Ok, Err } from '../types/result';
+import {
+  createChallenge,
+  consumeChallenge,
+} from '../application/auth/verificationService';
+import {
+  createSession,
+  rotateSession,
+  type SessionMetadata,
+} from '../application/auth/sessionService';
 
-const ACCESS_TOKEN_TTL = '15m';
-const REFRESH_TOKEN_TTL = '7d';
-const REFRESH_TOKEN_LONG_TTL = '30d';
 const PHONE_EMAIL_DOMAIN = 'phone.morganshope.local';
 
 const normalizeEmail = (value?: string) => value?.toLowerCase().trim() || '';
 const normalizePhone = (value?: string) => value?.replace(/[^\d+]/g, '').trim() || '';
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-const generateVerificationCode = () => Math.floor(100000 + Math.random() * 900000).toString();
-
-function makeAccessToken(id: number, ttl = ACCESS_TOKEN_TTL) {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: ttl as any });
-}
-
-function makeRefreshToken(id: number, rememberMe = false) {
-  return jwt.sign(
-    { id, rememberMe },
-    REFRESH_SECRET,
-    { expiresIn: (rememberMe ? REFRESH_TOKEN_LONG_TTL : REFRESH_TOKEN_TTL) as any },
-  );
-}
-
-function queueVerification(user: User, channel: 'email' | 'phone') {
-  const code = generateVerificationCode();
-  user.verificationCode = code;
-  user.verificationChannel = channel;
-  user.verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[Auth] Verification code for ' + channel + ': ' + code);
-  }
-
-  return code;
-}
 
 export interface RegisterInput {
   firstName: string;
@@ -57,20 +33,22 @@ export interface RegisterInput {
 
 export interface LoginResult {
   user: Record<string, unknown>;
-  accessToken: string;
-  refreshToken: string;
   rememberMe: boolean;
-  cookieMaxMs?: number;
   verification?: {
     required: boolean;
     channel: 'email';
     devCode?: string;
   };
+  session: {
+    accessToken: string;
+    refreshToken: string;
+    accessMaxAgeMs: number;
+    refreshMaxAgeMs?: number;
+  };
 }
 
-export async function registerUser(data: RegisterInput): Promise<Result<LoginResult>> {
+export async function registerUser(data: RegisterInput, metadata: SessionMetadata): Promise<Result<LoginResult>> {
   const email = normalizeEmail(data.email);
-
   const existing = await User.findOne({ where: { email } });
   if (existing) {
     return Err('Email already registered');
@@ -78,6 +56,7 @@ export async function registerUser(data: RegisterInput): Promise<Result<LoginRes
 
   const hashed = await bcrypt.hash(data.password, 12);
   let user: User;
+
   try {
     user = await User.create({
       firstName: data.firstName,
@@ -101,28 +80,24 @@ export async function registerUser(data: RegisterInput): Promise<Result<LoginRes
     throw error;
   }
 
-  const verificationCode = queueVerification(user, 'email');
-  await user.save();
+  let verificationCode: string;
   try {
-    await sendVerificationCodeEmail(user.email!, verificationCode);
+    verificationCode = await createChallenge(user, 'email_verification');
   } catch (error) {
-    console.error('[Auth] Verification email delivery failed:', error);
     try {
       await user.destroy();
-    } catch (cleanupError) {
-      console.error('[Auth] Failed to roll back incomplete registration:', cleanupError);
+    } catch {
+      // Ignore cleanup errors if the email pipeline already failed.
     }
-    return Err('We could not send the verification email. Please check the email service configuration and try again.');
+    return Err(error instanceof Error ? error.message : 'We could not send the verification email.');
   }
 
-  const accessToken = makeAccessToken(user.id);
-  const refreshToken = makeRefreshToken(user.id);
+  const session = await createSession(user.id, false, metadata);
 
   return Ok({
     user: user.toSafeJSON(),
-    accessToken,
-    refreshToken,
     rememberMe: false,
+    session,
     verification: {
       required: true,
       channel: 'email',
@@ -134,34 +109,15 @@ export async function registerUser(data: RegisterInput): Promise<Result<LoginRes
 export async function loginUser(
   identifier: string,
   password: string,
-  rememberMe?: boolean,
+  rememberMe: boolean,
+  metadata: SessionMetadata,
 ): Promise<Result<LoginResult>> {
-  const normalizedEmail = normalizeEmail(identifier);
+  const normalizedIdentifier = normalizeEmail(identifier);
   const trimmedPassword = password.toString().trim();
 
-  let user = isEmail(normalizedEmail)
-    ? await User.findOne({ where: { email: normalizedEmail, isActive: true } })
+  const user = isEmail(normalizedIdentifier)
+    ? await User.findOne({ where: { email: normalizedIdentifier, isActive: true } })
     : null;
-
-  if (
-    !user
-    && process.env.NODE_ENV !== 'production'
-    && process.env.ENABLE_DEV_AUTH_SETUP === 'true'
-    && normalizedEmail === 'admin@morganshope.local'
-    && trimmedPassword === 'Admin@123456'
-  ) {
-    const hashed = await bcrypt.hash(trimmedPassword, 12);
-    user = await User.create({
-      firstName: 'Admin',
-      lastName: 'Morgan\'s Hope',
-      email: normalizedEmail,
-      password: hashed,
-      role: 'admin',
-      emailVerified: true,
-      acceptedDisclaimer: true,
-      onboardingCompleted: true,
-    });
-  }
 
   if (!user) {
     await bcrypt.compare(trimmedPassword, '$2b$12$invalidhashplaceholderxxxxxxxxxxxxxxx');
@@ -173,34 +129,31 @@ export async function loginUser(
     return Err('Invalid email or password.');
   }
 
-  const isRemember = Boolean(rememberMe);
-  const accessTTL = isRemember ? '7d' : ACCESS_TOKEN_TTL;
-  const accessToken = makeAccessToken(user.id, accessTTL);
-  const refreshToken = makeRefreshToken(user.id, isRemember);
-  const cookieMaxMs = isRemember ? 30 * 24 * 60 * 60 * 1000 : undefined;
+  const session = await createSession(user.id, Boolean(rememberMe), metadata);
 
-  return Ok({ user: user.toSafeJSON(), accessToken, refreshToken, rememberMe: isRemember, cookieMaxMs });
+  return Ok({
+    user: user.toSafeJSON(),
+    rememberMe: Boolean(rememberMe),
+    session,
+  });
 }
 
-export async function refreshUserToken(token: string): Promise<Result<LoginResult>> {
-  let payload: { id: number; rememberMe?: boolean };
-  try {
-    payload = jwt.verify(token, REFRESH_SECRET) as { id: number; rememberMe?: boolean };
-  } catch {
-    return Err('Invalid or expired refresh token');
+export async function refreshUserSession(refreshToken: string, metadata: SessionMetadata): Promise<Result<LoginResult>> {
+  const rotated = await rotateSession(refreshToken, metadata);
+  if (!rotated) {
+    return Err('Invalid or expired refresh session.');
   }
 
-  const user = await User.findOne({ where: { id: payload.id, isActive: true } });
-  if (!user) {
-    return Err('User not found');
-  }
-
-  const isRemember = payload.rememberMe === true;
-  const newAccessToken = makeAccessToken(user.id, isRemember ? '7d' : ACCESS_TOKEN_TTL);
-  const newRefreshToken = makeRefreshToken(user.id, isRemember);
-  const cookieMaxMs = isRemember ? 30 * 24 * 60 * 60 * 1000 : undefined;
-
-  return Ok({ user: user.toSafeJSON(), accessToken: newAccessToken, refreshToken: newRefreshToken, rememberMe: isRemember, cookieMaxMs });
+  return Ok({
+    user: rotated.user.toSafeJSON(),
+    rememberMe: rotated.refreshMaxAgeMs !== undefined,
+    session: {
+      accessToken: rotated.accessToken,
+      refreshToken: rotated.refreshToken,
+      accessMaxAgeMs: rotated.accessMaxAgeMs,
+      refreshMaxAgeMs: rotated.refreshMaxAgeMs,
+    },
+  });
 }
 
 export interface UpdateProfileInput {
@@ -256,30 +209,18 @@ export async function updateUserProfile(
 }
 
 export async function verifyUserContact(user: User, code: string): Promise<Result<Record<string, unknown>>> {
-  if (!user.verificationCode || !user.verificationChannel || !user.verificationExpiresAt) {
-    return Err('No verification is pending.');
+  const result = await consumeChallenge(user, 'email_verification', code);
+  if (!result.success) {
+    return Err(result.error);
   }
 
-  if (user.verificationExpiresAt.getTime() < Date.now()) {
-    return Err('Verification code expired.');
-  }
-
-  if (code !== user.verificationCode) {
-    return Err('Invalid verification code.');
-  }
-
-  if (user.verificationChannel === 'email') user.emailVerified = true;
-  if (user.verificationChannel === 'phone') user.phoneVerified = true;
-  user.verificationCode = null;
-  user.verificationChannel = null;
-  user.verificationExpiresAt = null;
+  user.emailVerified = true;
   await user.save();
-
   return Ok(user.toSafeJSON());
 }
 
 export interface ResendResult {
-  channel: string;
+  channel: 'email' | 'phone';
   devCode?: string;
 }
 
@@ -287,39 +228,28 @@ export async function resendUserVerification(
   user: User,
   channel?: string,
 ): Promise<Result<ResendResult>> {
-  const ch = (channel || (user.email && !user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`) ? 'email' : 'phone')) as 'email' | 'phone';
+  const normalizedChannel = (channel || 'email') as 'email' | 'phone';
 
-  if (ch === 'email' && (!user.email || user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`))) {
-    return Err('No email address is available for verification.');
-  }
-  if (ch === 'phone' && !user.phone) {
-    return Err('No phone number is available for verification.');
-  }
-
-  if (ch === 'phone') {
+  if (normalizedChannel === 'email') {
     if (!user.email || user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
-      return Err('No email address is available to deliver the phone verification code.');
+      return Err('No email address is available for verification.');
     }
 
-    const otp = generateOTP();
-    user.phoneOtpHash = hashOTP(otp);
-    user.phoneOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-    await user.save();
-    await sendOTPEmail(user.email, otp);
-
+    const code = await createChallenge(user, 'email_verification');
     return Ok({
-      channel: ch,
-      ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {}),
+      channel: 'email',
+      ...(process.env.NODE_ENV !== 'production' ? { devCode: code } : {}),
     });
   }
 
-  const verificationCode = queueVerification(user, ch);
-  await user.save();
-  await sendVerificationCodeEmail(user.email!, verificationCode);
+  if (!user.phone) {
+    return Err('No phone number is available for verification.');
+  }
 
+  const code = await createChallenge(user, 'phone_verification');
   return Ok({
-    channel: ch,
-    ...(process.env.NODE_ENV !== 'production' ? { devCode: verificationCode } : {}),
+    channel: 'phone',
+    ...(process.env.NODE_ENV !== 'production' ? { devCode: code } : {}),
   });
 }
 
@@ -327,18 +257,10 @@ export async function sendPhoneOtpToUser(user: User): Promise<Result<{ devCode?:
   if (!user.phone) {
     return Err('Please add your phone number before requesting a verification code.');
   }
-  if (!user.email || user.email.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
-    return Err('A valid account email is required to deliver the phone verification code.');
-  }
 
-  const otp = generateOTP();
-  user.phoneOtpHash = hashOTP(otp);
-  user.phoneOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-  await user.save();
-  await sendOTPEmail(user.email, otp);
-
+  const code = await createChallenge(user, 'phone_verification');
   return Ok({
-    ...(process.env.NODE_ENV !== 'production' ? { devCode: otp } : {}),
+    ...(process.env.NODE_ENV !== 'production' ? { devCode: code } : {}),
   });
 }
 
@@ -346,21 +268,14 @@ export async function verifyPhoneOtpForUser(user: User, otp: string): Promise<Re
   if (!otp) {
     return Err('Verification code is required.');
   }
-  if (!user.phoneOtpHash || !user.phoneOtpExpiry) {
-    return Err('No phone verification code is pending.');
-  }
-  if (user.phoneOtpExpiry.getTime() < Date.now()) {
-    return Err('Verification code expired.');
-  }
-  if (!verifyOTP(otp, user.phoneOtpHash)) {
-    return Err('Invalid verification code.');
+
+  const result = await consumeChallenge(user, 'phone_verification', otp);
+  if (!result.success) {
+    return Err(result.error);
   }
 
   user.phoneVerified = true;
-  user.phoneOtpHash = null;
-  user.phoneOtpExpiry = null;
   await user.save();
-
   return Ok(user.toSafeJSON());
 }
 
@@ -369,7 +284,7 @@ export async function uploadUserAvatar(
   file: { path: string; mimetype: string; size: number },
 ): Promise<Result<Record<string, unknown>>> {
   if (file.size > 2 * 1024 * 1024) {
-    try { fs.unlinkSync(file.path); } catch { }
+    try { fs.unlinkSync(file.path); } catch {}
     return Err('Avatar image must be 2MB or smaller');
   }
 
@@ -385,15 +300,15 @@ export async function uploadUserAvatar(
         : path.join(process.cwd(), uploadsRoot);
       const oldPath = path.join(uploadPath, user.profilePicture);
       if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-    } catch { }
+    } catch {
+      // Ignore avatar cleanup errors.
+    }
   }
 
   user.profilePicture = dataUri;
   await user.save();
 
-  try { fs.unlinkSync(file.path); } catch { }
+  try { fs.unlinkSync(file.path); } catch {}
 
   return Ok(user.toSafeJSON());
 }
-
-export { makeAccessToken, makeRefreshToken };
