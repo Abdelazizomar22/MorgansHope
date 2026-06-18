@@ -152,6 +152,10 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
   }, [search, selectedCities, selectedTypes, selectedSpecializations, setSearchParams]);
 
   const allCities = useMemo(() => Array.from(new Set(REAL_HOSPITALS.map((hospital) => hospital.city))), []);
+  const cityArLookup = useMemo(() =>
+    Object.fromEntries(REAL_HOSPITALS.map((h) => [h.city, h.cityAr])), []);
+  const specArLookup = useMemo(() =>
+    Object.fromEntries(REAL_HOSPITALS.map((h) => [h.specialization, h.specializationAr])), []);
   const allSpecializations = useMemo(
     () => Array.from(new Set(REAL_HOSPITALS.flatMap((hospital) => [hospital.specialization, ...hospital.services]))).sort(),
     [],
@@ -172,31 +176,54 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
   const cityOptions = useMemo(() => {
     const base = getOptionCount(REAL_HOSPITALS, filtersState, ar, 'city');
     const options = allCities
-      .map((city) => toFilterOption(city, city, base.filter((hospital) => hospital.city === city).length))
+      .map((city) => toFilterOption(ar ? cityArLookup[city] : city, city, base.filter((hospital) => hospital.city === city).length))
       .filter((option) => option.count > 0);
 
-    return [toFilterOption('All Cities', 'All Cities', base.length), ...options];
-  }, [allCities, ar, filtersState]);
+    return [toFilterOption(ar ? 'كل المدن' : 'All Cities', 'All Cities', base.length), ...options];
+  }, [allCities, cityArLookup, ar, filtersState]);
 
   const typeOptions = useMemo(() => {
     const base = getOptionCount(REAL_HOSPITALS, filtersState, ar, 'type');
     return TYPE_OPTIONS.map((type) =>
-      toFilterOption(type.label, type.value, base.filter((hospital) => hospital.type === type.value).length),
+      toFilterOption(ar ? (type.value === 'Government' ? 'حكومي' : 'خاص') : type.label, type.value, base.filter((hospital) => hospital.type === type.value).length),
     ).filter((option) => option.count > 0);
   }, [ar, filtersState]);
+
+  const serviceArLookup: Record<string, string> = {
+    'Lung Cancer': 'سرطان الرئة',
+    Chemotherapy: 'العلاج الكيميائي',
+    Radiation: 'العلاج الإشعاعي',
+    Surgery: 'الجراحة',
+    'Bone Marrow': 'نخاع العظم',
+    'CT Biopsy': 'خزعة بالتوجيه المقطعي',
+    'Palliative Care': 'الرعاية التلطيفية',
+    'VATS Surgery': 'جراحة الصدر بالمنظار',
+    'PET-CT': 'PET-CT',
+    Immunotherapy: 'العلاج المناعي',
+    'Targeted Therapy': 'العلاج المستهدف',
+    'Nuclear Medicine': 'الطب النووي',
+    Bronchoscopy: 'تنظير القصبات',
+    'Thoracic Surgery': 'جراحة الصدر',
+    Pulmonology: 'أمراض الرئة',
+    Endoscopy: 'المنظار',
+    MRI: 'MRI',
+    'Tumor Board': 'مجلس الأورام',
+    'CT Scan': 'الأشعة المقطعية',
+    Biopsy: 'الخزعة',
+  };
 
   const specializationOptions = useMemo(() => {
     const base = getOptionCount(REAL_HOSPITALS, filtersState, ar, 'specialization');
     return allSpecializations
-      .map((specialization) =>
+      .map((spec) =>
         toFilterOption(
-          specialization,
-          specialization,
-          base.filter((hospital) => includesSpecialization(hospital, [specialization])).length,
+          ar ? (specArLookup[spec] || serviceArLookup[spec] || spec) : spec,
+          spec,
+          base.filter((hospital) => includesSpecialization(hospital, [spec])).length,
         ),
       )
       .filter((option) => option.count > 0);
-  }, [allSpecializations, ar, filtersState]);
+  }, [allSpecializations, specArLookup, ar, filtersState]);
 
   const hasActiveFilters =
     Boolean(search.trim()) || selectedCities.length > 0 || selectedTypes.length > 0 || selectedSpecializations.length > 0;
@@ -224,15 +251,15 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
 
   return (
     <div
-      dir={ar ? 'rtl' : 'ltr'}
+
       className={`min-h-screen bg-[#F4F8F8] text-slate-950 ${ar ? "font-['Cairo',sans-serif]" : "font-['Sora',sans-serif]"}`}
     >
-      <section className="bg-[#1B4D3E] bg-[url('/images/common/upper-section.jpeg')] bg-cover bg-center bg-no-repeat">
+      <section className="bg-[var(--primary-forest)] bg-[url('/images/common/upper-section.jpeg')] bg-cover bg-center bg-no-repeat">
         <div className="bg-[#0B2F27]/70">
           <div className="mx-auto max-w-[1180px] px-4 py-12 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-black text-white">Oncology Centers in Egypt</h1>
+            <h1 className="text-3xl font-black text-white">{t('Oncology Centers in Egypt', 'مراكز الأورام في مصر')}</h1>
             <p className="mt-2 text-sm font-semibold text-white/80">
-              8 real hospitals - verified contact info, websites & booking links
+              {t('8 real hospitals - verified contact info, websites & booking links', '8 مستشفيات حقيقية - معلومات اتصال موثقة، مواقع إلكترونية وروابط حجز')}
             </p>
           </div>
         </div>
@@ -243,13 +270,13 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
           <button
             type="button"
             onClick={() => setFiltersOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#1B4D3E] px-4 py-2 text-sm font-black text-white shadow-md"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--primary-forest)] px-4 py-2 text-sm font-black text-white shadow-md"
           >
             <HiAdjustmentsHorizontal className="h-4 w-4" />
             Filters
           </button>
           <p className="text-sm font-black text-slate-700">
-            {filtered.length} {t('hospitals found', 'hospitals found')}
+            {filtered.length} {t('hospitals found', 'مستشفى تم العثور عليها')}
           </p>
         </div>
 
@@ -259,10 +286,11 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
               type="button"
               className="absolute inset-0 h-full w-full cursor-default"
               onClick={() => setFiltersOpen(false)}
-              aria-label="Close filters overlay"
+              aria-label={t('Close filters', 'إغلاق التصفيات')}
             />
             <div className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-3xl bg-white p-4 shadow-2xl">
               <HospitalFilters
+                lang={lang}
                 search={search}
                 cityOptions={cityOptions}
                 typeOptions={typeOptions}
@@ -287,6 +315,7 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
         <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
           <div className="hidden lg:block lg:sticky lg:top-24">
             <HospitalFilters
+              lang={lang}
               search={search}
               cityOptions={cityOptions}
               typeOptions={typeOptions}
@@ -306,10 +335,10 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
           <section>
             <div className="mb-4 hidden items-center justify-between gap-3 md:flex">
               <p className="text-sm font-black text-slate-700">
-                {filtered.length} {t('hospitals found', 'hospitals found')}
+                {filtered.length} {t('hospitals found', 'مستشفى تم العثور عليها')}
               </p>
-              <span className="rounded-full bg-[#1B4D3E]/10 px-3 py-1 text-xs font-black text-[#1B4D3E]">
-                Egypt Oncology Network
+              <span className="rounded-full bg-[var(--primary-forest)]/10 px-3 py-1 text-xs font-black text-[var(--primary-forest)]">
+                {t('Egypt Oncology Network', 'شبكة الأورام المصرية')}
               </span>
             </div>
 
@@ -329,23 +358,22 @@ export default function HospitalsPage({ lang }: HospitalsPageProps) {
               </div>
             ) : (
               <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#1B4D3E]/10 text-[#1B4D3E]">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary-forest)]/10 text-[var(--primary-forest)]">
                   <HiBuildingOffice className="h-7 w-7" />
                 </div>
-                <p className="mt-4 text-sm font-black text-slate-800">No hospitals found matching your filters</p>
+                <p className="mt-4 text-sm font-black text-slate-800">{t('No hospitals found matching your filters', 'لا توجد مستشفيات تطابق تصفياتك')}</p>
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="mt-4 rounded-lg bg-[#1B4D3E] px-4 py-2 text-xs font-black text-white transition hover:bg-[#12372d]"
+                  className="mt-4 rounded-lg bg-[var(--primary-forest)] px-4 py-2 text-xs font-black text-white transition hover:bg-[#12372d]"
                 >
-                  Clear all filters
+                  {t('Clear all filters', 'مسح جميع التصفيات')}
                 </button>
               </div>
             )}
 
             <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs font-semibold leading-6 text-amber-800">
-              <strong>Note:</strong> Hospital information is for guidance only. Contact details and booking links may change -
-              always verify directly with the hospital before visiting.
+              <strong>{t('Note:', 'ملاحظة:')}</strong> {t('Hospital information is for guidance only. Contact details and booking links may change - always verify directly with the hospital before visiting.', 'معلومات المستشفيات هي للإرشاد فقط. قد تتغير تفاصيل الاتصال وروابط الحجز - يرجى دائمًا التحقق مباشرة مع المستشفى قبل الزيارة.')}
             </div>
           </section>
         </div>

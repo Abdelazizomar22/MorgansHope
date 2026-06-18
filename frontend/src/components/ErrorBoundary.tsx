@@ -17,14 +17,14 @@ function NotFoundFooter() {
                             src="/logo-v2.png"
                             alt="Morgan's Hope Logo"
                             className="theme-logo w-7 h-7 lg:w-7 lg:h-7"
-                            style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -8 }}
+                            style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginInlineEnd: -8 }}
                         />
                         <div dir="ltr" className='ml-4' style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                             <span style={{ fontSize: 18, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
                             <span style={{ fontSize: 16, fontWeight: 400, fontStyle: 'italic', color: 'white', opacity: 0.85, lineHeight: 1 }}>Hope</span>
                         </div>
                     </div>
-                    <p style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.4, paddingLeft: 6 }}>
+                    <p style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.4, paddingInlineStart: 6 }}>
                         &ldquo;A Second Chance for Every Breath&rdquo;
                     </p>
                 </div>

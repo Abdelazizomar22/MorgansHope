@@ -187,7 +187,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
   ];
 
   return (
-    <div dir={ar ? 'rtl' : 'ltr'} className="overflow-x-hidden" style={{ minHeight: '90vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
+    <div className="overflow-x-hidden" style={{ minHeight: '90vh', background: 'var(--bg-main)', fontFamily: ar ? "'Cairo', sans-serif" : "'Sora', sans-serif" }}>
 
       {/* Page header */}
       <div className='section-bg-image page-header-padding'>
@@ -213,7 +213,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
             <div style={{ maxWidth: '100%', height: 52, background: '#ffffff', borderRadius: 12, padding: 6, display: 'inline-flex', gap: 8, marginBottom: 20, boxShadow: '0 4px 14px rgba(15, 23, 42, 0.10)', border: '1px solid #dbe6e4' }}>
               {([
                 { type: 'xray' as ScanType, Icon: IconXray, label: t('X-Ray', 'أشعة سينية') },
-                { type: 'ct' as ScanType, Icon: IconCT, label: t('CT Scan', 'CT Scan') },
+                { type: 'ct' as ScanType, Icon: IconCT, label: t('CT Scan', 'الأشعة المقطعية') },
               ]).map(({ type, Icon, label }) => (
                 <button key={type} onClick={() => setScanType(type)} style={{ height: 40, flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '0 12px', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 800, fontSize: 14, lineHeight: 1, whiteSpace: 'nowrap', fontFamily: 'inherit', transition: 'all 0.2s', background: scanType === type ? '#285f57' : 'transparent', color: scanType === type ? 'white' : '#34495e' }}>
                   <Icon />{label}
@@ -252,11 +252,11 @@ export default function UploadPage({ lang }: UploadPageProps) {
                   <div key={i} style={{ position: 'relative', background: 'var(--card-bg)', borderRadius: 10, overflow: 'hidden', border: `1.5px solid ${loading && i === currentIndex ? 'var(--primary)' : 'var(--card-border)'}`, opacity: loading && i < currentIndex ? 0.5 : 1 }}>
                     <img src={src} alt="preview" style={{ width: '100%', height: 100, objectFit: 'cover', display: 'block' }} />
                     {(!loading) && (
-                      <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12 }}>✕</button>
+                      <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} style={{ position: 'absolute', top: 4, insetInlineEnd: 4, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 12 }}>✕</button>
                     )}
                     {loading && i === currentIndex && (
                       <div style={{ position: 'absolute', inset: 0, background: 'rgba(var(--primary-rgb),0.1)' }}>
-                        <div style={{ position: 'absolute', left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--primary), transparent)', animation: 'scanLine 1.0s linear infinite' }} />
+                        <div style={{ position: 'absolute', insetInlineStart: 0, insetInlineEnd: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--primary), transparent)', animation: 'scanLine 1.0s linear infinite' }} />
                       </div>
                     )}
                   </div>
@@ -301,9 +301,9 @@ export default function UploadPage({ lang }: UploadPageProps) {
                 <WarningGraphic width={100} height={50} enableAnimations={true}
                         animationSpeed={1.5} color="#b64235" className="mt-0.5 shrink-0" />
                 <div>
-                  <div className="text-sm font-bold text-[#9f3329]">MEDICAL WARNING</div>
+                  <div className="text-sm font-bold text-[#9f3329]">{t('MEDICAL WARNING', 'تحذير طبي')}</div>
                   <div className="mt-2 text-xs leading-relaxed text-[#b64235]">
-                    AI screening support only. Do not make treatment decisions without consulting a qualified physician.
+                    {t('AI screening support only. Do not make treatment decisions without consulting a qualified physician.', 'دعم فحص بالذكاء الاصطناعي فقط. لا تتخذ قرارات علاجية دون استشارة طبيب مؤهل.')}
                   </div>
                 </div>
               </div>

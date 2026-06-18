@@ -8,9 +8,12 @@ interface ConfirmDeleteModalProps {
   title: string;
   description: string;
   loading?: boolean;
+  lang?: 'en' | 'ar';
 }
 
-export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, title, description, loading }: ConfirmDeleteModalProps) {
+export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, title, description, loading, lang }: ConfirmDeleteModalProps) {
+  const ar = lang === 'ar';
+  const t = (en: string, arText: string) => ar ? arText : en;
   return (
     <AnimatePresence>
       {isOpen && (
@@ -65,7 +68,7 @@ export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, title, 
                     cursor: loading ? 'default' : 'pointer',
                   }}
                 >
-                  Cancel
+                  {t('Cancel', 'إلغاء')}
                 </button>
                 <button
                   type="button"
@@ -78,7 +81,7 @@ export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, title, 
                     boxShadow: loading ? 'none' : '0 8px 24px rgba(220,38,38,0.25)',
                   }}
                 >
-                  {loading ? 'Deleting...' : 'Delete'}
+                  {loading ? t('Deleting...', 'جارٍ الحذف...') : t('Delete', 'حذف')}
                 </button>
               </div>
             </div>

@@ -197,16 +197,10 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     }
   };
 
-  const formatDate = (date: string) => new Date(date).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
+  const formatDate = (date: string) => new Date(date).toLocaleDateString(ar ? 'ar-EG' : 'en-GB', { year: 'numeric', month: 'short', day: '2-digit' });
 
-  const formatTime = (date: string) => {
-    const d = new Date(date);
-    const hours = d.getHours();
-    const minutes = d.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const h = hours % 12 || 12;
-    return `${h}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-  };
+  const formatTime = (date: string) =>
+    new Date(date).toLocaleTimeString(ar ? 'ar-EG' : 'en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
   const groupByDate = (items: AnalysisResult[]) => {
     const groups: Record<string, AnalysisResult[]> = {};
@@ -228,7 +222,6 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     {
       value: history.length,
       label: t('Total analyses', 'إجمالي التحليلات'),
-      // icon: HiChartBar,
       color: 'var(--primary)',
       bg: 'rgba(var(--primary-rgb),0.08)',
       border: 'rgba(var(--primary-rgb),0.14)',
@@ -236,7 +229,6 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     {
       value: history.filter((item) => item.isMalignant).length,
       label: t('Cases needing follow-up', 'حالات تحتاج متابعة'),
-      // icon: HiExclamationTriangle,
       color: '#dc2626',
       bg: 'rgba(220,38,38,0.08)',
       border: 'rgba(220,38,38,0.16)',
@@ -244,7 +236,6 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
     {
       value: history.filter((item) => !item.isMalignant && item.hasFindings).length,
       label: t('Detected findings', 'نتائج مكتشفة'),
-      // icon: HiMagnifyingGlass,
       color: '#d97706',
       bg: 'rgba(217,119,6,0.08)',
       border: 'rgba(217,119,6,0.16)',
@@ -270,6 +261,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
         onClose={() => setDeleteModal({ open: false, id: null, loading: false })}
         onConfirm={handleDeleteAnalysis}
         loading={deleteModal.loading}
+        lang={lang}
         title={t('Delete analysis?', 'حذف التحليل؟')}
         description={t(
           'This will permanently remove this analysis report from your history. This action cannot be undone.',
@@ -278,7 +270,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
       />
 
       <div
-        dir={ar ? 'rtl' : 'ltr'}
+
         className="min-h-screen"
         style={{
           background: 'var(--bg-main)',
@@ -352,7 +344,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                       aria-label={t('Change profile photo', 'تغيير صورة الملف الشخصي')}
                       className="absolute bottom-0.5 grid place-items-center rounded-full border bg-white shadow-md"
                       style={{
-                        [ar ? 'left' : 'right']: 2,
+                        insetInlineEnd: 2,
                         width: 32,
                         height: 32,
                         borderColor: 'var(--card-border)',
@@ -638,7 +630,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                           fontFamily: 'inherit',
                         }}
                       >
-                        {type === 'all' ? t('All', 'الكل') : type.toUpperCase()}
+                        {type === 'all' ? t('All', 'الكل') : type === 'ct' ? t('CT', 'أشعة مقطعية') : t('X-Ray', 'أشعة سينية')}
                       </button>
                     ))}
                   </div>
@@ -679,7 +671,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                                   <div className="flex flex-wrap items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
                                       <div className="mb-2 flex flex-wrap items-center gap-2.5">
-                                        <span className="font-bold" style={{ fontSize: 15 }}>{item.imageType.toUpperCase()}</span>
+                                        <span className="font-bold" style={{ fontSize: 15 }}>{item.imageType.toLowerCase() === 'ct' ? t('CT', 'أشعة مقطعية') : t('X-Ray', 'أشعة سينية')}</span>
                                         <span
                                           className="rounded-full px-2.5 py-1 text-xs font-bold leading-none"
                                           style={{ background: state.bg, color: state.color }}
@@ -997,7 +989,7 @@ export default function ProfilePage({ lang }: ProfilePageProps) {
                 className="absolute grid place-items-center rounded-full border text-lg leading-none"
                 style={{
                   top: 14,
-                  [ar ? 'left' : 'right']: 14,
+                  insetInlineEnd: 14,
                   width: 36,
                   height: 36,
                   borderColor: 'var(--card-border)',

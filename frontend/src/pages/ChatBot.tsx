@@ -179,7 +179,7 @@ export default function ChatBot({ lang }: ChatBotProps) {
  	backgroundSize: "cover"
   }}>
     <div
-      dir={ar ? 'rtl' : 'ltr'}
+
       style={{
         maxWidth: 920,
         margin: isMobile ? '0 auto' : '0 auto',

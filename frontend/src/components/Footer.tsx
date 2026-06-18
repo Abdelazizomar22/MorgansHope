@@ -28,7 +28,7 @@ export default function Footer({ lang }: { lang: 'en' | 'ar'}) {
     }, []);
 
     return (
-        <footer dir={ar ? 'rtl' : 'ltr'} style={{
+        <footer style={{
             background: 'var(--primary)',
             padding: isMobile ? '40px 20px 24px' : '60px 40px 50px',
             color: 'white',
@@ -54,16 +54,16 @@ export default function Footer({ lang }: { lang: 'en' | 'ar'}) {
                                 src="/logo-v1.png"
                                 alt="Morgan's Hope Logo"
                                 className="theme-logo"
-                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginRight: -10 }}
+                                style={{ height: 60, width: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', transform: 'scale(1.4) translateY(-4px)', marginInlineEnd: -10 }}
                             />
                             <div dir="ltr" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.6, lineHeight: 1 }}>Morgan's</span>
-                                <span style={{ fontSize: 20, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, marginLeft: 0, lineHeight: 1 }}>Hope</span>
+                                <span style={{ fontSize: 20, fontWeight: 400, fontStyle: 'italic', letterSpacing: 0, color: 'white', opacity: 0.85, lineHeight: 1 }}>Hope</span>
                             </div>
                         </div>
 
                         {/* Tagline aligned to match 'Morgan's Hope' text */}
-                        <div style={{ paddingLeft: 12, marginTop: -6 }}>
+                        <div style={{ paddingInlineStart: 12, marginTop: -6 }}>
                             <p style={{
                                 fontSize: 16,
                                 fontStyle: 'italic',
