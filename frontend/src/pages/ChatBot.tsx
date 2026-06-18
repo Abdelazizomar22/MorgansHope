@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getLocalResponse } from '../utils/medicalKnowledge';
 import { chatApi } from '../utils/api';
+import { REDIRECT_KEY, useAuth } from '../context/AuthContext';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -44,6 +46,8 @@ const formatDateLabel = (dateStr: string, prevDateStr?: string) => {
 };
 
 export default function ChatBot({ lang }: ChatBotProps) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +57,25 @@ export default function ChatBot({ lang }: ChatBotProps) {
   const ar = lang === 'ar';
 
   const t = (en: string, arText: string) => (ar ? arText : en);
+  const needsSetup = Boolean(user && (!user.onboardingCompleted || (user.authProvider === 'local' && user.emailVerified !== true)));
+  const ensureChatAccess = () => {
+    if (!user) {
+      sessionStorage.setItem(REDIRECT_KEY, '/chat');
+      window.alert(t(
+        'Please create an account or sign in to use the AI assistant.',
+        'يرجى إنشاء حساب أو تسجيل الدخول لاستخدام المساعد الذكي.',
+      ));
+      return false;
+    }
+
+    if (needsSetup) {
+      sessionStorage.setItem(REDIRECT_KEY, '/chat');
+      navigate('/onboarding');
+      return false;
+    }
+
+    return true;
+  };
 
   const quickPrompts = ar
     ? ['اشرح آخر نتيجة تحليل', 'لخص حالتي', 'ما الخطوة التالية؟', 'متى أحتاج مراجعة عاجلة؟']
@@ -67,6 +90,12 @@ export default function ChatBot({ lang }: ChatBotProps) {
   // Load chat history on mount
   useEffect(() => {
     (async () => {
+      if (!user) {
+        setMessages([]);
+        setHistoryLoaded(true);
+        return;
+      }
+
       try {
         const res = await chatApi.getHistory();
         const history: Message[] = (res?.data?.data || []).map((m: any) => ({
@@ -81,7 +110,7 @@ export default function ChatBot({ lang }: ChatBotProps) {
         setHistoryLoaded(true);
       }
     })();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -93,6 +122,9 @@ export default function ChatBot({ lang }: ChatBotProps) {
     if (e) e.preventDefault();
     const messageText = (preset ?? input).trim();
     if (!messageText || isLoading) return;
+    if (!ensureChatAccess()) {
+      return;
+    }
 
     const now = new Date().toISOString();
     const userMessage: Message = { role: 'user', content: messageText, createdAt: now };

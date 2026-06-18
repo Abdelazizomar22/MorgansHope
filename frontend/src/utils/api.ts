@@ -61,7 +61,7 @@ api.interceptors.response.use(
       try {
         const { data } = await api.post<ApiResponse<{ token: string; user: SafeUser }>>('/auth/refresh');
         const newToken = data.data!.token;
-        TokenService.setToken(newToken);
+        TokenService.setToken(newToken, TokenService.isPersistent());
         processQueue(null, newToken);
 
         original.headers = original.headers || {};

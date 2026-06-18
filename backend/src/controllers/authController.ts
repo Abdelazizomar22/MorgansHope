@@ -4,17 +4,18 @@ import { AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
 import * as authService from '../services/authService';
 
-const REFRESH_COOKIE = 'medtech_refresh';
+export const REFRESH_COOKIE = 'morgans_hope_refresh';
 
-const cookieOptions = (maxAgeMs: number) => {
+const cookieOptions = (rememberMe = false, maxAgeMs?: number) => {
   const isProd = process.env.NODE_ENV === 'production';
-  return {
+  const base = {
     httpOnly: true,
-    sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
+    sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
     secure: isProd,
-    maxAge: maxAgeMs,
     path: '/',
   };
+
+  return rememberMe && maxAgeMs ? { ...base, maxAge: maxAgeMs } : base;
 };
 
 export const registerValidators = [
@@ -77,8 +78,8 @@ export const resendVerificationValidators = [
 ];
 
 const devHint =
-  process.env.NODE_ENV !== 'production'
-    ? ' Open http://localhost:3000/api/auth/dev-setup in browser to create admin (admin@medtech.com / Admin@123456).'
+  process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEV_AUTH_SETUP === 'true'
+    ? ' Open http://localhost:3000/api/auth/dev-setup in browser to create admin (admin@morganshope.local / Admin@123456).'
     : '';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
@@ -100,20 +101,24 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     age: req.body.age,
     gender: req.body.gender,
     smokingHistory: req.body.smokingHistory,
-    role: req.body.role,
     acceptedDisclaimer: req.body.acceptedDisclaimer,
   });
 
   if (result.success === false) {
-    res.status(409).json({ success: false, message: result.error });
+    const status = result.error === 'Email already registered' ? 409 : 503;
+    res.status(status).json({ success: false, message: result.error });
     return;
   }
 
-  res.cookie(REFRESH_COOKIE, result.data.refreshToken, cookieOptions(7 * 24 * 60 * 60 * 1000));
+  res.cookie(REFRESH_COOKIE, result.data.refreshToken, cookieOptions(false));
   res.status(201).json({
     success: true,
-    message: 'Account created successfully',
-    data: { user: result.data.user, token: result.data.accessToken },
+    message: 'Account created successfully. Please verify your email to unlock protected services.',
+    data: {
+      user: result.data.user,
+      token: result.data.accessToken,
+      verification: result.data.verification,
+    },
   });
 });
 
@@ -143,7 +148,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     return;
   }
 
-  res.cookie(REFRESH_COOKIE, result.data.refreshToken, cookieOptions(result.data.cookieMaxMs));
+  res.cookie(REFRESH_COOKIE, result.data.refreshToken, cookieOptions(result.data.rememberMe, result.data.cookieMaxMs));
 
   res.json({
     success: true,
@@ -153,7 +158,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const logout = asyncHandler(async (_req: Request, res: Response) => {
-  res.clearCookie(REFRESH_COOKIE, { path: '/' });
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie(REFRESH_COOKIE, {
+    path: '/',
+    httpOnly: true,
+    sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
+    secure: isProd,
+  });
   res.json({ success: true, message: 'Logged out successfully' });
 });
 
@@ -167,12 +178,18 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
   const result = await authService.refreshUserToken(token);
 
   if (result.success === false) {
-    res.clearCookie(REFRESH_COOKIE, { path: '/' });
+    const isProd = process.env.NODE_ENV === 'production';
+    res.clearCookie(REFRESH_COOKIE, {
+      path: '/',
+      httpOnly: true,
+      sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
+      secure: isProd,
+    });
     res.status(401).json({ success: false, message: result.error });
     return;
   }
 
-  res.cookie(REFRESH_COOKIE, result.data.refreshToken, cookieOptions(result.data.cookieMaxMs));
+  res.cookie(REFRESH_COOKIE, result.data.refreshToken, cookieOptions(result.data.rememberMe, result.data.cookieMaxMs));
 
   res.json({
     success: true,

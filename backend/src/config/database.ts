@@ -28,7 +28,7 @@ if (useSqlite) {
   }
 } else {
   sequelize = new Sequelize(
-    process.env.DB_NAME || 'medtech_db',
+    process.env.DB_NAME || 'morgans_hope',
     process.env.DB_USER || 'root',
     process.env.DB_PASSWORD || '',
     {

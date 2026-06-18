@@ -15,6 +15,7 @@ import {
   verifyPhoneOtp, verifyPhoneOtpValidators,
   resendVerification, resendVerificationValidators,
   uploadAvatar,
+  REFRESH_COOKIE,
 } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 import upload from '../middleware/upload';
@@ -30,6 +31,8 @@ const GOOGLE_CONFIGURED = Boolean(
   process.env.GOOGLE_CLIENT_ID &&
   process.env.GOOGLE_CLIENT_SECRET,
 );
+const DEV_AUTH_SETUP_ENABLED = process.env.NODE_ENV !== 'production'
+  && process.env.ENABLE_DEV_AUTH_SETUP === 'true';
 
 const googleRedirect = (status: 'success' | 'error', params: Record<string, string>) => {
   const search = new URLSearchParams({ googleAuth: status, ...params });
@@ -60,12 +63,12 @@ const getGoogleCallbackUrl = (req: Request) => {
  *         description: Not found in production
  */
 router.get('/debug', async (req: Request, res: Response) => {
-  if (process.env.NODE_ENV === 'production') {
+  if (!DEV_AUTH_SETUP_ENABLED) {
     return res.status(404).json({ success: false, message: 'Not found' });
   }
   try {
     const count = await User.count();
-    const admin = await User.findOne({ where: { email: 'admin@medtech.com' } });
+    const admin = await User.findOne({ where: { email: 'admin@morganshope.local' } });
     const bcrypt = await import('bcryptjs');
     const testMatch = admin ? await bcrypt.compare('Admin@123456', admin.password) : null;
     return res.json({
@@ -95,17 +98,17 @@ router.get('/debug', async (req: Request, res: Response) => {
  *         description: Not found in production
  */
 router.get('/dev-setup', async (req: Request, res: Response) => {
-  if (process.env.NODE_ENV === 'production') {
+  if (!DEV_AUTH_SETUP_ENABLED) {
     return res.status(404).json({ success: false, message: 'Not found' });
   }
-  const email = 'admin@medtech.com';
+  const email = 'admin@morganshope.local';
   const password = 'Admin@123456';
   const hashed = await bcrypt.hash(password, 12);
   let user = await User.findOne({ where: { email } });
   if (!user) {
     user = await User.create({
       firstName: 'Admin',
-      lastName: 'MedTech',
+      lastName: 'Morgan\'s Hope',
       email,
       password: hashed,
       role: 'admin',
@@ -187,7 +190,7 @@ router.get('/google/callback', (req, res, next) => {
     const accessToken = makeGoogleAccessToken(user.id);
     const refreshToken = makeGoogleRefreshToken(user.id);
 
-    res.cookie('medtech_refresh', refreshToken, authCookieOptions(30 * 24 * 60 * 60 * 1000));
+    res.cookie(REFRESH_COOKIE, refreshToken, authCookieOptions(30 * 24 * 60 * 60 * 1000));
     return res.redirect(googleRedirect('success', { token: accessToken }));
   })(req, res, next);
 });
@@ -295,7 +298,7 @@ router.post('/logout', logout);
  *   post:
  *     tags: [Auth]
  *     summary: Refresh access token using HttpOnly cookie
- *     description: The refresh token is read from the medtech_refresh HttpOnly cookie automatically.
+ *     description: The refresh token is read from the morgans_hope_refresh HttpOnly cookie automatically.
  *     security: []
  *     responses:
  *       200:

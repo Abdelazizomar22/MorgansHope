@@ -5,7 +5,7 @@ import path from 'path';
 import User from '../models/User';
 import { JWT_SECRET, REFRESH_SECRET } from '../middleware/auth';
 import { generateOTP, hashOTP, verifyOTP } from '../utils/otp';
-import { sendOTPEmail } from '../utils/mailer';
+import { sendOTPEmail, sendVerificationCodeEmail } from '../utils/mailer';
 import type { Result } from '../types/result';
 import { Ok, Err } from '../types/result';
 
@@ -52,7 +52,6 @@ export interface RegisterInput {
   age?: number;
   gender?: string;
   smokingHistory?: string;
-  role?: string;
   acceptedDisclaimer?: boolean;
 }
 
@@ -61,7 +60,12 @@ export interface LoginResult {
   accessToken: string;
   refreshToken: string;
   rememberMe: boolean;
-  cookieMaxMs: number;
+  cookieMaxMs?: number;
+  verification?: {
+    required: boolean;
+    channel: 'email';
+    devCode?: string;
+  };
 }
 
 export async function registerUser(data: RegisterInput): Promise<Result<LoginResult>> {
@@ -73,26 +77,58 @@ export async function registerUser(data: RegisterInput): Promise<Result<LoginRes
   }
 
   const hashed = await bcrypt.hash(data.password, 12);
-  const user = await User.create({
-    firstName: data.firstName,
-    lastName: data.lastName,
-    email,
-    password: hashed,
-    age: data.age,
-    gender: data.gender as any,
-    smokingHistory: data.smokingHistory as any,
-    role: (data.role || 'user') as 'user' | 'admin',
-    acceptedDisclaimer: data.acceptedDisclaimer === true,
-    onboardingCompleted: false,
-    authProvider: 'local',
-    emailVerified: true,
-    phoneVerified: false,
-  });
+  let user: User;
+  try {
+    user = await User.create({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email,
+      password: hashed,
+      age: data.age,
+      gender: data.gender as any,
+      smokingHistory: data.smokingHistory as any,
+      role: 'user',
+      acceptedDisclaimer: data.acceptedDisclaimer === true,
+      onboardingCompleted: false,
+      authProvider: 'local',
+      emailVerified: false,
+      phoneVerified: false,
+    });
+  } catch (error) {
+    if ((error as { name?: string }).name === 'SequelizeUniqueConstraintError') {
+      return Err('Email already registered');
+    }
+    throw error;
+  }
+
+  const verificationCode = queueVerification(user, 'email');
+  await user.save();
+  try {
+    await sendVerificationCodeEmail(user.email!, verificationCode);
+  } catch (error) {
+    console.error('[Auth] Verification email delivery failed:', error);
+    try {
+      await user.destroy();
+    } catch (cleanupError) {
+      console.error('[Auth] Failed to roll back incomplete registration:', cleanupError);
+    }
+    return Err('We could not send the verification email. Please check the email service configuration and try again.');
+  }
 
   const accessToken = makeAccessToken(user.id);
   const refreshToken = makeRefreshToken(user.id);
 
-  return Ok({ user: user.toSafeJSON(), accessToken, refreshToken, rememberMe: false, cookieMaxMs: 7 * 24 * 60 * 60 * 1000 });
+  return Ok({
+    user: user.toSafeJSON(),
+    accessToken,
+    refreshToken,
+    rememberMe: false,
+    verification: {
+      required: true,
+      channel: 'email',
+      ...(process.env.NODE_ENV !== 'production' ? { devCode: verificationCode } : {}),
+    },
+  });
 }
 
 export async function loginUser(
@@ -107,11 +143,17 @@ export async function loginUser(
     ? await User.findOne({ where: { email: normalizedEmail, isActive: true } })
     : null;
 
-  if (!user && process.env.NODE_ENV !== 'production' && normalizedEmail === 'admin@medtech.com' && trimmedPassword === 'Admin@123456') {
+  if (
+    !user
+    && process.env.NODE_ENV !== 'production'
+    && process.env.ENABLE_DEV_AUTH_SETUP === 'true'
+    && normalizedEmail === 'admin@morganshope.local'
+    && trimmedPassword === 'Admin@123456'
+  ) {
     const hashed = await bcrypt.hash(trimmedPassword, 12);
     user = await User.create({
       firstName: 'Admin',
-      lastName: 'MedTech',
+      lastName: 'Morgan\'s Hope',
       email: normalizedEmail,
       password: hashed,
       role: 'admin',
@@ -135,7 +177,7 @@ export async function loginUser(
   const accessTTL = isRemember ? '7d' : ACCESS_TOKEN_TTL;
   const accessToken = makeAccessToken(user.id, accessTTL);
   const refreshToken = makeRefreshToken(user.id, isRemember);
-  const cookieMaxMs = isRemember ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+  const cookieMaxMs = isRemember ? 30 * 24 * 60 * 60 * 1000 : undefined;
 
   return Ok({ user: user.toSafeJSON(), accessToken, refreshToken, rememberMe: isRemember, cookieMaxMs });
 }
@@ -156,7 +198,7 @@ export async function refreshUserToken(token: string): Promise<Result<LoginResul
   const isRemember = payload.rememberMe === true;
   const newAccessToken = makeAccessToken(user.id, isRemember ? '7d' : ACCESS_TOKEN_TTL);
   const newRefreshToken = makeRefreshToken(user.id, isRemember);
-  const cookieMaxMs = isRemember ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+  const cookieMaxMs = isRemember ? 30 * 24 * 60 * 60 * 1000 : undefined;
 
   return Ok({ user: user.toSafeJSON(), accessToken: newAccessToken, refreshToken: newRefreshToken, rememberMe: isRemember, cookieMaxMs });
 }
@@ -273,6 +315,7 @@ export async function resendUserVerification(
 
   const verificationCode = queueVerification(user, ch);
   await user.save();
+  await sendVerificationCodeEmail(user.email!, verificationCode);
 
   return Ok({
     channel: ch,

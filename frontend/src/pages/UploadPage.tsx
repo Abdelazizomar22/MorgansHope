@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiExclamationTriangle, HiShieldCheck, HiSparkles, HiBolt, HiCloudArrowUp } from 'react-icons/hi2';
+import { REDIRECT_KEY, useAuth } from '../context/AuthContext';
 import { WarningGraphic } from '../components/ui/warning-graphic';
 import { analysisApi } from '../utils/api';
 import { MAX_WIDTH } from '../constants/layouts';
@@ -21,8 +22,10 @@ const STAGES = {
 
 export default function UploadPage({ lang }: UploadPageProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
+  const needsSetup = Boolean(user && (!user.onboardingCompleted || (user.authProvider === 'local' && user.emailVerified !== true)));
 
   const [scanType, setScanType] = useState<ScanType>('xray');
   const [files, setFiles] = useState<File[]>([]);
@@ -35,6 +38,25 @@ export default function UploadPage({ lang }: UploadPageProps) {
   const [stage, setStage] = useState(0);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const ensureServiceAccess = () => {
+    if (!user) {
+      sessionStorage.setItem(REDIRECT_KEY, '/upload');
+      setError(t(
+        'Please create an account or sign in to upload and analyze medical scans.',
+        'يرجى إنشاء حساب أو تسجيل الدخول لرفع الأشعة وتحليلها.',
+      ));
+      return false;
+    }
+
+    if (needsSetup) {
+      sessionStorage.setItem(REDIRECT_KEY, '/upload');
+      navigate('/onboarding');
+      return false;
+    }
+
+    return true;
+  };
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
@@ -53,6 +75,10 @@ export default function UploadPage({ lang }: UploadPageProps) {
   };
   
   const handleFiles = async (newFiles: FileList | null) => {
+    if (!ensureServiceAccess()) {
+      return;
+    }
+
     if (!newFiles) return;
     const acceptedFiles: File[] = [];
     const acceptedPreviews: string[] = [];
@@ -129,6 +155,9 @@ export default function UploadPage({ lang }: UploadPageProps) {
     });
 
   const handleSubmit = async () => {
+    if (!ensureServiceAccess()) {
+      return;
+    }
     if (files.length === 0) { setError(t('Please select an image first.', 'يرجى اختيار صورة أولاً.')); return; }
     setLoading(true); setError(''); setProgress(0); setStage(0); setCurrentIndex(0);
     const sessionId = window.crypto?.randomUUID ? window.crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
@@ -197,7 +226,12 @@ export default function UploadPage({ lang }: UploadPageProps) {
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
-              onClick={() => !loading && !validatingFiles && inputRef.current?.click()}
+              onClick={() => {
+                if (!ensureServiceAccess()) {
+                  return;
+                }
+                if (!loading && !validatingFiles) inputRef.current?.click();
+              }}
               style={{ border: `2px dashed ${dragging ? 'var(--primary)' : 'var(--card-border)'}`, borderRadius: 16, minHeight: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: loading || validatingFiles ? 'default' : 'pointer', background: dragging ? 'rgba(var(--primary-rgb), 0.08)' : 'var(--card-bg)', transition: 'all 0.2s', position: 'relative', overflow: 'hidden', marginBottom: 16 }}>
               <div style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ marginBottom: 14, display: 'flex', justifyContent: 'center' }}><IconCloudUpload size={52} /></div>
@@ -253,7 +287,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
             )}
 
             {/* Submit */}
-            <button onClick={handleSubmit} disabled={loading || validatingFiles || files.length === 0} style={{ width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: loading || validatingFiles || files.length === 0 ? 'var(--card-border)' : 'var(--primary)', color: loading || validatingFiles || files.length === 0 ? 'var(--text-muted)' : 'white', fontWeight: 700, fontSize: 15, cursor: loading || validatingFiles || files.length === 0 ? 'default' : 'pointer', boxShadow: loading || validatingFiles || files.length === 0 ? 'none' : '0 4px 18px var(--shadow-hover)', fontFamily: 'inherit', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <button onClick={handleSubmit} disabled={loading || validatingFiles || (!!user && files.length === 0)} style={{ width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: loading || validatingFiles || (!!user && files.length === 0) ? 'var(--card-border)' : 'var(--primary)', color: loading || validatingFiles || (!!user && files.length === 0) ? 'var(--text-muted)' : 'white', fontWeight: 700, fontSize: 15, cursor: loading || validatingFiles || (!!user && files.length === 0) ? 'default' : 'pointer', boxShadow: loading || validatingFiles || (!!user && files.length === 0) ? 'none' : '0 4px 18px var(--shadow-hover)', fontFamily: 'inherit', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               {loading
                 ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 12a9 9 0 11-6.219-8.56"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" /></path></svg>{t('Analyzing...', 'جاري التحليل...')}</>
                 : validatingFiles

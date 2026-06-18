@@ -197,7 +197,7 @@ const swaggerConfig: Options = {
             password: { type: 'string', description: 'Account password' },
             rememberMe: { type: 'boolean' },
           },
-          example: { email: 'admin@medtech.com', password: 'Admin@123456' },
+          example: { email: 'admin@morganshope.local', password: 'Admin@123456' },
         },
         UpdateProfileInput: {
           type: 'object',

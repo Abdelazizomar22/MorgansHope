@@ -136,16 +136,16 @@ async function initializeApp() {
     console.log('Database tables synced.');
 
     const userCount = await User.count();
-    if (userCount === 0) {
+    if (userCount === 0 && isDev && process.env.ENABLE_DEV_AUTH_SETUP === 'true') {
       const hashed = await bcrypt.hash('Admin@123456', 12);
       await User.create({
         firstName: 'Admin',
-        lastName: 'MedTech',
-        email: 'admin@medtech.com',
+        lastName: 'Morgan\'s Hope',
+        email: 'admin@morganshope.local',
         password: hashed,
         role: 'admin',
       });
-      console.log('Admin created: admin@medtech.com / Admin@123456');
+      console.log('Development admin created: admin@morganshope.local / Admin@123456');
     }
   })().catch((err) => {
     initPromise = null;

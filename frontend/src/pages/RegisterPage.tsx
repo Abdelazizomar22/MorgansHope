@@ -159,7 +159,6 @@ export default function RegisterPage() {
         password: form.password,
         confirmPassword: form.confirmPassword,
         acceptedDisclaimer: true,
-        role: (window as any).isAdminDev ? 'admin' : 'user',
       });
       setStep(3);
       // Redirect to onboarding after brief delay for UX

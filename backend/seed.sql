@@ -1,6 +1,6 @@
 -- ============================================================
 --  Morgan's Hope — Full Database Seed (Real Egyptian Hospitals)
---  Run: mysql -u root -p medtech_db < seed.sql
+--  Run: mysql -u root -p morgans_hope < seed.sql
 -- ============================================================
 
 -- Clear existing data
@@ -105,8 +105,8 @@ INSERT INTO hospitals (
 INSERT INTO users (first_name, last_name, email, password, role, is_active) VALUES
 (
   'Admin',
-  'MedTech',
-  'admin@medtech.com',
+  'Morgan''s Hope',
+  'admin@morganshope.local',
   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMeSSVMbJKBuI5frU0LFPPFd0G',
   'admin',
   TRUE
