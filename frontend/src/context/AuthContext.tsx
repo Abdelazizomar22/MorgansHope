@@ -1,6 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-//  Morgan's Hope — Auth Context  (Professional Edition)
-// ─────────────────────────────────────────────────────────────
 import {
   createContext, useContext, useState, useEffect, useCallback,
   type ReactNode,
@@ -24,20 +21,22 @@ interface AuthContextType {
 }
 
 interface RegisterData {
-  firstName: string; lastName: string; email: string;
-  password: string; confirmPassword: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
   acceptedDisclaimer: boolean;
   age?: number;
   gender?: 'male' | 'female' | 'other';
   smokingHistory?: 'never' | 'former' | 'current';
   medicalHistory?: string;
-  role?: 'user' | 'admin';
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Key used to remember where the user was trying to go before being redirected to login
-export const REDIRECT_KEY = 'medtech_redirect_after_login';
+export const REDIRECT_KEY = 'morgans_hope_redirect_after_login';
+export const VERIFICATION_NOTICE_KEY = 'morgans_hope_verification_notice';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
@@ -47,39 +46,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Derived
   const isAdmin = user?.role === 'admin';
 
-  // ── Bootstrap: validate stored token on mount ─────────────────────────────
   useEffect(() => {
-    const stored = TokenService.getToken();
-    if (stored) {
-      authApi.me()
-        .then((res) => setUser(res.data.data ?? null))
-        .catch(() => {
-          // Token invalid — clear and let silent refresh interceptor handle 401
-          TokenService.removeToken();
-          setToken(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    let active = true;
+
+    const bootstrapAuth = async () => {
+      const stored = TokenService.getToken();
+
+      if (stored) {
+        setToken(stored);
+      }
+
+      try {
+        if (stored) {
+          const res = await authApi.me();
+          if (!active) return;
+          setUser(res.data.data ?? null);
+          return;
+        }
+
+        const res = await authApi.refresh();
+        const restoredToken = res.data.data?.token ?? null;
+        const restoredUser = res.data.data?.user ?? null;
+
+        if (!active) return;
+
+        if (restoredToken) {
+          TokenService.setToken(restoredToken, TokenService.isPersistent());
+          setToken(restoredToken);
+        }
+
+        setUser(restoredUser);
+      } catch {
+        TokenService.removeToken();
+        if (!active) return;
+        setToken(null);
+        setUser(null);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    bootstrapAuth();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  // ── Listen for forced logout from the Axios interceptor ───────────────────
   useEffect(() => {
     const handleForcedLogout = () => {
       setUser(null);
       setToken(null);
       TokenService.removeToken();
-      navigate('/login', { replace: true });
+      sessionStorage.removeItem(REDIRECT_KEY);
+      navigate('/', { replace: true });
     };
+
     window.addEventListener('auth:logout', handleForcedLogout);
     return () => window.removeEventListener('auth:logout', handleForcedLogout);
   }, [navigate]);
 
-  // ── Login ─────────────────────────────────────────────────────────────────
   const resolvePostLoginPath = (currentUser: SafeUser | null) => {
     if (currentUser && !currentUser.onboardingCompleted) return '/onboarding';
     return sessionStorage.getItem(REDIRECT_KEY) || '/';
@@ -87,20 +115,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (identifier: string, password: string, rememberMe = false) => {
     const res = await authApi.login({ identifier, password, rememberMe });
-    const { user: u, token: t } = res.data.data!;
-    TokenService.setToken(t);
-    setToken(t);
-    setUser(u);
+    const { user: nextUser, token: nextToken } = res.data.data!;
 
-    // Go to where the user originally wanted to go
-    const redirectTo = resolvePostLoginPath(u);
+    TokenService.setToken(nextToken, rememberMe);
+    setToken(nextToken);
+    setUser(nextUser);
+
+    const redirectTo = resolvePostLoginPath(nextUser);
     sessionStorage.removeItem(REDIRECT_KEY);
     navigate(redirectTo, { replace: true });
   };
 
   const completeSocialLogin = async (incomingToken: string) => {
-    TokenService.setToken(incomingToken);
+    TokenService.setToken(incomingToken, true);
     setToken(incomingToken);
+
     const res = await authApi.me();
     const currentUser = res.data.data ?? null;
     setUser(currentUser);
@@ -110,37 +139,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate(redirectTo, { replace: true });
   };
 
-  // ── Register ──────────────────────────────────────────────────────────────
   const register = async (data: RegisterData) => {
     const res = await authApi.register(data);
-    const { user: u, token: t } = res.data.data!;
-    TokenService.setToken(t);
-    setToken(t);
-    setUser(u);
+    const { user: nextUser, token: nextToken, verification } = res.data.data!;
+
+    TokenService.setToken(nextToken, false);
+    setToken(nextToken);
+    setUser(nextUser);
+
+    if (verification?.required) {
+      const notice = verification.devCode
+        ? `We've emailed your verification code. Dev code: ${verification.devCode}`
+        : "We've emailed your verification code. Enter it to activate your account.";
+      sessionStorage.setItem(VERIFICATION_NOTICE_KEY, notice);
+    }
+
     navigate('/onboarding', { replace: true });
   };
 
-  // ── Logout ────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
-    try { await authApi.logout(); } catch { /* ignore */ }
+    try {
+      await authApi.logout();
+    } catch {
+      // Ignore logout transport errors and clear local auth state anyway.
+    }
+
     TokenService.removeToken();
     setToken(null);
     setUser(null);
-    navigate('/login', { replace: true });
+    sessionStorage.removeItem(REDIRECT_KEY);
+    navigate('/', { replace: true });
   }, [navigate]);
 
-  // ── Refresh user data ─────────────────────────────────────────────────────
   const refreshUser = useCallback(async () => {
     const res = await authApi.me();
     setUser(res.data.data ?? null);
   }, []);
 
-  const updateUser = (u: SafeUser) => setUser(u);
+  const updateUser = (nextUser: SafeUser) => setUser(nextUser);
 
-  // Save current path for after-login redirect (except /login and /register)
   useEffect(() => {
-    const pub = ['/login', '/register'];
-    if (!pub.includes(location.pathname) && !user && !loading) {
+    const protectedPrefixes = ['/results', '/profile', '/onboarding'];
+    const shouldRemember = protectedPrefixes.some((prefix) => location.pathname.startsWith(prefix));
+
+    if (shouldRemember && !user && !loading) {
       sessionStorage.setItem(REDIRECT_KEY, location.pathname + location.search);
     }
   }, [location, user, loading]);

@@ -8,7 +8,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Plus, X } from '@aliimam/icons';
+import { Plus, X } from 'lucide-react';
 
 interface FAQsPageProps { lang: 'en' | 'ar'; }
 

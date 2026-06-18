@@ -258,18 +258,18 @@ async function seed() {
     }
     console.log('Hospitals seeded');
 
-    const adminEmail = 'admin@medtech.com';
+    const adminEmail = 'admin@morganshope.local';
     const existing = await User.findOne({ where: { email: adminEmail } });
     if (!existing) {
       const hashed = await bcrypt.hash('Admin@123456', 12);
       await User.create({
         firstName: 'Admin',
-        lastName: 'MedTech',
+        lastName: 'Morgan\'s Hope',
         email: adminEmail,
         password: hashed,
         role: 'admin',
       });
-      console.log('Admin user created: admin@medtech.com / Admin@123456');
+      console.log('Admin user created: admin@morganshope.local / Admin@123456');
     } else {
       console.log('Admin already exists');
     }

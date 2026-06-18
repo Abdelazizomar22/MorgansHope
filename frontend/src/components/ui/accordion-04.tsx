@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { X, Plus } from "@aliimam/icons";
+import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils"; 
 
 

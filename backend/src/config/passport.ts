@@ -21,7 +21,7 @@ export function authCookieOptions(maxAgeMs: number) {
   const isProd = process.env.NODE_ENV === 'production';
   return {
     httpOnly: true,
-    sameSite: (isProd ? 'none' : 'strict') as 'none' | 'strict',
+    sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
     secure: isProd,
     maxAge: maxAgeMs,
     path: '/',
