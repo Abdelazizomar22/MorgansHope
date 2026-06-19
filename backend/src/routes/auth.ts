@@ -40,6 +40,10 @@ const googleRedirect = (status: 'success' | 'error', params: Record<string, stri
 };
 
 const getGoogleCallbackUrl = (req: Request) => {
+  if (process.env.NODE_ENV === 'production' && FRONTEND_URL.startsWith('https://')) {
+    return `${FRONTEND_URL}/api/auth/google/callback`;
+  }
+
   const configured = (process.env.GOOGLE_CALLBACK_URL || '').trim().replace(/^['"]|['"]$/g, '');
   if (configured) return configured;
 

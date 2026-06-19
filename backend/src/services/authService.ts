@@ -170,6 +170,7 @@ export interface UpdateProfileInput {
   gender?: string;
   smokingHistory?: string;
   medicalHistory?: string;
+  acceptedDisclaimer?: boolean;
   onboardingCompleted?: boolean;
 }
 
@@ -206,7 +207,14 @@ export async function updateUserProfile(
   if (data.gender !== undefined) user.gender = data.gender as any;
   if (data.smokingHistory !== undefined) user.smokingHistory = data.smokingHistory as any;
   if (data.medicalHistory !== undefined) user.medicalHistory = data.medicalHistory;
-  if (data.onboardingCompleted !== undefined) user.onboardingCompleted = data.onboardingCompleted === true;
+  if (data.acceptedDisclaimer === true) user.acceptedDisclaimer = true;
+  if (data.onboardingCompleted === true) {
+    if (user.emailVerified !== true) return Err('Verify your email address before completing setup.');
+    if (user.acceptedDisclaimer !== true) return Err('Accept the medical disclaimer before completing setup.');
+    user.onboardingCompleted = true;
+  } else if (data.onboardingCompleted === false) {
+    user.onboardingCompleted = false;
+  }
 
   await user.save();
   return Ok(user.toSafeJSON());

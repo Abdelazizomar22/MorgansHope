@@ -27,9 +27,6 @@ export const registerValidators = [
     if (val !== req.body.password) throw new Error('Passwords do not match');
     return true;
   }),
-  body('acceptedDisclaimer')
-    .custom((value) => value === true)
-    .withMessage('You must accept the medical disclaimer to continue'),
 ];
 
 export const loginValidators = [
@@ -57,6 +54,7 @@ export const updateProfileValidators = [
   body('currentPassword').if(body('newPassword').exists()).notEmpty().withMessage('Current password is required to set a new password'),
   body('smokingHistory').optional().trim(),
   body('medicalHistory').optional().trim(),
+  body('acceptedDisclaimer').optional().isBoolean().withMessage('acceptedDisclaimer must be a boolean'),
 ];
 
 export const verifyContactValidators = [
@@ -96,7 +94,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     age: req.body.age,
     gender: req.body.gender,
     smokingHistory: req.body.smokingHistory,
-    acceptedDisclaimer: req.body.acceptedDisclaimer,
+    acceptedDisclaimer: false,
   }, sessionMetadataFrom(req));
 
   if (result.success === false) {
@@ -204,6 +202,7 @@ export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response
     gender: req.body.gender,
     smokingHistory: req.body.smokingHistory,
     medicalHistory: req.body.medicalHistory,
+    acceptedDisclaimer: req.body.acceptedDisclaimer,
     onboardingCompleted: req.body.onboardingCompleted,
   });
 

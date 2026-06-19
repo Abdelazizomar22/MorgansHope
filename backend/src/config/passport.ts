@@ -6,7 +6,9 @@ import User from '../models/User';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || '';
+const FRONTEND_URL = (process.env.FRONTEND_URL || '').trim().replace(/\/$/, '');
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL
+  || (FRONTEND_URL ? `${FRONTEND_URL}/api/auth/google/callback` : '');
 
 if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_CALLBACK_URL) {
   passport.use(
@@ -22,6 +24,12 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_CALLBACK_URL) {
           const email = profile.emails?.[0]?.value?.toLowerCase().trim();
           if (!email) {
             return done(new Error('Google account did not return an email address.'));
+          }
+
+          const googleProfile = (profile._json || {}) as Record<string, unknown>;
+          const googleVerified = googleProfile.email_verified ?? googleProfile.verified_email;
+          if (googleVerified !== true) {
+            return done(new Error('Google did not verify this account email address.'));
           }
 
           let user = await User.findOne({ where: { email } });
@@ -40,7 +48,7 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_CALLBACK_URL) {
               role: 'user',
               isActive: true,
               emailVerified: true,
-              acceptedDisclaimer: true,
+              acceptedDisclaimer: false,
               onboardingCompleted: false,
               authProvider: 'google',
             });
@@ -56,10 +64,6 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_CALLBACK_URL) {
             }
             if (!user.authProvider) {
               user.authProvider = 'google';
-              changed = true;
-            }
-            if (!user.acceptedDisclaimer) {
-              user.acceptedDisclaimer = true;
               changed = true;
             }
             if (changed) await user.save();

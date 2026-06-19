@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { authenticate, requireVerifiedEmail } from '../middleware/auth';
+import { authenticate, requireAcceptedDisclaimer, requireVerifiedEmail } from '../middleware/auth';
 import { handleSendMessage, handleGetHistory } from '../controllers/chatController';
 
 const router = Router();
@@ -43,6 +43,7 @@ router.post(
   '/',
   authenticate,
   requireVerifiedEmail,
+  requireAcceptedDisclaimer,
   [
     body('message').isString().trim().isLength({ min: 1, max: 4000 }),
     body('history').optional().isArray({ max: 12 }),
@@ -78,6 +79,6 @@ router.post(
  *                           content: { type: string }
  *                           createdAt: { type: string, format: date-time }
  */
-router.get('/history', authenticate, requireVerifiedEmail, handleGetHistory);
+router.get('/history', authenticate, requireVerifiedEmail, requireAcceptedDisclaimer, handleGetHistory);
 
 export default router;

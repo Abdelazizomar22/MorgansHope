@@ -144,6 +144,7 @@ export const authApi = {
     gender?: 'male' | 'female' | 'other';
     smokingHistory?: 'never' | 'former' | 'current';
     medicalHistory?: string;
+    acceptedDisclaimer?: boolean;
     onboardingCompleted?: boolean;
     currentPassword?: string;
     newPassword?: string;

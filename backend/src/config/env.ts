@@ -29,7 +29,8 @@ export const env = {
   refreshSecret: read('REFRESH_SECRET'),
   otpPepper: read('OTP_PEPPER'),
   csrfSecret: read('CSRF_SECRET'),
-  cookieDomain: read('COOKIE_DOMAIN') || undefined,
+  // Vercel routes /api through the frontend host, so auth cookies must remain host-only.
+  cookieDomain: process.env.VERCEL ? undefined : (read('COOKIE_DOMAIN') || undefined),
   databaseUrl: read('DATABASE_URL'),
   supabaseUrl: read('SUPABASE_URL'),
   supabaseServiceRoleKey: read('SUPABASE_SERVICE_ROLE_KEY'),
