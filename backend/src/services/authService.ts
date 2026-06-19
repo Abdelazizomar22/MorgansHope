@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
-import path from 'path';
 import User from '../models/User';
 import type { Result } from '../types/result';
 import { Ok, Err } from '../types/result';
@@ -13,6 +12,11 @@ import {
   rotateSession,
   type SessionMetadata,
 } from '../application/auth/sessionService';
+import {
+  resolveStoredUpload,
+  resolveUploadedFile,
+  safeUnlinkUploadedFile,
+} from '../utils/safeFiles';
 
 const PHONE_EMAIL_DOMAIN = 'phone.morganshope.local';
 
@@ -283,32 +287,31 @@ export async function uploadUserAvatar(
   user: User,
   file: { path: string; mimetype: string; size: number },
 ): Promise<Result<Record<string, unknown>>> {
+  const uploadedPath = resolveUploadedFile(file.path);
+  if (!uploadedPath) {
+    return Err('Invalid avatar upload path');
+  }
+
   if (file.size > 2 * 1024 * 1024) {
-    try { fs.unlinkSync(file.path); } catch {}
+    safeUnlinkUploadedFile(uploadedPath);
     return Err('Avatar image must be 2MB or smaller');
   }
 
-  const imageBuffer = fs.readFileSync(file.path);
+  const imageBuffer = fs.readFileSync(uploadedPath);
   const mimeType = file.mimetype || 'image/png';
   const dataUri = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
 
   if (user.profilePicture && !/^https?:\/\//i.test(user.profilePicture) && !user.profilePicture.startsWith('data:')) {
-    try {
-      const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
-      const uploadPath = path.isAbsolute(uploadsRoot)
-        ? uploadsRoot
-        : path.join(process.cwd(), uploadsRoot);
-      const oldPath = path.join(uploadPath, user.profilePicture);
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-    } catch {
-      // Ignore avatar cleanup errors.
+    const oldPath = resolveStoredUpload(user.profilePicture);
+    if (oldPath) {
+      safeUnlinkUploadedFile(oldPath);
     }
   }
 
   user.profilePicture = dataUri;
   await user.save();
 
-  try { fs.unlinkSync(file.path); } catch {}
+  safeUnlinkUploadedFile(uploadedPath);
 
   return Ok(user.toSafeJSON());
 }

@@ -1,5 +1,21 @@
-const cleanEnvUrl = (value?: string) =>
-  value?.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '') || '';
+const cleanEnvUrl = (value?: string) => {
+  if (!value) return '';
+
+  let normalized = value.trim();
+  if (
+    normalized.length >= 2
+    && ((normalized.startsWith('"') && normalized.endsWith('"'))
+      || (normalized.startsWith("'") && normalized.endsWith("'")))
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+
+  let end = normalized.length;
+  while (end > 0 && normalized.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return normalized.slice(0, end);
+};
 
 const isBrowser = typeof window !== 'undefined';
 const isLocalHost = isBrowser && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);

@@ -130,7 +130,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.loginUser(identifier, password, rememberMe, sessionMetadataFrom(req));
 
   if (result.success === false) {
-    res.status(401).json({ success: false, message: result.error + devHint });
+    res.status(401).json({ success: false, message: result.error });
     return;
   }
 

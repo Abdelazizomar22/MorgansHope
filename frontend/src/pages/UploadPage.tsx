@@ -294,9 +294,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
     setStage(0);
     setCurrentIndex(0);
 
-    const sessionId = window.crypto?.randomUUID
-      ? window.crypto.randomUUID()
-      : Math.random().toString(36).substring(2, 15);
+    const sessionId = window.crypto.randomUUID();
 
     try {
       for (let i = 0; i < files.length; i += 1) {

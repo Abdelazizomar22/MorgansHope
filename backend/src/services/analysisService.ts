@@ -19,6 +19,14 @@ import {
 } from '../infrastructure/storage/supabaseStorage';
 import { env } from '../config/env';
 import { enqueueAnalysis, isQstashConfigured } from '../infrastructure/queue/qstash';
+import {
+  resolveAnalysisInputFile,
+  resolveAnalysisTempFile,
+  resolveStoredUpload,
+  safeUnlinkAnalysisInputFile,
+  safeUnlinkAnalysisTempFile,
+  safeUnlinkUploadedFile,
+} from '../utils/safeFiles';
 
 const CT_URL = process.env.CT_SERVICE_URL || 'http://localhost:8000';
 const XRAY_URL = process.env.XRAY_SERVICE_URL || 'http://localhost:8001';
@@ -52,8 +60,13 @@ function computeUrgency(r: AnalysisResult): UrgencyLevel {
 }
 
 function createForm(filePath: string, originalFilename: string) {
+  const trustedPath = resolveAnalysisInputFile(filePath);
+  if (!trustedPath) {
+    throw new Error('Invalid analysis file path.');
+  }
+
   const form = new FormData();
-  form.append('file', fs.readFileSync(filePath), originalFilename);
+  form.append('file', fs.readFileSync(trustedPath), originalFilename);
   return form;
 }
 
@@ -381,7 +394,7 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     console.error('AI service error:', err);
     return Err('AI service unavailable. Please try again.');
   } finally {
-    try { fs.unlinkSync(input.filePath); } catch {}
+    safeUnlinkAnalysisInputFile(input.filePath);
   }
 }
 
@@ -420,7 +433,7 @@ export async function validateUploadedScan(
 
 export async function uploadAndAnalyze(input: UploadInput): Promise<Result<UploadResult>> {
   if (!['xray', 'ct'].includes(input.imageType)) {
-    try { fs.unlinkSync(input.filePath); } catch {}
+    safeUnlinkUploadedFile(input.filePath);
     return Err('imageType must be "xray" or "ct"');
   }
 
@@ -545,7 +558,14 @@ export async function processAnalysisJob(jobId: string): Promise<Result<UploadRe
   });
   const currentAttempt = job.attempts + 1;
 
-  const tempPath = createTempFilePath(analysis.id, analysis.originalFilename);
+  const tempPath = resolveAnalysisTempFile(
+    createTempFilePath(analysis.id, analysis.originalFilename),
+  );
+  if (!tempPath) {
+    await job.update({ status: 'failed', lastError: 'Could not create a secure temporary file.' });
+    return Err('Could not create a secure temporary file.');
+  }
+
   try {
     const buffer = await downloadPrivateObject(analysis.storageBucket, analysis.storageKey);
     fs.writeFileSync(tempPath, buffer);
@@ -586,7 +606,7 @@ export async function processAnalysisJob(jobId: string): Promise<Result<UploadRe
     });
     return Err(message);
   } finally {
-    try { fs.unlinkSync(tempPath); } catch {}
+    safeUnlinkAnalysisTempFile(tempPath);
   }
 }
 
@@ -693,15 +713,9 @@ export async function deleteAnalysisById(
       // Ignore storage cleanup errors and continue deleting DB record.
     }
   } else if (result.imagePath) {
-    try {
-      const uploadsRoot = process.env.UPLOAD_DIR || 'uploads';
-      const uploadPath = path.isAbsolute(uploadsRoot)
-        ? uploadsRoot
-        : path.join(process.cwd(), uploadsRoot);
-      const filePath = path.join(uploadPath, path.basename(result.imagePath));
-      fs.unlinkSync(filePath);
-    } catch {
-      // Ignore missing local files.
+    const filePath = resolveStoredUpload(result.imagePath);
+    if (filePath) {
+      safeUnlinkUploadedFile(filePath);
     }
   }
 

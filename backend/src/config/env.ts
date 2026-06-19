@@ -5,12 +5,20 @@ const requiredInProduction = [
 
 const read = (name: string, fallback = '') => (process.env[name] || fallback).trim();
 
+const trimTrailingSlashes = (value: string) => {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return value.slice(0, end);
+};
+
 export const env = {
   nodeEnv: read('NODE_ENV', 'development'),
-  frontendUrl: read('FRONTEND_URL', 'http://localhost:3001').replace(/\/+$/, ''),
+  frontendUrl: trimTrailingSlashes(read('FRONTEND_URL', 'http://localhost:3001')),
   frontendUrls: read('FRONTEND_URLS')
     .split(',')
-    .map((value) => value.trim().replace(/\/+$/, ''))
+    .map((value) => trimTrailingSlashes(value.trim()))
     .filter(Boolean),
   jwtSecret: read('JWT_SECRET'),
   refreshSecret: read('REFRESH_SECRET'),

@@ -54,7 +54,22 @@ const XRAY_URL = process.env.XRAY_SERVICE_URL || 'http://localhost:8001';
 const GATE_URL = process.env.GATE_SERVICE_URL || '';
 const NODULE_URL = process.env.NODULE_SERVICE_URL || '';
 
-const normalizeOrigin = (origin: string) => origin.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
+const normalizeOrigin = (origin: string) => {
+  let normalized = origin.trim();
+  if (
+    normalized.length >= 2
+    && ((normalized.startsWith('"') && normalized.endsWith('"'))
+      || (normalized.startsWith("'") && normalized.endsWith("'")))
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+
+  let end = normalized.length;
+  while (end > 0 && normalized.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return normalized.slice(0, end);
+};
 
 const configuredOrigins = Array.from(new Set([
   env.frontendUrl,
@@ -93,6 +108,7 @@ app.use(helmet({
 }));
 app.use(compression());
 app.use(cookieParser());
+app.use(csrfProtection);
 app.use(passport.initialize());
 app.use(requestContext);
 
@@ -170,7 +186,6 @@ if (!env.enableDistributedRateLimit) {
 }
 
 app.use('/api', distributedRateLimit('global'));
-app.use(csrfProtection);
 
 app.use(
   '/api/uploads',

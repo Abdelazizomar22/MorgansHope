@@ -1,8 +1,8 @@
 import { Response } from 'express';
-import fs from 'fs';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../utils/asyncHandler';
+import { safeUnlinkUploadedFile } from '../utils/safeFiles';
 import * as analysisService from '../services/analysisService';
 
 export const upload = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -34,7 +34,7 @@ export const upload = asyncHandler(async (req: AuthRequest, res: Response) => {
   });
 
   if (result.success === false) {
-    try { fs.unlinkSync(file.path); } catch {}
+    safeUnlinkUploadedFile(file.path);
     const isClientUploadError =
       result.error.startsWith('imageType') ||
       result.error.startsWith('Image appears') ||
@@ -134,7 +134,7 @@ export const validateScan = asyncHandler(async (req: AuthRequest, res: Response)
   const imageType = (req.body.imageType as string).toLowerCase() as 'xray' | 'ct';
   const result = await analysisService.validateUploadedScan(file.path, file.originalname, imageType);
 
-  try { fs.unlinkSync(file.path); } catch {}
+  safeUnlinkUploadedFile(file.path);
 
   if (result.success === false) {
     const status = result.error.startsWith('imageType') ? 400 : 503;

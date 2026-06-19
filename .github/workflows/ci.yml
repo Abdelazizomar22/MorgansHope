@@ -11,12 +11,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - project: frontend
-            install_command: npm ci
+            install_command: npm ci --no-audit --no-fund
           - project: backend
-            install_command: npm ci --omit=optional
+            install_command: npm install --include=dev --omit=optional --no-audit --no-fund
     defaults:
       run:
         working-directory: ${{ matrix.project }}
