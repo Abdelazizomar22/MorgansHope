@@ -60,7 +60,11 @@ export const updateProfileValidators = [
 ];
 
 export const verifyContactValidators = [
-  body('code').notEmpty().withMessage('Verification code is required').isString().trim(),
+  body('code')
+    .isString()
+    .trim()
+    .matches(/^\d{6}$/)
+    .withMessage('Enter the 6-digit verification code'),
 ];
 
 export const verifyPhoneOtpValidators = [

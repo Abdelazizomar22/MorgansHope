@@ -56,6 +56,18 @@ export const authenticate = asyncHandler(async (
   next();
 }) as unknown as (req: AuthRequest, res: Response, next: NextFunction) => void;
 
+export function requireVerifiedEmail(req: AuthRequest, res: Response, next: NextFunction) {
+  if (req.user?.authProvider === 'local' && req.user.emailVerified !== true) {
+    res.status(403).json({
+      success: false,
+      code: 'EMAIL_VERIFICATION_REQUIRED',
+      message: 'Verify your email address before using this service.',
+    });
+    return;
+  }
+  next();
+}
+
 export function requireRole(...roles: Array<'admin' | 'user'>) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

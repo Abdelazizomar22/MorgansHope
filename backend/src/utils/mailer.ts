@@ -1,24 +1,29 @@
 import nodemailer from 'nodemailer';
+import { env } from '../config/env';
 
-function createGmailTransporter() {
-  const user = process.env.GMAIL_USER?.trim();
-  const pass = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, '').trim();
-
-  if (!user || !pass) return null;
+function createSmtpTransporter() {
+  if (!env.smtpHost || !env.smtpUser || !env.smtpPass || !env.smtpFrom) return null;
 
   return {
-    user,
+    from: env.smtpFrom,
     transporter: nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      host: env.smtpHost,
+      port: env.smtpPort,
+      secure: env.smtpSecure,
       connectionTimeout: 10_000,
       greetingTimeout: 10_000,
       socketTimeout: 15_000,
-      auth: { user, pass },
+      auth: { user: env.smtpUser, pass: env.smtpPass },
     }),
   };
 }
+
+const escapeHtml = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
 
 interface VerificationEmailOptions {
   subject: string;
@@ -32,17 +37,17 @@ async function sendCodeEmail(toEmail: string, code: string, options: Verificatio
     throw new Error('A recipient email address is required to send the verification code.');
   }
 
-  const mailer = createGmailTransporter();
+  const mailer = createSmtpTransporter();
   if (!mailer) {
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`[OTP] Gmail SMTP missing. Dev code for ${toEmail}: ${code}`);
+      console.log(`[OTP] SMTP missing. Dev code for ${toEmail}: ${code}`);
       return;
     }
-    throw new Error('Email delivery is not configured yet. Missing Gmail SMTP credentials.');
+    throw new Error('Email delivery is not configured yet. Missing SMTP credentials.');
   }
 
   await mailer.transporter.sendMail({
-    from: `Morgan's Hope <${mailer.user}>`,
+    from: mailer.from,
     to: toEmail,
     subject: options.subject,
     html: `
@@ -52,7 +57,7 @@ async function sendCodeEmail(toEmail: string, code: string, options: Verificatio
         <div style="font-size: 28px; font-weight: 700; letter-spacing: 6px; margin: 20px 0; color: #1b4d3e;">
           ${code}
         </div>
-        <p>This code expires in 10 minutes.</p>
+        <p>This code expires in 5 minutes.</p>
         ${options.footer ? `<p style="margin-top: 14px; color: #4b5563;">${options.footer}</p>` : ''}
       </div>
     `,
@@ -84,25 +89,25 @@ export async function sendContactEmail(payload: {
   phone?: string;
   message: string;
 }) {
-  const mailer = createGmailTransporter();
+  const mailer = createSmtpTransporter();
   if (!mailer) {
-    throw new Error('Email delivery is not configured yet. Missing Gmail SMTP credentials.');
+    throw new Error('Email delivery is not configured yet. Missing SMTP credentials.');
   }
 
   await mailer.transporter.sendMail({
-    from: `Morgan's Hope <${mailer.user}>`,
-    to: process.env.CONTACT_EMAIL?.trim() || mailer.user,
+    from: mailer.from,
+    to: env.contactEmail || env.smtpUser,
     replyTo: payload.email,
     subject: `Morgan's Hope contact form - ${payload.name}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #16322b;">
         <h2>New message from Morgan's Hope website</h2>
-        <p><strong>Name:</strong> ${payload.name}</p>
-        <p><strong>Email:</strong> ${payload.email}</p>
-        <p><strong>Phone:</strong> ${payload.phone || 'Not provided'}</p>
+        <p><strong>Name:</strong> ${escapeHtml(payload.name)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(payload.email)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(payload.phone || 'Not provided')}</p>
         <p><strong>Message:</strong></p>
         <div style="padding: 14px; border-radius: 12px; background: #f6fbfa; border: 1px solid #d7ebe5;">
-          ${payload.message.replace(/\n/g, '<br />')}
+          ${escapeHtml(payload.message).replace(/\n/g, '<br />')}
         </div>
       </div>
     `,

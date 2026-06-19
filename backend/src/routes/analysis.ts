@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
-import { authenticate } from '../middleware/auth';
+import { authenticate, requireVerifiedEmail } from '../middleware/auth';
 import { distributedRateLimit } from '../middleware/distributedRateLimit';
 import upload from '../middleware/upload';
 import {
@@ -15,17 +15,18 @@ import {
 } from '../controllers/analysisController';
 
 const router = Router();
+router.use(authenticate, requireVerifiedEmail);
 
-router.post('/upload', authenticate, distributedRateLimit('upload'), upload.single('image'), [
+router.post('/upload', distributedRateLimit('upload'), upload.single('image'), [
   body('imageType').isIn(['xray', 'ct']).withMessage('imageType must be "xray" or "ct"'),
   body('sessionId').optional().isString().trim(),
 ], uploadAnalysis);
 
-router.post('/validate', authenticate, distributedRateLimit('upload'), upload.single('image'), [
+router.post('/validate', distributedRateLimit('upload'), upload.single('image'), [
   body('imageType').isIn(['xray', 'ct']).withMessage('imageType must be "xray" or "ct"'),
 ], validateScan);
 
-router.post('/upload-intent', authenticate, distributedRateLimit('upload'), [
+router.post('/upload-intent', distributedRateLimit('upload'), [
   body('originalFilename').isString().trim().notEmpty(),
   body('imageType').isIn(['xray', 'ct']).withMessage('imageType must be "xray" or "ct"'),
   body('mimeType').isString().trim().notEmpty(),
@@ -33,10 +34,10 @@ router.post('/upload-intent', authenticate, distributedRateLimit('upload'), [
   body('sessionId').optional().isString().trim(),
 ], createUploadIntent);
 
-router.post('/:id/submit', authenticate, distributedRateLimit('upload'), param('id').isInt().toInt(), submitAnalysis);
-router.get('/:id/status', authenticate, param('id').isInt().toInt(), getAnalysisStatus);
-router.get('/history', authenticate, getHistory);
-router.get('/:id', authenticate, param('id').isInt().toInt(), getById);
-router.delete('/:id', authenticate, param('id').isInt().toInt(), deleteAnalysis);
+router.post('/:id/submit', distributedRateLimit('upload'), param('id').isInt().toInt(), submitAnalysis);
+router.get('/:id/status', param('id').isInt().toInt(), getAnalysisStatus);
+router.get('/history', getHistory);
+router.get('/:id', param('id').isInt().toInt(), getById);
+router.delete('/:id', param('id').isInt().toInt(), deleteAnalysis);
 
 export default router;
