@@ -19,7 +19,7 @@ const hashIp = (ip?: string) => (ip ? sha256(`${env.refreshSecret}:${ip}`) : nul
 export function createAccessToken(userId: number, sessionId: string) {
   return jwt.sign(
     { sub: userId, sid: sessionId, type: 'access' },
-    env.jwtSecret || 'development_only_jwt_secret_minimum_32_chars',
+    env.jwtSecret,
     { expiresIn: ACCESS_TOKEN_TTL_SECONDS, issuer: 'morgans-hope', audience: 'morgans-hope-web' },
   );
 }

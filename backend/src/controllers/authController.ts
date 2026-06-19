@@ -71,11 +71,6 @@ export const resendVerificationValidators = [
   body('channel').optional().isIn(['email', 'phone']).withMessage('Channel must be email or phone'),
 ];
 
-const devHint =
-  process.env.NODE_ENV !== 'production' && process.env.ENABLE_DEV_AUTH_SETUP === 'true'
-    ? ' Open http://localhost:3000/api/auth/dev-setup in browser to create admin (admin@morganshope.local / Admin@123456).'
-    : '';
-
 export const csrf = issueCsrfToken;
 
 export const register = asyncHandler(async (req: Request, res: Response) => {

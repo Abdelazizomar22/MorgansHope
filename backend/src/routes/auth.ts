@@ -1,5 +1,4 @@
-import { Router, Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
+import { Router, Request } from 'express';
 import User from '../models/User';
 import passport from '../config/passport';
 import {
@@ -35,9 +34,6 @@ const GOOGLE_CONFIGURED = Boolean(
   process.env.GOOGLE_CLIENT_SECRET,
 );
 
-const DEV_AUTH_SETUP_ENABLED = process.env.NODE_ENV !== 'production'
-  && process.env.ENABLE_DEV_AUTH_SETUP === 'true';
-
 const googleRedirect = (status: 'success' | 'error', params: Record<string, string>) => {
   const search = new URLSearchParams({ googleAuth: status, ...params });
   return `${FRONTEND_URL}/login?${search.toString()}`;
@@ -52,63 +48,6 @@ const getGoogleCallbackUrl = (req: Request) => {
   const host = req.get('host');
   return `${proto}://${host}/api/auth/google/callback`;
 };
-
-router.get('/debug', async (_req: Request, res: Response) => {
-  if (!DEV_AUTH_SETUP_ENABLED) {
-    return res.status(404).json({ success: false, message: 'Not found' });
-  }
-  try {
-    const count = await User.count();
-    const admin = await User.findOne({ where: { email: 'admin@morganshope.local' } });
-    const testMatch = admin ? await bcrypt.compare('Admin@123456', admin.password) : null;
-    return res.json({
-      success: true,
-      db: 'ok',
-      userCount: count,
-      adminExists: !!admin,
-      adminEmailInDb: admin?.email ?? null,
-      testPasswordMatch: testMatch,
-    });
-  } catch (e: any) {
-    return res.status(500).json({ success: false, dbError: e?.message });
-  }
-});
-
-router.get('/dev-setup', async (_req: Request, res: Response) => {
-  if (!DEV_AUTH_SETUP_ENABLED) {
-    return res.status(404).json({ success: false, message: 'Not found' });
-  }
-  const email = 'admin@morganshope.local';
-  const password = 'Admin@123456';
-  const hashed = await bcrypt.hash(password, 12);
-  let user = await User.findOne({ where: { email } });
-  if (!user) {
-    user = await User.create({
-      firstName: 'Admin',
-      lastName: 'Morgan\'s Hope',
-      email,
-      password: hashed,
-      role: 'admin',
-      emailVerified: true,
-      acceptedDisclaimer: true,
-      onboardingCompleted: true,
-    });
-    return res.json({
-      success: true,
-      message: 'Admin user created. Use these credentials to log in.',
-      email,
-      password,
-    });
-  }
-  user.password = hashed;
-  await user.save();
-  return res.json({
-    success: true,
-    message: 'Admin password reset. Use these credentials to log in.',
-    email,
-    password,
-  });
-});
 
 router.get('/csrf', csrf);
 

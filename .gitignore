@@ -17,6 +17,7 @@ build/
 .env.local
 .env.*.local
 .env.models
+.hf_token
 .npm-cache/
 .gitleaks-report.json
 coverage/

@@ -12,7 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [frontend, backend]
+        include:
+          - project: frontend
+            install_command: npm ci
+          - project: backend
+            install_command: npm ci --omit=optional
     defaults:
       run:
         working-directory: ${{ matrix.project }}
@@ -25,5 +29,5 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ matrix.project }}/package-lock.json
 
-      - run: npm ci
+      - run: ${{ matrix.install_command }}
       - run: npm run build

@@ -6,7 +6,11 @@ import { env } from '../config/env';
 import { isSessionActive } from '../application/auth/sessionService';
 import { ACCESS_COOKIE } from '../config/authCookies';
 
-const JWT_SECRET = env.jwtSecret || 'development_only_jwt_secret_minimum_32_chars';
+const JWT_SECRET = env.jwtSecret;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is required.');
+}
 
 export interface AuthRequest extends Request {
   user?: InstanceType<typeof User>;
