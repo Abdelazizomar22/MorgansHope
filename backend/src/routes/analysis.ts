@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
-import { authenticate, requireVerifiedEmail } from '../middleware/auth';
+import { authenticate, requireAcceptedDisclaimer, requireVerifiedEmail } from '../middleware/auth';
 import { distributedRateLimit } from '../middleware/distributedRateLimit';
 import upload from '../middleware/upload';
 import {
@@ -15,7 +15,7 @@ import {
 } from '../controllers/analysisController';
 
 const router = Router();
-router.use(authenticate, requireVerifiedEmail);
+router.use(authenticate, requireVerifiedEmail, requireAcceptedDisclaimer);
 
 router.post('/upload', distributedRateLimit('upload'), upload.single('image'), [
   body('imageType').isIn(['xray', 'ct']).withMessage('imageType must be "xray" or "ct"'),

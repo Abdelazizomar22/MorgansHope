@@ -57,11 +57,23 @@ export const authenticate = asyncHandler(async (
 }) as unknown as (req: AuthRequest, res: Response, next: NextFunction) => void;
 
 export function requireVerifiedEmail(req: AuthRequest, res: Response, next: NextFunction) {
-  if (req.user?.authProvider === 'local' && req.user.emailVerified !== true) {
+  if (req.user?.emailVerified !== true) {
     res.status(403).json({
       success: false,
       code: 'EMAIL_VERIFICATION_REQUIRED',
       message: 'Verify your email address before using this service.',
+    });
+    return;
+  }
+  next();
+}
+
+export function requireAcceptedDisclaimer(req: AuthRequest, res: Response, next: NextFunction) {
+  if (req.user?.acceptedDisclaimer !== true) {
+    res.status(403).json({
+      success: false,
+      code: 'DISCLAIMER_ACCEPTANCE_REQUIRED',
+      message: 'Accept the medical disclaimer before using this service.',
     });
     return;
   }

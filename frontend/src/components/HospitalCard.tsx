@@ -132,22 +132,25 @@ export default function HospitalCard({ hospital, lang, open, onToggleAbout }: Ho
           rel="noopener noreferrer"
           className="group block overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
         >
-          {(mapTilerKey || mapsKey) && !mapImageFailed ? (
-            <img
-              src={mapTilerKey ? toMapTilerUrl(hospital) : toStaticMapUrl(hospital)}
-              alt={`${hospital.hospitalName} map`}
-              className="h-[120px] w-full object-cover transition duration-200 group-hover:scale-105"
-              loading="lazy"
-              onError={() => setMapImageFailed(true)}
-            />
-          ) : (
-            <iframe
-              src={toOsmEmbedUrl(hospital)}
-              title={`${hospital.hospitalName} map`}
-              className="h-full w-full border-0"
-              loading="lazy"
-            />
-          )}
+          <div className="h-[120px] w-full overflow-hidden bg-slate-100">
+            {(mapTilerKey || mapsKey) && !mapImageFailed ? (
+              <img
+                src={mapTilerKey ? toMapTilerUrl(hospital) : toStaticMapUrl(hospital)}
+                alt={`${hospital.hospitalName} map`}
+                className="h-[120px] w-full object-cover transition duration-200 group-hover:scale-105"
+                loading="lazy"
+                onError={() => setMapImageFailed(true)}
+              />
+            ) : (
+              <iframe
+                src={toOsmEmbedUrl(hospital)}
+                title={`${hospital.hospitalName} map`}
+                className="h-[120px] w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            )}
+          </div>
           <div className="flex items-center justify-center gap-1 py-1.5 text-[10px] font-black text-[var(--primary-forest)]">
             <HiMapPin className="h-3 w-3" />
             {t('View on Map', 'عرض على الخريطة')}

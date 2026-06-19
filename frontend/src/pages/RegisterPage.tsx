@@ -128,7 +128,7 @@ export default function RegisterPage() {
     }
     setError('');
     setConsentTarget('email');
-    setShowConsentModal(true);
+    void handleConsentAccept('email');
   };
 
   const handleGoogleClick = () => {
@@ -136,14 +136,13 @@ export default function RegisterPage() {
       setError(t('Google sign-in is not configured for this deployment yet.', 'تسجيل الدخول عبر Google غير مُعد بعد.'));
       return;
     }
-    setConsentTarget('google');
-    setShowConsentModal(true);
+    window.location.href = googleAuthUrl;
   };
 
-  const handleConsentAccept = async () => {
+  const handleConsentAccept = async (target = consentTarget) => {
     setShowConsentModal(false);
 
-    if (consentTarget === 'google') {
+    if (target === 'google') {
       window.location.href = googleAuthUrl;
       return;
     }
@@ -158,7 +157,7 @@ export default function RegisterPage() {
         email: form.email.trim(),
         password: form.password,
         confirmPassword: form.confirmPassword,
-        acceptedDisclaimer: true,
+        acceptedDisclaimer: false,
       });
       setStep(3);
       // Redirect to onboarding after brief delay for UX

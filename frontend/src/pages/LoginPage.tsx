@@ -115,7 +115,7 @@ export default function LoginPage() {
       setError(t('Google sign-in is not configured for this deployment yet.', 'تسجيل الدخول عبر Google غير مُعد بعد.'));
       return;
     }
-    setShowConsentModal(true);
+    window.location.href = googleAuthUrl;
   };
 
   const handleConsentAccept = () => {

@@ -19,6 +19,7 @@ import {
 } from '../infrastructure/storage/supabaseStorage';
 import { env } from '../config/env';
 import { enqueueAnalysis, isQstashConfigured } from '../infrastructure/queue/qstash';
+import { logger, safeError } from '../infrastructure/observability/logger';
 import {
   resolveAnalysisInputFile,
   resolveAnalysisTempFile,
@@ -70,6 +71,49 @@ function createForm(filePath: string, originalFilename: string) {
   return form;
 }
 
+const retryableAiStatuses = new Set([408, 429, 502, 503, 504]);
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function postScanToAi(
+  service: 'gate' | 'ct' | 'xray' | 'nodule',
+  baseUrl: string,
+  endpoint: string,
+  input: UploadInput,
+  timeout: number,
+  maxAttempts = 2,
+) {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const form = createForm(input.filePath, input.originalFilename);
+    try {
+      return await axios.post(`${baseUrl}${endpoint}`, form, {
+        headers: {
+          ...form.getHeaders(),
+          ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
+        },
+        timeout,
+      });
+    } catch (error) {
+      lastError = error;
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      const retryable = status ? retryableAiStatuses.has(status) : axios.isAxiosError(error);
+
+      logger.warn({
+        service,
+        attempt,
+        status,
+        error: safeError(error),
+      }, 'ai_service_request_failed');
+
+      if (!retryable || attempt === maxAttempts) break;
+      await wait(5_000);
+    }
+  }
+
+  throw lastError;
+}
+
 function asNumber(value: unknown, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -97,14 +141,7 @@ async function runGate(input: UploadInput): Promise<GateResult> {
     };
   }
 
-  const form = createForm(input.filePath, input.originalFilename);
-  const response = await axios.post(`${GATE_URL}/predict`, form, {
-    headers: {
-      ...form.getHeaders(),
-      ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
-    },
-    timeout: 60_000,
-  });
+  const response = await postScanToAi('gate', GATE_URL, '/predict', input, 45_000);
 
   const classification = response.data?.classification as GateClassification;
   const confidence = response.data?.confidence === undefined ? null : asNumber(response.data.confidence, 0);
@@ -160,14 +197,13 @@ function buildGateValidationMessage(
 async function runNoduleDetection(input: UploadInput) {
   if (!NODULE_URL) return null;
 
-  const form = createForm(input.filePath, input.originalFilename);
-  const response = await axios.post(`${NODULE_URL}/detect`, form, {
-    headers: {
-      ...form.getHeaders(),
-      ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
-    },
-    timeout: 120_000,
-  });
+  let response;
+  try {
+    response = await postScanToAi('nodule', NODULE_URL, '/detect', input, 45_000, 1);
+  } catch (error) {
+    logger.warn({ error: safeError(error) }, 'optional_nodule_detection_unavailable');
+    return null;
+  }
 
   const best = response.data?.best_detection || response.data?.detection || null;
   if (!best) return null;
@@ -287,24 +323,10 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     let aiData: Record<string, unknown>;
 
     if (routedImageType === 'ct') {
-      const form = createForm(input.filePath, input.originalFilename);
-      const response = await axios.post(`${CT_URL}/predict`, form, {
-        headers: {
-          ...form.getHeaders(),
-          ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
-        },
-        timeout: 120_000,
-      });
+      const response = await postScanToAi('ct', CT_URL, '/predict', input, 75_000);
       aiData = response.data;
     } else {
-      const form = createForm(input.filePath, input.originalFilename);
-      const response = await axios.post(`${XRAY_URL}/predict/xray`, form, {
-        headers: {
-          ...form.getHeaders(),
-          ...(env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : {}),
-        },
-        timeout: 120_000,
-      });
+      const response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 75_000);
       aiData = response.data;
     }
 
@@ -391,7 +413,7 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     });
   } catch (err) {
     await record.update({ status: 'failed' });
-    console.error('AI service error:', err);
+    logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_ai_pipeline_failed');
     return Err('AI service unavailable. Please try again.');
   } finally {
     safeUnlinkAnalysisInputFile(input.filePath);
@@ -426,7 +448,7 @@ export async function validateUploadedScan(
       message,
     });
   } catch (err) {
-    console.error('Gate validation error:', err);
+    logger.error({ error: safeError(err) }, 'gate_validation_failed');
     return Err('Validation service unavailable. Please try again.');
   }
 }

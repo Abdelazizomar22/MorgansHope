@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { HiEnvelope, HiExclamationCircle } from 'react-icons/hi2';
 import { useAuth, VERIFICATION_NOTICE_KEY } from '../context/AuthContext';
 import { authApi } from '../utils/api';
+import DisclaimerModal from '../components/DisclaimerModal';
 
 const IconAlert = () => <HiExclamationCircle size={15} />;
 const IconMail = () => <HiEnvelope size={15} />;
@@ -28,6 +29,7 @@ export default function OnboardingPage() {
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => (ar ? arText : en);
   const needsEmailVerification = Boolean(user?.authProvider === 'local' && user?.emailVerified !== true);
+  const needsDisclaimer = Boolean(user && user.emailVerified === true && user.acceptedDisclaimer !== true);
   const emailTarget = user?.email || '';
 
   useEffect(() => {
@@ -113,6 +115,11 @@ export default function OnboardingPage() {
       return;
     }
 
+    if (user?.acceptedDisclaimer !== true) {
+      setError(t('Please accept the medical disclaimer before completing setup.', 'Please accept the medical disclaimer before completing setup.'));
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -139,9 +146,33 @@ export default function OnboardingPage() {
     navigate('/login', { replace: true });
   };
 
+  const handleAcceptDisclaimer = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const updated = await authApi.updateProfile({ acceptedDisclaimer: true });
+      if (updated.data.data) updateUser(updated.data.data);
+      await refreshUser();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Could not save your acceptance. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeclineDisclaimer = async () => {
+    await logout();
+    navigate('/', { replace: true });
+  };
+
   const handleSkip = async () => {
     if (needsEmailVerification) {
       setError(t('Please verify your email address before continuing.', 'Please verify your email address before continuing.'));
+      return;
+    }
+
+    if (user?.acceptedDisclaimer !== true) {
+      setError(t('Please accept the medical disclaimer before continuing.', 'Please accept the medical disclaimer before continuing.'));
       return;
     }
 
@@ -182,6 +213,14 @@ export default function OnboardingPage() {
         fontFamily: "'Sora', sans-serif",
       }}
     >
+      {needsDisclaimer && (
+        <DisclaimerModal
+          lang={lang}
+          onAccept={handleAcceptDisclaimer}
+          onDecline={handleDeclineDisclaimer}
+          subtitle="Your account is verified. Please review and accept before entering Morgan's Hope."
+        />
+      )}
       <div style={{ width: '100%', maxWidth: 520 }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <h1 style={{ margin: '0 0 10px', color: 'var(--text-main)', fontSize: 'clamp(1.7rem, 4vw, 2.1rem)', fontWeight: 900, letterSpacing: '-0.04em' }}>

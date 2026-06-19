@@ -92,7 +92,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   const resolvePostLoginPath = (currentUser: SafeUser | null) => {
-    if (currentUser && !currentUser.onboardingCompleted) return '/onboarding';
+    if (currentUser && (
+      currentUser.emailVerified !== true
+      || currentUser.acceptedDisclaimer !== true
+      || !currentUser.onboardingCompleted
+    )) return '/onboarding';
     return sessionStorage.getItem(REDIRECT_KEY) || '/';
   };
 
