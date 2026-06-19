@@ -29,10 +29,23 @@ import {
   safeUnlinkUploadedFile,
 } from '../utils/safeFiles';
 
-const CT_URL = process.env.CT_SERVICE_URL || 'http://localhost:8000';
-const XRAY_URL = process.env.XRAY_SERVICE_URL || 'http://localhost:8001';
-const GATE_URL = process.env.GATE_SERVICE_URL || '';
-const NODULE_URL = process.env.NODULE_SERVICE_URL || '';
+const cleanServiceUrl = (value: string) => {
+  let normalized = value.trim();
+  if (
+    normalized.length >= 2
+    && ((normalized.startsWith('"') && normalized.endsWith('"'))
+      || (normalized.startsWith("'") && normalized.endsWith("'")))
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+  while (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+  return normalized;
+};
+
+const CT_URL = cleanServiceUrl(process.env.CT_SERVICE_URL || 'http://localhost:8000');
+const XRAY_URL = cleanServiceUrl(process.env.XRAY_SERVICE_URL || 'http://localhost:8001');
+const GATE_URL = cleanServiceUrl(process.env.GATE_SERVICE_URL || '');
+const NODULE_URL = cleanServiceUrl(process.env.NODULE_SERVICE_URL || '');
 
 type UrgencyLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 type GateClassification = 'Chest_XRay' | 'Chest_CT' | 'Other_Medical' | 'Non_Medical';
