@@ -100,7 +100,7 @@ export default function Navbar({ lang, onLangToggle }: NavbarProps) {
 	        className="theme-logo"
 	        style={{ height: 30, width: 30, objectFit: 'contain', transform: 'scale(1.35) translateY(-2px)', marginInlineEnd: -8 }}
 	      />
-        <div dir="ltr" className="hidden md:flex items-center gap-1.5" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.35)' }}>
+        <div dir="ltr" className="hidden md:flex items-center gap-1.5">
           <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.5, lineHeight: 1 }}>Morgan&apos;s</span>
           <span style={{ fontSize: 18, fontWeight: 400, fontStyle: 'italic', color: 'var(--primary)', opacity: 0.85, lineHeight: 1 }}>Hope</span>
         </div>
