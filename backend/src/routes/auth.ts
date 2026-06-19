@@ -6,6 +6,7 @@ import {
   login, loginValidators,
   logout,
   refreshToken,
+  bootstrapSession,
   me,
   updateProfile, updateProfileValidators,
   verifyContact, verifyContactValidators,
@@ -27,7 +28,7 @@ const FRONTEND_URL = (
   process.env.FRONTEND_URL ||
   process.env.FRONTEND_URLS?.split(',')[0] ||
   'http://localhost:3001'
-).trim().replace(/^['"]|['"]$/g, '');
+).trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, '');
 
 const GOOGLE_CONFIGURED = Boolean(
   process.env.GOOGLE_CLIENT_ID &&
@@ -97,6 +98,7 @@ router.post('/register', distributedRateLimit('register'), registerValidators, r
 router.post('/login', distributedRateLimit('login'), loginValidators, login);
 router.post('/logout', logout);
 router.post('/refresh', refreshToken);
+router.get('/bootstrap', bootstrapSession);
 router.get('/me', authenticate, me);
 router.put('/profile', authenticate, updateProfileValidators, updateProfile);
 router.post('/verify-contact', authenticate, distributedRateLimit('otp'), verifyContactValidators, verifyContact);

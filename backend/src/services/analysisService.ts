@@ -336,10 +336,10 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     let aiData: Record<string, unknown>;
 
     if (routedImageType === 'ct') {
-      const response = await postScanToAi('ct', CT_URL, '/predict', input, 75_000);
+      const response = await postScanToAi('ct', CT_URL, '/predict', input, 120_000);
       aiData = response.data;
     } else {
-      const response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 75_000);
+      const response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 180_000);
       aiData = response.data;
     }
 
