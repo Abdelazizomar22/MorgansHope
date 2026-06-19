@@ -32,6 +32,7 @@ export interface AnalysisResult {
   userId: number;
   imageType: ImageType;
   imagePath: string;
+  imageUrl?: string;
   originalFilename: string;
   gateClassification?: 'Chest_XRay' | 'Chest_CT' | 'Other_Medical' | 'Non_Medical' | null;
   gateConfidence?: number | null;
@@ -104,4 +105,28 @@ export interface UploadResponse {
   urgencyLevel: UrgencyLevel;
   recommendedHospitals: Hospital[];
   processingTimeMs: number;
+}
+
+export interface UploadIntentResponse {
+  analysisId: number;
+  objectPath: string;
+  bucket: string;
+  token: string;
+  signedUrl: string;
+}
+
+export interface AnalysisSubmitResponse {
+  analysisId: number;
+  jobId: string;
+  status: string;
+}
+
+export interface AnalysisStatusResponse {
+  analysisId: number;
+  status: 'pending' | 'completed' | 'failed';
+  jobId: string | null;
+  jobStatus: string | null;
+  errorMessage?: string | null;
+  result?: AnalysisResult;
+  recommendedHospitals?: Hospital[];
 }

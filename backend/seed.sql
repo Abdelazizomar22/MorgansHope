@@ -101,15 +101,5 @@ INSERT INTO hospitals (
 );
 
 -- ─── Default Admin User ───────────────────────────────────────
--- Password: Admin@123456  (bcrypt hash)
-INSERT INTO users (first_name, last_name, email, password, role, is_active) VALUES
-(
-  'Admin',
-  'Morgan''s Hope',
-  'admin@morganshope.local',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMeSSVMbJKBuI5frU0LFPPFd0G',
-  'admin',
-  TRUE
-);
-
-SELECT 'Seed completed: 8 cities, 8 hospitals, 1 admin user' AS result;
+-- Admin seed user removed. Use environment-driven seeding from src/utils/seed.ts when needed.
+SELECT 'Seed completed: 8 cities and 8 hospitals' AS result;

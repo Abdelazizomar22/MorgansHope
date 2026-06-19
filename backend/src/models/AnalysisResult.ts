@@ -8,6 +8,10 @@ interface AnalysisResultAttributes {
   imageType: 'xray' | 'ct';
   imagePath: string;
   originalFilename: string;
+  storageKey?: string | null;
+  storageBucket?: string | null;
+  mimeType?: string | null;
+  fileSizeBytes?: number | null;
   gateClassification: 'Chest_XRay' | 'Chest_CT' | 'Other_Medical' | 'Non_Medical' | null;
   gateConfidence: number | null;
   classification: string;
@@ -36,6 +40,10 @@ interface AnalysisResultCreationAttributes
   extends Optional<
     AnalysisResultAttributes,
     | 'id'
+    | 'storageKey'
+    | 'storageBucket'
+    | 'mimeType'
+    | 'fileSizeBytes'
     | 'hasCancer'
     | 'cancerProbability'
     | 'isMalignant'
@@ -62,6 +70,10 @@ class AnalysisResult
   public imageType!: 'xray' | 'ct';
   public imagePath!: string;
   public originalFilename!: string;
+  public storageKey!: string | null;
+  public storageBucket!: string | null;
+  public mimeType!: string | null;
+  public fileSizeBytes!: number | null;
   public gateClassification!: 'Chest_XRay' | 'Chest_CT' | 'Other_Medical' | 'Non_Medical' | null;
   public gateConfidence!: number | null;
   public classification!: string;
@@ -93,6 +105,10 @@ AnalysisResult.init(
     imageType: { type: DataTypes.ENUM('xray', 'ct'), allowNull: false },
     imagePath: { type: DataTypes.STRING(500), allowNull: false },
     originalFilename: { type: DataTypes.STRING(255), allowNull: false },
+    storageKey: { type: DataTypes.STRING(500), allowNull: true, field: 'storage_key' },
+    storageBucket: { type: DataTypes.STRING(100), allowNull: true, field: 'storage_bucket' },
+    mimeType: { type: DataTypes.STRING(100), allowNull: true, field: 'mime_type' },
+    fileSizeBytes: { type: DataTypes.INTEGER, allowNull: true, field: 'file_size_bytes' },
     gateClassification: { type: DataTypes.STRING(50), allowNull: true },
     gateConfidence: { type: DataTypes.DECIMAL(5, 4), allowNull: true },
     classification: { type: DataTypes.STRING(100), allowNull: false },

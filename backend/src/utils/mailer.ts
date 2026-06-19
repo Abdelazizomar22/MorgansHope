@@ -77,3 +77,36 @@ export async function sendOTPEmail(toEmail: string, otp: string) {
     intro: 'Use the 6-digit code below to complete phone verification in Morgan\'s Hope.',
   });
 }
+
+export async function sendContactEmail(payload: {
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+}) {
+  const mailer = createGmailTransporter();
+  if (!mailer) {
+    throw new Error('Email delivery is not configured yet. Missing Gmail SMTP credentials.');
+  }
+
+  await mailer.transporter.sendMail({
+    from: `Morgan's Hope <${mailer.user}>`,
+    to: process.env.CONTACT_EMAIL?.trim() || mailer.user,
+    replyTo: payload.email,
+    subject: `Morgan's Hope contact form - ${payload.name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #16322b;">
+        <h2>New message from Morgan's Hope website</h2>
+        <p><strong>Name:</strong> ${payload.name}</p>
+        <p><strong>Email:</strong> ${payload.email}</p>
+        <p><strong>Phone:</strong> ${payload.phone || 'Not provided'}</p>
+        <p><strong>Message:</strong></p>
+        <div style="padding: 14px; border-radius: 12px; background: #f6fbfa; border: 1px solid #d7ebe5;">
+          ${payload.message.replace(/\n/g, '<br />')}
+        </div>
+      </div>
+    `,
+    disableFileAccess: true,
+    disableUrlAccess: true,
+  });
+}

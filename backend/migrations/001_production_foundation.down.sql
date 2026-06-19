@@ -1,0 +1,12 @@
+BEGIN;
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS outbox_events;
+DROP TABLE IF EXISTS analysis_jobs;
+DROP TABLE IF EXISTS verification_challenges;
+DROP TABLE IF EXISTS auth_sessions;
+ALTER TABLE analysis_results DROP COLUMN IF EXISTS file_size_bytes;
+ALTER TABLE analysis_results DROP COLUMN IF EXISTS mime_type;
+ALTER TABLE analysis_results DROP COLUMN IF EXISTS storage_bucket;
+ALTER TABLE analysis_results DROP COLUMN IF EXISTS storage_key;
+DELETE FROM schema_migrations WHERE version = '001_production_foundation';
+COMMIT;

@@ -258,20 +258,25 @@ async function seed() {
     }
     console.log('Hospitals seeded');
 
-    const adminEmail = 'admin@morganshope.local';
-    const existing = await User.findOne({ where: { email: adminEmail } });
-    if (!existing) {
-      const hashed = await bcrypt.hash('Admin@123456', 12);
-      await User.create({
-        firstName: 'Admin',
-        lastName: 'Morgan\'s Hope',
-        email: adminEmail,
-        password: hashed,
-        role: 'admin',
-      });
-      console.log('Admin user created: admin@morganshope.local / Admin@123456');
+    const adminEmail = process.env.SEED_ADMIN_EMAIL?.trim();
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD?.trim();
+    if (adminEmail && adminPassword) {
+      const existing = await User.findOne({ where: { email: adminEmail } });
+      if (!existing) {
+        const hashed = await bcrypt.hash(adminPassword, 12);
+        await User.create({
+          firstName: 'Admin',
+          lastName: 'Morgan\'s Hope',
+          email: adminEmail,
+          password: hashed,
+          role: 'admin',
+        });
+        console.log(`Admin seed user created for ${adminEmail}`);
+      } else {
+        console.log('Admin seed user already exists');
+      }
     } else {
-      console.log('Admin already exists');
+      console.log('Skipping admin seed user because SEED_ADMIN_EMAIL or SEED_ADMIN_PASSWORD is not set');
     }
 
     console.log('Seeding complete!');

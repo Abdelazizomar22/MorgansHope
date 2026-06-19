@@ -13,7 +13,7 @@ const router = Router();
  *     summary: Get paginated list of oncology hospitals
  *     description: Filter by city, type, specialization, or free-text search. Returns hospitals sorted by rating.
  *     security:
- *       - BearerAuth: []
+ *       - SessionCookieAuth: []
  *     parameters:
  *       - in: query
  *         name: city
@@ -61,7 +61,7 @@ router.get('/',        authenticate, getAll);
  *     tags: [Hospitals]
  *     summary: Get list of cities with hospitals
  *     security:
- *       - BearerAuth: []
+ *       - SessionCookieAuth: []
  *     responses:
  *       200:
  *         description: Cities retrieved
@@ -85,7 +85,7 @@ router.get('/cities',  authenticate, getCities);
  *     tags: [Hospitals]
  *     summary: Get a single hospital by ID
  *     security:
- *       - BearerAuth: []
+ *       - SessionCookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id

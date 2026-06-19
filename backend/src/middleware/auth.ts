@@ -2,33 +2,53 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import { asyncHandler } from '../utils/asyncHandler';
+import { env } from '../config/env';
+import { isSessionActive } from '../application/auth/sessionService';
+import { ACCESS_COOKIE } from '../config/authCookies';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'changeme_min32chars_xxxxxxxxxxxxxxxxxx';
-const REFRESH_SECRET = process.env.REFRESH_SECRET || `${JWT_SECRET}_refresh`;
+const JWT_SECRET = env.jwtSecret;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is required.');
+}
 
 export interface AuthRequest extends Request {
   user?: InstanceType<typeof User>;
   requestId?: string;
 }
 
-// ── Authenticate (Bearer access token) ───────────────────────────────────────
 export const authenticate = asyncHandler(async (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const header = req.headers.authorization;
-  if (!header?.startsWith('Bearer ')) {
-    res.status(401).json({ success: false, message: 'No token provided' });
+  const token = header?.startsWith('Bearer ') ? header.slice(7) : req.cookies?.[ACCESS_COOKIE];
+
+  if (!token) {
+    res.status(401).json({ success: false, message: 'Authentication required.' });
     return;
   }
 
-  const token = header.slice(7);
-  const payload = jwt.verify(token, JWT_SECRET) as { id: number };
+  const payload = jwt.verify(token, JWT_SECRET, {
+    issuer: 'morgans-hope',
+    audience: 'morgans-hope-web',
+  }) as unknown as { sub?: number | string; sid?: string; id?: number };
 
-  const user = await User.findOne({ where: { id: payload.id, isActive: true } });
+  const userId = Number(payload.sub || payload.id);
+  if (!userId || Number.isNaN(userId)) {
+    res.status(401).json({ success: false, message: 'Authentication token is invalid.' });
+    return;
+  }
+
+  if (payload.sid && !(await isSessionActive(payload.sid, userId))) {
+    res.status(401).json({ success: false, message: 'Session is no longer active.' });
+    return;
+  }
+
+  const user = await User.findOne({ where: { id: userId, isActive: true } });
   if (!user) {
-    res.status(401).json({ success: false, message: 'User not found or inactive' });
+    res.status(401).json({ success: false, message: 'User not found or inactive.' });
     return;
   }
 
@@ -36,28 +56,20 @@ export const authenticate = asyncHandler(async (
   next();
 }) as unknown as (req: AuthRequest, res: Response, next: NextFunction) => void;
 
-// ── Require Role ──────────────────────────────────────────────────────────────
 export function requireRole(...roles: Array<'admin' | 'user'>) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      res.status(401).json({ success: false, message: 'Not authenticated' });
+      res.status(401).json({ success: false, message: 'Not authenticated.' });
       return;
     }
+
     if (!roles.includes(req.user.role)) {
-      res.status(403).json({ success: false, message: 'Insufficient permissions' });
+      res.status(403).json({ success: false, message: 'Insufficient permissions.' });
       return;
     }
+
     next();
   };
 }
 
-// ── Verify Refresh Token (from HttpOnly cookie) ───────────────────────────────
-export async function verifyRefreshToken(token: string): Promise<{ id: number } | null> {
-  try {
-    return jwt.verify(token, REFRESH_SECRET) as { id: number };
-  } catch {
-    return null;
-  }
-}
-
-export { JWT_SECRET, REFRESH_SECRET };
+export { JWT_SECRET };
