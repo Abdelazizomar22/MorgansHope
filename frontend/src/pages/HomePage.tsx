@@ -77,9 +77,10 @@ export default function HomePage({ lang }: HomePageProps) {
   const gridCols = isMobile ? 2 : isTablet ? 3 : 6;
 
   const COVERAGE_ITEMS = [
-    { en: 'Lung Cancer (CT)', ar: 'سرطان الرئة (CT)', desc_en: 'AI classification of lung nodules and cancer.', desc_ar: 'تصنيف بالذكاء الاصطناعي للعقيدات الرئوية والسرطان.', tag: 'CT', status: 'available' },
-    { en: 'Pulmonary Infection', ar: 'عدوى رئوية', desc_en: 'Detection of infections and consolidations.', desc_ar: 'كشف العدوى والتماسكات الرئوية.', tag: 'X-Ray', status: 'available' },
-    { en: 'Pleural Diseases', ar: 'أمراض الغشاء البلوري', desc_en: 'Effusion, pneumothorax, and pleural abnormalities.', desc_ar: 'الانصباب الجنبي، استرواح الصدر، وتشوهات الغشاء البلوري.', tag: 'X-Ray', status: 'available' },
+    { en: 'Lung Cancer Detection', ar: 'اكتشاف سرطان الرئة', desc_en: 'AI-assisted CT screening for lung cancer-related findings, nodule presence, and malignant-suspicious patterns.', desc_ar: 'فحص CT بمساعدة الذكاء الاصطناعي لنتائج سرطان الرئة ووجود العقيدات والأنماط المشبوهة بالخبث.', tag: 'CT', status: 'available' },
+    { en: 'Tuberculosis Screening', ar: 'فحص السل', desc_en: 'AI-assisted Chest X-Ray screening support for TB-related lung patterns.', desc_ar: 'دعم فحص الأشعة السينية للصدر بمساعدة الذكاء الاصطناعي لأنماط الرئة المرتبطة بالسل.', tag: 'X-Ray', status: 'available' },
+    { en: 'Pulmonary Infection', ar: 'عدوى رئوية', desc_en: 'Screens for infection-related Chest X-Ray patterns such as pneumonia, consolidation, and infiltration.', desc_ar: 'يفحص أنماط الأشعة السينية للصدر المرتبطة بالعدوى مثل الالتهاب الرئوي والتماسك والتسلل.', tag: 'X-Ray', status: 'available' },
+    { en: 'Pleural Diseases', ar: 'أمراض الغشاء البلوري', desc_en: 'Screens for pleural abnormalities such as effusion, pneumothorax, and pleural thickening.', desc_ar: 'يفحص تشوهات الغشاء البلوري مثل الانصباب واسترواح الصدر وسماكة الغشاء البلوري.', tag: 'X-Ray', status: 'available' },
     { en: 'COPD-related Findings', ar: 'نتائج مرتبطة بالانسداد الرئوي المزمن', desc_en: 'Emphysema, hyperinflation, and airway changes.', desc_ar: 'النُفاخ الرئوي وفرط الانتفاخ وتغيرات المجاري الهوائية.', tag: 'CT / X-Ray', status: 'soon' },
     { en: 'Fibrotic Lung Disease', ar: 'مرض التليف الرئوي', desc_en: 'ILD patterns and pulmonary fibrosis.', desc_ar: 'أنماط أمراض الرئة الخلالية والتليف الرئوي.', tag: 'CT / X-Ray', status: 'soon' },
     { en: 'Cardiac Conditions', ar: 'حالات قلبية', desc_en: 'Cardiomegaly and related cardiac findings.', desc_ar: 'تضخم القلب والنتائج القلبية ذات الصلة.', tag: 'X-Ray', status: 'soon' },
@@ -94,7 +95,7 @@ export default function HomePage({ lang }: HomePageProps) {
         <div id='hero' className='flex flex-col justify-between'>
           <section style={{ backgroundImage: `url('images/home/hero-background.png')`, backgroundPosition: "center", backgroundSize: "cover", color: 'var(--text-main)', padding: isMobile ? '60px 16px' : '60px 40px', position: 'relative', overflow: 'hidden'}}>
 
-            <div style={{ position: 'relative', maxWidth: 400, zIndex: 10 }}>
+            <div style={{ position: 'relative', maxWidth: 400, zIndex: 10, marginRight: 'auto' }}>
               <MotionFade direction="up" delay={0.1}>
                 <div style={{ transform: isMobile ? 'translateY(4px)' : 'translateY(12px)' }}>
                 <h1 style={{ color: 'var(--primary)', fontSize: 'clamp(2.15rem, 7vw, 3rem)', fontWeight: 700, margin: '0 0 12px', lineHeight: 1.12, letterSpacing: -1 }}>
@@ -469,9 +470,9 @@ export default function HomePage({ lang }: HomePageProps) {
           </div>
         </div>
 
-        {/* Section 7 — Trusted by Innovators */}
-        <div style={{ background: 'var(--card-bg)', padding: isMobile ? '40px 24px' : '80px 60px' }}>
-          <div className='border border-border rounded-2xl p-6' style={{ margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '350px 1fr', gap: isMobile ? 32 : 60, alignItems: 'center' }}>
+				{/* Section 7 — Trusted by Innovators */}
+        <div style={{ backgroundImage: "url('/images/common/flowers-2.jpeg')", backgroundSize: 'contain', padding: isMobile ? '40px 24px' : '80px 60px' }}>
+          <div className='border border-primary rounded-2xl p-6 bg-card' style={{ margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '350px 1fr', gap: isMobile ? 32 : 60, alignItems: 'center' }}>
             <MotionFade direction="up" delay={0.15}>
               <div style={{ textAlign: ar ? 'right' : 'left' }}>
                 <h2 style={{ fontSize: isMobile ? 26 : 30, fontWeight: 700, color: 'var(--primary)', margin: '0 0 12px' }}>
@@ -488,12 +489,17 @@ export default function HomePage({ lang }: HomePageProps) {
                   { number: '100+', label: t('Hospitals & Partners', 'مستشفى وشريك') },
                   { number: '4,500+', label: t('Scans Analyzed', 'فحص تم تحليله') },
                   { number: '150+', label: t('Researchers & Doctors', 'باحث وطبيب') },
-                ].map((item) => (
-                  <div key={item.label} className='flex flex-col gap-4' style={{ background: 'var(--bg-main)', border: '1px solid var(--card-border)', borderRadius: 18, padding: '24px', textAlign: 'center', boxShadow: '0 4px 16px var(--shadow-main)' }}>
-                    <div style={{ fontSize: 30, fontWeight: 900, color: 'var(--primary-dark)', lineHeight: 1 }}>{item.number}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{item.label}</div>
-                  </div>
-                ))}
+                ].map((item, index) => {
+                  const CURRENT_IMAGE = CARDS_IMAGES[index];
+                  return (
+                    <div key={item.label} style={{ backgroundImage: `url(${CURRENT_IMAGE})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 18, padding: '24px', textAlign: 'center', boxShadow: '0 4px 16px var(--shadow-main)', position: 'relative', overflow: 'hidden' }}>
+                      <div className='flex flex-col gap-4' style={{ position: 'relative', zIndex: 1 }}>
+                        <div style={{ fontSize: 30, fontWeight: 900, color: 'white', lineHeight: 1 }}>{item.number}</div>
+                        <div style={{ fontSize: 11, color: '#ddd', fontWeight: 600 }}>{item.label}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </MotionFade>
           </div>
