@@ -72,7 +72,7 @@ api.interceptors.response.use(
     const original = error.config as typeof error.config & { _retry?: boolean };
     const status = error.response?.status;
     const url = String(original?.url || '');
-    const isAuthEndpoint = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/csrf'].some((segment) => url.includes(segment));
+    const isAuthEndpoint = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/csrf', '/auth/me'].some((segment) => url.includes(segment));
 
     if (status === 403 && error.response?.data?.message?.includes('CSRF')) {
       csrfToken = null;
@@ -95,10 +95,12 @@ api.interceptors.response.use(
         });
         processQueue();
         return api(original);
-      } catch (refreshError) {
+      } catch (refreshError: unknown) {
         processQueue(refreshError);
         csrfToken = null;
-        window.dispatchEvent(new CustomEvent('auth:logout'));
+        if (!axios.isAxiosError(refreshError) || refreshError.response?.status !== 401) {
+          window.dispatchEvent(new CustomEvent('auth:logout'));
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
