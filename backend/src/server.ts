@@ -4,7 +4,6 @@ dotenv.config();
 import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
-import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import axios from 'axios';
@@ -16,6 +15,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerConfig from './config/swagger';
 import { env, isProduction, validateEnvironment } from './config/env';
 import { csrfProtection } from './middleware/csrf';
+import { parseCookies } from './middleware/cookies';
 import { distributedRateLimit } from './middleware/distributedRateLimit';
 import { requestContext } from './middleware/requestContext';
 import { initializeSentry, captureException } from './infrastructure/observability/sentry';
@@ -107,7 +107,7 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 app.use(compression());
-app.use(cookieParser());
+app.use(parseCookies);
 app.use(csrfProtection);
 app.use(passport.initialize());
 app.use(requestContext);

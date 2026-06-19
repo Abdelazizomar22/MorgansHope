@@ -109,6 +109,21 @@ export default function UploadPage({ lang }: UploadPageProps) {
     );
   };
 
+  const createSafePreview = async (file: File) => {
+    const bitmap = await createImageBitmap(file);
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Image preview is unavailable.');
+      context.drawImage(bitmap, 0, 0);
+      return canvas.toDataURL('image/jpeg', 0.85);
+    } finally {
+      bitmap.close();
+    }
+  };
+
   const handleFiles = async (newFiles: FileList | null) => {
     if (!ensureServiceAccess()) return;
     if (!newFiles) return;
@@ -141,7 +156,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
       try {
         await analysisApi.validate(file, scanType);
         acceptedFiles.push(file);
-        acceptedPreviews.push(URL.createObjectURL(file));
+        acceptedPreviews.push(await createSafePreview(file));
       } catch (err: any) {
         errorMsg = err?.response?.data?.message
           || t(
