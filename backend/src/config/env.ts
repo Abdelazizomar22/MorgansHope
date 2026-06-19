@@ -1,6 +1,11 @@
 const requiredInProduction = [
   'JWT_SECRET',
   'REFRESH_SECRET',
+  'OTP_PEPPER',
+  'SMTP_HOST',
+  'SMTP_USER',
+  'SMTP_PASS',
+  'SMTP_FROM',
 ] as const;
 
 const read = (name: string, fallback = '') => (process.env[name] || fallback).trim();
@@ -22,6 +27,7 @@ export const env = {
     .filter(Boolean),
   jwtSecret: read('JWT_SECRET'),
   refreshSecret: read('REFRESH_SECRET'),
+  otpPepper: read('OTP_PEPPER'),
   csrfSecret: read('CSRF_SECRET'),
   cookieDomain: read('COOKIE_DOMAIN') || undefined,
   databaseUrl: read('DATABASE_URL'),
@@ -40,6 +46,12 @@ export const env = {
   aiInternalToken: read('AI_INTERNAL_TOKEN'),
   turnstileSecret: read('TURNSTILE_SECRET_KEY'),
   contactEmail: read('CONTACT_EMAIL', 'morganshope40@gmail.com'),
+  smtpHost: read('SMTP_HOST'),
+  smtpPort: Number(read('SMTP_PORT', '587')),
+  smtpSecure: read('SMTP_SECURE') === 'true',
+  smtpUser: read('SMTP_USER'),
+  smtpPass: read('SMTP_PASS'),
+  smtpFrom: read('SMTP_FROM'),
   enableAsyncAnalysis: read('ENABLE_ASYNC_ANALYSIS') === 'true',
   enableDistributedRateLimit: read('ENABLE_DISTRIBUTED_RATE_LIMIT') === 'true',
   enableSentry: read('ENABLE_SENTRY') !== 'false',
@@ -56,6 +68,7 @@ export function validateEnvironment() {
   const unsafeSecrets = [
     ['JWT_SECRET', env.jwtSecret],
     ['REFRESH_SECRET', env.refreshSecret],
+    ['OTP_PEPPER', env.otpPepper],
   ].filter(([, value]) => value.length < 32 || /change|example|secret/i.test(value));
 
   if (missing.length || unsafeSecrets.length || (!hasDatabaseUrl && !hasDbParts)) {

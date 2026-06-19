@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   HiBuildingOffice,
   HiCalendarDays,
@@ -21,6 +22,7 @@ const mapsKey =
   import.meta.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
   import.meta.env.VITE_GOOGLE_MAPS_API_KEY ||
   '';
+const mapTilerKey = import.meta.env.VITE_MAPTILER_API_KEY || '';
 
 const formatReviews = (value: number) => value.toLocaleString('en-US');
 
@@ -30,6 +32,11 @@ const toMapUrl = (hospital: Hospital) =>
 const toStaticMapUrl = (hospital: Hospital) => {
   const { lat, lng } = hospital.coordinates;
   return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=15&size=200x120&markers=color:green%7C${lat},${lng}&key=${mapsKey}`;
+};
+
+const toMapTilerUrl = (hospital: Hospital) => {
+  const { lat, lng } = hospital.coordinates;
+  return `https://api.maptiler.com/maps/streets-v2/static/${lng},${lat},15/400x240.png?markers=${lng},${lat}&key=${encodeURIComponent(mapTilerKey)}`;
 };
 
 const toOsmEmbedUrl = (hospital: Hospital) => {
@@ -67,6 +74,7 @@ function Stars({ value }: { value: number }) {
 }
 
 export default function HospitalCard({ hospital, lang, open, onToggleAbout }: HospitalCardProps) {
+  const [mapImageFailed, setMapImageFailed] = useState(false);
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
   const hospitalName = ar ? hospital.hospitalNameAr : hospital.hospitalName;
@@ -124,12 +132,13 @@ export default function HospitalCard({ hospital, lang, open, onToggleAbout }: Ho
           rel="noopener noreferrer"
           className="group block overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
         >
-          {mapsKey ? (
+          {(mapTilerKey || mapsKey) && !mapImageFailed ? (
             <img
-              src={toStaticMapUrl(hospital)}
+              src={mapTilerKey ? toMapTilerUrl(hospital) : toStaticMapUrl(hospital)}
               alt={`${hospital.hospitalName} map`}
               className="h-[120px] w-full object-cover transition duration-200 group-hover:scale-105"
               loading="lazy"
+              onError={() => setMapImageFailed(true)}
             />
           ) : (
             <iframe

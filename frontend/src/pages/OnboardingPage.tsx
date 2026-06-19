@@ -23,6 +23,7 @@ export default function OnboardingPage() {
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationNotice, setVerificationNotice] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
+  const [resendAvailableIn, setResendAvailableIn] = useState(0);
 
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => (ar ? arText : en);
@@ -34,9 +35,18 @@ export default function OnboardingPage() {
     if (storedNotice) {
       setVerificationNotice(storedNotice);
       setIsCodeSent(true);
+      setResendAvailableIn(60);
       sessionStorage.removeItem(VERIFICATION_NOTICE_KEY);
     }
   }, []);
+
+  useEffect(() => {
+    if (resendAvailableIn <= 0) return undefined;
+    const timer = window.setInterval(() => {
+      setResendAvailableIn((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendAvailableIn]);
 
   const bind = (key: string) => ({
     value: (form as Record<string, string>)[key],
@@ -79,6 +89,7 @@ export default function OnboardingPage() {
     try {
       const response = await authApi.resendVerification('email');
       setIsCodeSent(true);
+      setResendAvailableIn(60);
       setVerificationNotice(
         response.data.data?.devCode
           ? `Verification code sent to ${emailTarget}. Dev code: ${response.data.data.devCode}`
@@ -229,7 +240,7 @@ export default function OnboardingPage() {
                   </h3>
                   <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.6 }}>
                     {t(
-                      `Enter the 6-digit code sent to ${emailTarget} to activate your account and continue.`,
+                      `Enter the 6-digit code sent to ${emailTarget}. It expires in 5 minutes.`,
                       `أدخل الكود المكون من 6 أرقام المرسل إلى ${emailTarget} لتفعيل حسابك والمتابعة.`,
                     )}
                   </p>
@@ -245,10 +256,14 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={handleSendEmailCode}
-                disabled={verificationLoading}
-                style={{ width: '100%', minHeight: 44, border: '1.5px solid var(--primary)', borderRadius: 14, background: 'rgba(var(--primary-rgb),0.08)', color: 'var(--primary)', fontWeight: 850, cursor: verificationLoading ? 'default' : 'pointer', opacity: verificationLoading ? 0.7 : 1, fontFamily: 'inherit', marginBottom: 10 }}
+                disabled={verificationLoading || resendAvailableIn > 0}
+                style={{ width: '100%', minHeight: 44, border: '1.5px solid var(--primary)', borderRadius: 14, background: 'rgba(var(--primary-rgb),0.08)', color: 'var(--primary)', fontWeight: 850, cursor: verificationLoading || resendAvailableIn > 0 ? 'default' : 'pointer', opacity: verificationLoading || resendAvailableIn > 0 ? 0.7 : 1, fontFamily: 'inherit', marginBottom: 10 }}
               >
-                {isCodeSent ? t('Resend verification code', 'إعادة إرسال كود التحقق') : t('Send verification code', 'إرسال كود التحقق')}
+                {resendAvailableIn > 0
+                  ? `Resend in ${resendAvailableIn}s`
+                  : isCodeSent
+                    ? t('Resend verification code', 'إعادة إرسال كود التحقق')
+                    : t('Send verification code', 'إرسال كود التحقق')}
               </button>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 }}>
@@ -257,6 +272,7 @@ export default function OnboardingPage() {
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   onKeyDown={(e) => e.key === 'Enter' && handleVerifyEmail()}
                   inputMode="numeric"
+                  autoComplete="one-time-code"
                   placeholder="123456"
                   style={{ ...inputStyle, letterSpacing: '0.22em', fontWeight: 800, textAlign: 'center' }}
                 />
