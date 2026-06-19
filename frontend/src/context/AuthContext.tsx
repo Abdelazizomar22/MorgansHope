@@ -52,22 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const bootstrapAuth = async () => {
       try {
         await ensureCsrfToken();
-
-        try {
-          const meResponse = await authApi.me();
-          if (!active) return;
-          setUser(meResponse.data.data ?? null);
-        } catch {
-          try {
-            await authApi.refresh();
-            const meResponse = await authApi.me();
-            if (!active) return;
-            setUser(meResponse.data.data ?? null);
-          } catch {
-            if (!active) return;
-            setUser(null);
-          }
-        }
+        const sessionResponse = await authApi.bootstrap();
+        if (!active) return;
+        setUser(sessionResponse.data.data ?? null);
       } finally {
         if (active) setLoading(false);
       }

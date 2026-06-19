@@ -72,7 +72,7 @@ api.interceptors.response.use(
     const original = error.config as typeof error.config & { _retry?: boolean };
     const status = error.response?.status;
     const url = String(original?.url || '');
-    const isAuthEndpoint = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/csrf', '/auth/me'].some((segment) => url.includes(segment));
+    const isAuthEndpoint = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/csrf', '/auth/me', '/auth/bootstrap'].some((segment) => url.includes(segment));
 
     if (status === 403 && error.response?.data?.message?.includes('CSRF')) {
       csrfToken = null;
@@ -135,6 +135,8 @@ export const authApi = {
   logout: () => api.post<ApiResponse>('/auth/logout'),
 
   refresh: () => api.post<ApiResponse<{ user: SafeUser }>>('/auth/refresh'),
+
+  bootstrap: () => api.get<ApiResponse<SafeUser | null>>('/auth/bootstrap'),
 
   me: () => api.get<ApiResponse<SafeUser>>('/auth/me'),
 
