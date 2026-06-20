@@ -18,6 +18,37 @@ const trimTrailingSlashes = (value: string) => {
   return value.slice(0, end);
 };
 
+const cleanServiceUrl = (value: string) => {
+  let normalized = value.trim();
+  if (
+    normalized.length >= 2
+    && ((normalized.startsWith('"') && normalized.endsWith('"'))
+      || (normalized.startsWith("'") && normalized.endsWith("'")))
+  ) {
+    normalized = normalized.slice(1, -1);
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    const path = parsed.pathname.replace(/\/+$/, '');
+    const suffixes = ['/predict/xray', '/predict', '/detect', '/health', '/'];
+    const matched = suffixes.find((suffix) => path.endsWith(suffix) && path !== suffix);
+    if (matched) {
+      parsed.pathname = path.slice(0, -matched.length) || '/';
+    } else {
+      parsed.pathname = path || '/';
+    }
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    while (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+    return normalized;
+  }
+};
+
+const readServiceUrl = (name: string, fallback = '', unifiedFallback = '') => cleanServiceUrl(read(name, unifiedFallback || fallback));
+
 export const env = {
   nodeEnv: read('NODE_ENV', 'development'),
   frontendUrl: trimTrailingSlashes(read('FRONTEND_URL', 'http://localhost:3001')),
@@ -45,6 +76,11 @@ export const env = {
   qstashWorkerUrl: read('QSTASH_WORKER_URL'),
   sentryDsn: read('SENTRY_DSN'),
   aiInternalToken: read('AI_INTERNAL_TOKEN'),
+  aiServicesUrl: cleanServiceUrl(read('AI_SERVICES_URL')),
+  ctServiceUrl: readServiceUrl('CT_SERVICE_URL', 'http://localhost:8000', read('AI_SERVICES_URL')),
+  xrayServiceUrl: readServiceUrl('XRAY_SERVICE_URL', 'http://localhost:8001', read('AI_SERVICES_URL')),
+  gateServiceUrl: readServiceUrl('GATE_SERVICE_URL', '', read('AI_SERVICES_URL')),
+  noduleServiceUrl: readServiceUrl('NODULE_SERVICE_URL', '', read('AI_SERVICES_URL')),
   turnstileSecret: read('TURNSTILE_SECRET_KEY'),
   contactEmail: read('CONTACT_EMAIL', 'morganshope40@gmail.com'),
   smtpHost: read('SMTP_HOST'),

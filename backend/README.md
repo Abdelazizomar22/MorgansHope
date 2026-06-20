@@ -8,16 +8,15 @@ Node.js + Express + TypeScript + Sequelize. Runs on port `3000`.
 2. Set the values you need:
    - `USE_SQLITE=1` for local SQLite development
    - or external DB credentials if you do not want SQLite
-   - `CT_SERVICE_URL`
-   - `XRAY_SERVICE_URL`
-   - `GATE_SERVICE_URL`
-   - `NODULE_SERVICE_URL`
+   - `AI_SERVICES_URL` for the combined HF Space
+   - optionally override `CT_SERVICE_URL`, `XRAY_SERVICE_URL`, `GATE_SERVICE_URL`, or `NODULE_SERVICE_URL`
    - `GEMINI_API_KEY`
    - `FRONTEND_URL` for production CORS
 
-Current deployed AI base URL for gate + X-ray + nodule:
+Current deployed AI base URL for the combined space:
 
 ```env
+AI_SERVICES_URL=https://abooz65-morgans-hope-ai-services.hf.space
 XRAY_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
 GATE_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
 NODULE_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
