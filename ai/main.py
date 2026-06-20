@@ -1,25 +1,31 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
-import os
+from importlib import import_module
 import logging
+import os
 
-from ct_service.main import health as ct_health, predict as ct_predict, get_model as get_ct_model
-from gate_service.main import health as gate_health, predict as gate_predict, get_model as get_gate_model
-from xray_service.main import (
-    health as xray_health,
-    predict_xray,
-    get_xray_model,
-    get_xray_config,
-    get_tb_model,
-    get_tb_localizer,
-)
-from nodule_service.main import health as nodule_health, detect as nodule_detect, get_model as get_nodule_model
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("morgans_hope_ai")
 
 app = FastAPI(title="Morgan's Hope AI Services", version="1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+def _ct():
+    return import_module("ct_service.main")
+
+
+def _gate():
+    return import_module("gate_service.main")
+
+
+def _xray():
+    return import_module("xray_service.main")
+
+
+def _nodule():
+    return import_module("nodule_service.main")
 
 
 @app.on_event("startup")
@@ -30,13 +36,13 @@ async def startup():
         return
 
     loaders = [
-        ("ct", get_ct_model),
-        ("gate", get_gate_model),
-        ("xray", get_xray_model),
-        ("xray_config", get_xray_config),
-        ("tb", get_tb_model),
-        ("tb_localizer", get_tb_localizer),
-        ("nodule", get_nodule_model),
+        ("ct", _ct().get_model),
+        ("gate", _gate().get_model),
+        ("xray", _xray().get_xray_model),
+        ("xray_config", _xray().get_xray_config),
+        ("tb", _xray().get_tb_model),
+        ("tb_localizer", _xray().get_tb_localizer),
+        ("nodule", _nodule().get_model),
     ]
     for name, loader in loaders:
         try:
@@ -63,30 +69,26 @@ async def root():
 
 @app.get("/health")
 async def health():
-    ct = ct_health()
-    gate = gate_health()
-    xray = xray_health()
-    nodule = nodule_health()
     return {
         "status": "ok",
         "service": "Morgan's Hope AI Services",
-        "ct": ct,
-        "gate": gate,
-        "xray": xray,
-        "nodule": nodule,
+        "ct": _ct().health(),
+        "gate": _gate().health(),
+        "xray": _xray().health(),
+        "nodule": _nodule().health(),
     }
 
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    return await ct_predict(file)
+    return await _ct().predict(file)
 
 
 @app.post("/predict/xray")
 async def predict_xray_route(file: UploadFile = File(...)):
-    return await predict_xray(file)
+    return await _xray().predict_xray(file)
 
 
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
-    return await nodule_detect(file)
+    return await _nodule().detect(file)
