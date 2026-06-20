@@ -523,6 +523,11 @@ export async function uploadAndAnalyze(input: UploadInput): Promise<Result<Uploa
     return Err('imageType must be "xray" or "ct"');
   }
 
+  if (env.nodeEnv === 'production') {
+    safeUnlinkUploadedFile(input.filePath);
+    return Err('Direct analysis upload is disabled in production. Use signed upload and queued analysis.');
+  }
+
   const record = await AnalysisResult.create({
     userId: input.userId,
     sessionId: input.sessionId,
@@ -620,6 +625,10 @@ export async function submitAnalysis(userId: number, analysisId: number): Promis
     }, 'analysis_job_queued');
     await enqueueAnalysis(job.id, analysis.id);
     return Ok({ analysisId: analysis.id, jobId: job.id, status: 'queued' });
+  }
+
+  if (env.nodeEnv === 'production') {
+    return Err('Async analysis is not configured. Set QSTASH_TOKEN, QSTASH_CURRENT_SIGNING_KEY, QSTASH_NEXT_SIGNING_KEY, and QSTASH_WORKER_URL.');
   }
 
   await processAnalysisJob(job.id);
