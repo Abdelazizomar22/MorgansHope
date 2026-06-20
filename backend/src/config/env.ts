@@ -30,6 +30,15 @@ const cleanServiceUrl = (value: string) => {
 
   try {
     const parsed = new URL(normalized);
+    const spaceMatch = parsed.hostname === 'huggingface.co'
+      ? parsed.pathname.match(/^\/spaces\/([^/]+)\/([^/]+)/)
+      : null;
+
+    if (spaceMatch) {
+      const [, owner, space] = spaceMatch;
+      return `https://${owner}-${space}`.toLowerCase() + '.hf.space';
+    }
+
     const path = parsed.pathname.replace(/\/+$/, '');
     const suffixes = ['/predict/xray', '/predict', '/detect', '/health', '/'];
     const matched = suffixes.find((suffix) => path.endsWith(suffix) && path !== suffix);
