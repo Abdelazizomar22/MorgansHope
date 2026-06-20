@@ -65,6 +65,7 @@ const NODULE_URL = env.noduleServiceUrl;
 
 type UrgencyLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 type GateClassification = 'Chest_XRay' | 'Chest_CT' | 'Other_Medical' | 'Non_Medical';
+const gateClassifications: GateClassification[] = ['Chest_XRay', 'Chest_CT', 'Other_Medical', 'Non_Medical'];
 
 interface GateResult {
   classification: GateClassification;
@@ -160,20 +161,32 @@ function createTempFilePath(analysisId: number, filename: string) {
   return path.join(os.tmpdir(), `morgans-hope-${analysisId}-${Date.now()}-${sanitizeFilename(filename)}`);
 }
 
+function fallbackGateResult(imageType: 'xray' | 'ct'): GateResult {
+  return {
+    classification: imageType === 'ct' ? 'Chest_CT' : 'Chest_XRay',
+    confidence: null,
+    routedImageType: imageType,
+    rejectedMessage: null,
+  };
+}
+
+function isGateClassification(value: unknown): value is GateClassification {
+  return typeof value === 'string' && gateClassifications.includes(value as GateClassification);
+}
+
 async function runGate(input: UploadInput): Promise<GateResult> {
   if (!GATE_URL) {
-    return {
-      classification: input.imageType === 'ct' ? 'Chest_CT' : 'Chest_XRay',
-      confidence: null,
-      routedImageType: input.imageType,
-      rejectedMessage: null,
-    };
+    return fallbackGateResult(input.imageType);
   }
 
   try {
     const response = await postScanToAi('gate', GATE_URL, '/predict', input, 120_000);
 
-    const classification = response.data?.classification as GateClassification;
+    const classification = response.data?.classification;
+    if (!isGateClassification(classification)) {
+      throw new Error('Gate response did not include a valid classification.');
+    }
+
     const confidence = response.data?.confidence === undefined ? null : asNumber(response.data.confidence, 0);
 
     if (classification === 'Chest_XRay') {
@@ -208,12 +221,7 @@ async function runGate(input: UploadInput): Promise<GateResult> {
       'gate_unavailable_falling_back_to_selected_image_type',
     );
 
-    return {
-      classification: input.imageType === 'ct' ? 'Chest_CT' : 'Chest_XRay',
-      confidence: null,
-      routedImageType: input.imageType,
-      rejectedMessage: null,
-    };
+    return fallbackGateResult(input.imageType);
   }
 }
 
