@@ -18,7 +18,7 @@ Morgan's Hope runs the AI pipeline as HTTP services. The Node.js backend can cal
 | --- | --- | --- | --- | --- |
 | CT classifier | `ct_service` | `8000` | `POST /predict` | Existing EfficientNet-B3 CT cancer classifier kept unchanged |
 | CXR classifier | `xray_service` | `8001` | `POST /predict/xray` | 7-class Chest X-Ray clinical groups classifier plus TB decision layer and optional TB localization |
-| Pre-classification gate | `gate_service` | `8002` | `POST /predict` | EfficientNet-B0 routing: Chest X-Ray, Chest CT, Other Medical, Non Medical |
+| Pre-classification gate | `gate_service` | `8002` | `POST /predict/gate` | EfficientNet-B0 routing: Chest X-Ray, Chest CT, Other Medical, Non Medical |
 | CT nodule detector | `nodule_service` | `8003` | `POST /detect` | YOLO nodule localization after positive CT classifier output |
 
 ## Local Run
@@ -32,7 +32,7 @@ docker compose up --build
 Then configure the backend:
 
 ```env
-AI_SERVICES_URL=https://abooz65-morgans-hope-ai-services.hf.space
+AI_SERVICES_URL=https://abdelaziz405-morgans-hope-ai-services.hf.space
 # Optional overrides if you split services again later:
 CT_SERVICE_URL=
 XRAY_SERVICE_URL=
