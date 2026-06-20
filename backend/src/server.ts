@@ -195,13 +195,35 @@ app.use(
 const checkRemoteService = async (url: string): Promise<string> => {
   try {
     await axios.get(`${url}/health`, {
-      timeout: 3000,
+      timeout: 15000,
       headers: env.aiInternalToken ? { 'x-ai-internal-token': env.aiInternalToken } : undefined,
     });
     return 'online';
   } catch {
     return 'offline';
   }
+};
+
+const checkAiServices = async () => {
+  const urls = {
+    ctService: env.ctServiceUrl,
+    xrayService: env.xrayServiceUrl,
+    gateService: env.gateServiceUrl,
+    noduleService: env.noduleServiceUrl,
+  };
+  const uniqueUrls = Array.from(new Set(Object.values(urls).filter(Boolean)));
+  const statuses = new Map<string, string>();
+
+  await Promise.all(uniqueUrls.map(async (url) => {
+    statuses.set(url, await checkRemoteService(url));
+  }));
+
+  return {
+    ctService: urls.ctService ? statuses.get(urls.ctService) || 'offline' : 'not_configured',
+    xrayService: urls.xrayService ? statuses.get(urls.xrayService) || 'offline' : 'not_configured',
+    gateService: urls.gateService ? statuses.get(urls.gateService) || 'offline' : 'not_configured',
+    noduleService: urls.noduleService ? statuses.get(urls.noduleService) || 'offline' : 'not_configured',
+  };
 };
 
 const rootHandler = (_req: express.Request, res: express.Response) => {
@@ -238,12 +260,7 @@ const readyHandler = async (_req: express.Request, res: express.Response) => {
 };
 
 const healthHandler = async (_req: express.Request, res: express.Response) => {
-  const [ctStatus, xrayStatus, gateStatus, noduleStatus] = await Promise.all([
-    env.ctServiceUrl ? checkRemoteService(env.ctServiceUrl) : Promise.resolve('not_configured'),
-    env.xrayServiceUrl ? checkRemoteService(env.xrayServiceUrl) : Promise.resolve('not_configured'),
-    env.gateServiceUrl ? checkRemoteService(env.gateServiceUrl) : Promise.resolve('not_configured'),
-    env.noduleServiceUrl ? checkRemoteService(env.noduleServiceUrl) : Promise.resolve('not_configured'),
-  ]);
+  const aiStatus = await checkAiServices();
 
   let dbStatus = 'offline';
   try {
@@ -259,10 +276,10 @@ const healthHandler = async (_req: express.Request, res: express.Response) => {
       server: 'online',
       database: dbStatus,
       ai: {
-        ctService: ctStatus,
-        xrayService: xrayStatus,
-        gateService: gateStatus,
-        noduleService: noduleStatus,
+        ctService: aiStatus.ctService,
+        xrayService: aiStatus.xrayService,
+        gateService: aiStatus.gateService,
+        noduleService: aiStatus.noduleService,
       },
       timestamp: new Date().toISOString(),
     },

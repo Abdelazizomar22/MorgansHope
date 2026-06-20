@@ -47,3 +47,15 @@ export const handleAnalysisJob = asyncHandler(async (req: Request, res: Response
 
   res.json({ success: true, message: 'Analysis job processed.', data: result.data });
 });
+
+export const getAnalysisJobEndpointStatus = asyncHandler(async (_req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Analysis job worker endpoint is available. QStash must call this URL with POST.',
+    data: {
+      qstashConfigured: isQstashConfigured(),
+      workerUrlConfigured: Boolean(env.qstashWorkerUrl),
+      accepts: 'POST',
+    },
+  });
+});

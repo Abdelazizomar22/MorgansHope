@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { handleAnalysisJob } from '../controllers/internalController';
+import { getAnalysisJobEndpointStatus, handleAnalysisJob } from '../controllers/internalController';
 
 const router = Router();
 
+router.get('/jobs/analysis', getAnalysisJobEndpointStatus);
 router.post('/jobs/analysis', handleAnalysisJob);
 
 export default router;
