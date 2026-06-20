@@ -79,7 +79,7 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
         	
         <div className="px-4 lg:px-0 lg:mx-auto space-y-4 sm:w-sm" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
           <div className="flex flex-col space-y-1">
-            <h1 className="font-heading text-2xl font-bold tracking-wide">
+            <h1 className="font-heading mt-10 lg:mt-0 text-2xl font-bold tracking-wide">
               {title}
             </h1>
             <p className="text-muted-foreground text-base">
