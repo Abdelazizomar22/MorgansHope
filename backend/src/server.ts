@@ -58,8 +58,24 @@ const cleanServiceUrl = (value: string) => {
   ) {
     normalized = normalized.slice(1, -1);
   }
-  while (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
-  return normalized;
+
+  try {
+    const parsed = new URL(normalized);
+    const path = parsed.pathname.replace(/\/+$/, '');
+    const suffixes = ['/predict/xray', '/predict', '/detect', '/health', '/'];
+    const matched = suffixes.find((suffix) => path.endsWith(suffix) && path !== suffix);
+    if (matched) {
+      parsed.pathname = path.slice(0, -matched.length) || '/';
+    } else {
+      parsed.pathname = path || '/';
+    }
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    while (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+    return normalized;
+  }
 };
 
 const CT_URL = cleanServiceUrl(process.env.CT_SERVICE_URL || 'http://localhost:8000');
