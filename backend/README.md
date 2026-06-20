@@ -16,10 +16,10 @@ Node.js + Express + TypeScript + Sequelize. Runs on port `3000`.
 Current deployed AI base URL for the combined space:
 
 ```env
-AI_SERVICES_URL=https://abooz65-morgans-hope-ai-services.hf.space
-XRAY_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
-GATE_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
-NODULE_SERVICE_URL=https://abooz65-morgans-hope-ai-services.hf.space
+AI_SERVICES_URL=https://YOUR-HF-SPACE-SLUG.hf.space
+XRAY_SERVICE_URL=https://YOUR-HF-SPACE-SLUG.hf.space
+GATE_SERVICE_URL=https://YOUR-HF-SPACE-SLUG.hf.space
+NODULE_SERVICE_URL=https://YOUR-HF-SPACE-SLUG.hf.space
 ```
 
 Install dependencies and prepare the database:
