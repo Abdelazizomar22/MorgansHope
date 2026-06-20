@@ -360,7 +360,7 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     if (routedImageType === 'ct') {
       let response;
       try {
-        response = await postScanToAi('ct', CT_URL, '/predict', input, 75_000);
+        response = await postScanToAi('ct', CT_URL, '/predict', input, 120_000);
       } catch (err) {
         logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_ct_pipeline_failed');
         return Err('CT service unavailable. Please try again.');
@@ -369,7 +369,7 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     } else {
       let response;
       try {
-        response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 75_000);
+        response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 180_000);
       } catch (err) {
         logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_xray_pipeline_failed');
         return Err('X-Ray service unavailable. Please try again.');
