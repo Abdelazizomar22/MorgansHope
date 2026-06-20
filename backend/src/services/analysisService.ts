@@ -308,12 +308,39 @@ async function fetchRecommendedHospitals(isMalignant: boolean | null) {
   });
 }
 
+const signedImageUrlTimeoutMs = 2_500;
+
+async function createPrivateReadUrlWithTimeout(bucket: string, objectPath: string) {
+  let timeout: NodeJS.Timeout | null = null;
+  try {
+    return await Promise.race([
+      createPrivateReadUrl(bucket, objectPath),
+      new Promise<string>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('Timed out creating signed image URL.')), signedImageUrlTimeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 async function withImageUrl<T extends Record<string, unknown>>(record: T & { storageKey?: string | null; storageBucket?: string | null; imagePath?: string }) {
   if (record.storageKey && record.storageBucket && isSupabaseStorageConfigured()) {
-    return {
-      ...record,
-      imageUrl: await createPrivateReadUrl(record.storageBucket, record.storageKey),
-    };
+    try {
+      return {
+        ...record,
+        imageUrl: await createPrivateReadUrlWithTimeout(record.storageBucket, record.storageKey),
+      };
+    } catch (error) {
+      logger.warn(
+        {
+          error: safeError(error),
+          storageBucket: record.storageBucket,
+          storageKey: record.storageKey,
+        },
+        'analysis_signed_image_url_unavailable',
+      );
+    }
   }
   return record;
 }
