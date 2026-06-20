@@ -170,34 +170,51 @@ async function runGate(input: UploadInput): Promise<GateResult> {
     };
   }
 
-  const response = await postScanToAi('gate', GATE_URL, '/predict', input, 45_000);
+  try {
+    const response = await postScanToAi('gate', GATE_URL, '/predict', input, 45_000);
 
-  const classification = response.data?.classification as GateClassification;
-  const confidence = response.data?.confidence === undefined ? null : asNumber(response.data.confidence, 0);
+    const classification = response.data?.classification as GateClassification;
+    const confidence = response.data?.confidence === undefined ? null : asNumber(response.data.confidence, 0);
 
-  if (classification === 'Chest_XRay') {
-    return { classification, confidence, routedImageType: 'xray', rejectedMessage: null };
-  }
+    if (classification === 'Chest_XRay') {
+      return { classification, confidence, routedImageType: 'xray', rejectedMessage: null };
+    }
 
-  if (classification === 'Chest_CT') {
-    return { classification, confidence, routedImageType: 'ct', rejectedMessage: null };
-  }
+    if (classification === 'Chest_CT') {
+      return { classification, confidence, routedImageType: 'ct', rejectedMessage: null };
+    }
 
-  if (classification === 'Other_Medical') {
+    if (classification === 'Other_Medical') {
+      return {
+        classification,
+        confidence,
+        routedImageType: null,
+        rejectedMessage: 'Image appears to be a non-chest medical scan. Please upload a chest X-ray or CT scan.',
+      };
+    }
+
     return {
-      classification,
+      classification: 'Non_Medical',
       confidence,
       routedImageType: null,
-      rejectedMessage: 'Image appears to be a non-chest medical scan. Please upload a chest X-ray or CT scan.',
+      rejectedMessage: 'Uploaded file does not appear to be a medical image. Please upload a valid chest scan.',
+    };
+  } catch (error) {
+    logger.warn(
+      {
+        error: safeError(error),
+        imageType: input.imageType,
+      },
+      'gate_unavailable_falling_back_to_selected_image_type',
+    );
+
+    return {
+      classification: input.imageType === 'ct' ? 'Chest_CT' : 'Chest_XRay',
+      confidence: null,
+      routedImageType: input.imageType,
+      rejectedMessage: null,
     };
   }
-
-  return {
-    classification: 'Non_Medical',
-    confidence,
-    routedImageType: null,
-    rejectedMessage: 'Uploaded file does not appear to be a medical image. Please upload a valid chest scan.',
-  };
 }
 
 function buildGateValidationMessage(
@@ -800,3 +817,4 @@ export async function deleteAnalysisById(
   await result.destroy();
   return Ok(undefined);
 }
+

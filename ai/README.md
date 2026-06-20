@@ -1,3 +1,13 @@
+---
+title: Morgan's Hope AI Services
+emoji: 🫀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_file: main.py
+pinned: false
+---
+
 # Morgan's Hope AI Services
 
 Morgan's Hope runs the AI pipeline as HTTP services. The Node.js backend can call one combined Hugging Face Space or separate service URLs through environment variables.
