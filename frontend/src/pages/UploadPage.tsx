@@ -203,9 +203,6 @@ export default function UploadPage({ lang }: UploadPageProps) {
       requestAnimationFrame(tick);
     });
 
-  const isSignedUploadUnavailable = (message: string) =>
-    /private storage is not configured|upload intent|signed upload/i.test(message);
-
   const pollAnalysisStatus = async (analysisId: number) => {
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const response = await analysisApi.getStatus(analysisId);
@@ -236,22 +233,6 @@ export default function UploadPage({ lang }: UploadPageProps) {
         'التحليل يستغرق وقتًا أطول من المتوقع. يرجى مراجعة النتائج بعد قليل.',
       ),
     );
-  };
-
-  const processLegacyUpload = async (file: File, sessionId: string) => {
-    setStage(0);
-    await animateProgress(0, 20, 350);
-    setStage(1);
-    await animateProgress(20, 40, 250);
-    setStage(2);
-    await Promise.all([
-      analysisApi.upload(file, scanType, sessionId),
-      animateProgress(40, 85, 2800),
-    ]);
-    setStage(3);
-    await animateProgress(85, 95, 180);
-    setStage(4);
-    await animateProgress(95, 100, 180);
   };
 
   const processSignedUpload = async (file: File, sessionId: string) => {
@@ -315,18 +296,7 @@ export default function UploadPage({ lang }: UploadPageProps) {
       for (let i = 0; i < files.length; i += 1) {
         setCurrentIndex(i);
         setProgress(0);
-
-        try {
-          await processSignedUpload(files[i], sessionId);
-        } catch (err: any) {
-          const message = err?.response?.data?.message || err?.message || '';
-          if (!isSignedUploadUnavailable(message)) {
-            throw err;
-          }
-
-          setProgress(0);
-          await processLegacyUpload(files[i], sessionId);
-        }
+        await processSignedUpload(files[i], sessionId);
       }
 
       setLoading(false);
