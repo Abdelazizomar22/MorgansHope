@@ -171,7 +171,7 @@ async function runGate(input: UploadInput): Promise<GateResult> {
   }
 
   try {
-    const response = await postScanToAi('gate', GATE_URL, '/predict', input, 45_000);
+    const response = await postScanToAi('gate', GATE_URL, '/predict', input, 120_000);
 
     const classification = response.data?.classification as GateClassification;
     const confidence = response.data?.confidence === undefined ? null : asNumber(response.data.confidence, 0);
@@ -245,7 +245,7 @@ async function runNoduleDetection(input: UploadInput) {
 
   let response;
   try {
-    response = await postScanToAi('nodule', NODULE_URL, '/detect', input, 45_000, 1);
+    response = await postScanToAi('nodule', NODULE_URL, '/detect', input, 120_000, 1);
   } catch (error) {
     logger.warn({ error: safeError(error) }, 'optional_nodule_detection_unavailable');
     return null;
@@ -377,7 +377,7 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     if (routedImageType === 'ct') {
       let response;
       try {
-        response = await postScanToAi('ct', CT_URL, '/predict', input, 120_000);
+        response = await postScanToAi('ct', CT_URL, '/predict', input, 300_000);
       } catch (err) {
         logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_ct_pipeline_failed');
         return Err('CT service unavailable. Please try again.');
@@ -386,7 +386,7 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     } else {
       let response;
       try {
-        response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 180_000);
+        response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 300_000);
       } catch (err) {
         logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_xray_pipeline_failed');
         return Err('X-Ray service unavailable. Please try again.');
@@ -817,4 +817,6 @@ export async function deleteAnalysisById(
   await result.destroy();
   return Ok(undefined);
 }
+
+
 
