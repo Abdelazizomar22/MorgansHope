@@ -88,7 +88,7 @@ export const env = {
   aiServicesUrl: cleanServiceUrl(read('AI_SERVICES_URL')),
   ctServiceUrl: readServiceUrl('CT_SERVICE_URL', 'http://localhost:8000', read('AI_SERVICES_URL')),
   xrayServiceUrl: readServiceUrl('XRAY_SERVICE_URL', 'http://localhost:8001', read('AI_SERVICES_URL')),
-  gateServiceUrl: readServiceUrl('GATE_SERVICE_URL', '', read('AI_SERVICES_URL')),
+  gateServiceUrl: readServiceUrl('GATE_SERVICE_URL', ''),
   noduleServiceUrl: readServiceUrl('NODULE_SERVICE_URL', '', read('AI_SERVICES_URL')),
   turnstileSecret: read('TURNSTILE_SECRET_KEY'),
   contactEmail: read('CONTACT_EMAIL', 'morganshope40@gmail.com'),
