@@ -38,8 +38,24 @@ const cleanServiceUrl = (value: string) => {
   ) {
     normalized = normalized.slice(1, -1);
   }
-  while (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
-  return normalized;
+
+  try {
+    const parsed = new URL(normalized);
+    const path = parsed.pathname.replace(/\/+$/, '');
+    const suffixes = ['/predict/xray', '/predict', '/detect', '/health', '/'];
+    const matched = suffixes.find((suffix) => path.endsWith(suffix) && path !== suffix);
+    if (matched) {
+      parsed.pathname = path.slice(0, -matched.length) || '/';
+    } else {
+      parsed.pathname = path || '/';
+    }
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString().replace(/\/+$/, '');
+  } catch {
+    while (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+    return normalized;
+  }
 };
 
 const CT_URL = cleanServiceUrl(process.env.CT_SERVICE_URL || 'http://localhost:8000');
@@ -314,7 +330,13 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
   const startTime = Date.now();
 
   try {
-    const gate = await runGate(input);
+    let gate: GateResult;
+    try {
+      gate = await runGate(input);
+    } catch (err) {
+      logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_gate_pipeline_failed');
+      return Err('Gate service unavailable. Please try again.');
+    }
     await record.update({
       gateClassification: gate.classification,
       gateConfidence: gate.confidence,
@@ -336,10 +358,22 @@ async function finalizeAnalysis(record: AnalysisResult, input: UploadInput): Pro
     let aiData: Record<string, unknown>;
 
     if (routedImageType === 'ct') {
-      const response = await postScanToAi('ct', CT_URL, '/predict', input, 120_000);
+      let response;
+      try {
+        response = await postScanToAi('ct', CT_URL, '/predict', input, 120_000);
+      } catch (err) {
+        logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_ct_pipeline_failed');
+        return Err('CT service unavailable. Please try again.');
+      }
       aiData = response.data;
     } else {
-      const response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 180_000);
+      let response;
+      try {
+        response = await postScanToAi('xray', XRAY_URL, '/predict/xray', input, 180_000);
+      } catch (err) {
+        logger.error({ error: safeError(err), analysisId: record.id }, 'analysis_xray_pipeline_failed');
+        return Err('X-Ray service unavailable. Please try again.');
+      }
       aiData = response.data;
     }
 
@@ -558,7 +592,15 @@ export async function submitAnalysis(userId: number, analysisId: number): Promis
     await job.update({ status: 'queued', lastError: null });
   }
 
-  if (env.enableAsyncAnalysis && isQstashConfigured()) {
+  const shouldUseAsyncAnalysis =
+    isQstashConfigured() && (env.enableAsyncAnalysis || env.nodeEnv === 'production');
+
+  if (shouldUseAsyncAnalysis) {
+    logger.info({
+      analysisId: analysis.id,
+      jobId: job.id,
+      mode: env.enableAsyncAnalysis ? 'flag-enabled' : 'production-fallback',
+    }, 'analysis_job_queued');
     await enqueueAnalysis(job.id, analysis.id);
     return Ok({ analysisId: analysis.id, jobId: job.id, status: 'queued' });
   }
