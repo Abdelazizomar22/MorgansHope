@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+import os
 import logging
 
 from ct_service.main import health as ct_health, predict as ct_predict, get_model as get_ct_model
@@ -23,6 +24,11 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 @app.on_event("startup")
 async def startup():
+    preload = os.environ.get("PRELOAD_AI_MODELS", "false").lower() == "true"
+    if not preload:
+        log.info("Lazy model loading enabled. Set PRELOAD_AI_MODELS=true to warm models at startup.")
+        return
+
     loaders = [
         ("ct", get_ct_model),
         ("gate", get_gate_model),
@@ -84,4 +90,3 @@ async def predict_xray_route(file: UploadFile = File(...)):
 @app.post("/detect")
 async def detect(file: UploadFile = File(...)):
     return await nodule_detect(file)
-
