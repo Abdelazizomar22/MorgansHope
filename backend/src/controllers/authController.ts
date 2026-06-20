@@ -177,6 +177,24 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
+export const bootstrapSession = asyncHandler(async (req: Request, res: Response) => {
+  const token = req.cookies?.[REFRESH_COOKIE];
+  if (!token) {
+    res.json({ success: true, message: 'No active session', data: null });
+    return;
+  }
+
+  const result = await authService.refreshUserSession(token, sessionMetadataFrom(req));
+  if (result.success === false) {
+    clearAuthCookies(res);
+    res.json({ success: true, message: 'No active session', data: null });
+    return;
+  }
+
+  setAuthCookies(res, result.data.session, result.data.rememberMe);
+  res.json({ success: true, message: 'Session restored', data: result.data.user });
+});
+
 export const me = asyncHandler(async (req: AuthRequest, res: Response) => {
   res.json({ success: true, message: 'User retrieved', data: req.user!.toSafeJSON() });
 });

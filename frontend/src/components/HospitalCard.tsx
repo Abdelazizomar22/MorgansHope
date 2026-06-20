@@ -27,7 +27,7 @@ const mapTilerKey = import.meta.env.VITE_MAPTILER_API_KEY || '';
 const formatReviews = (value: number) => value.toLocaleString('en-US');
 
 const toMapUrl = (hospital: Hospital) =>
-  `https://www.google.com/maps?q=${hospital.coordinates.lat},${hospital.coordinates.lng}`;
+  `https://www.google.com/maps/search/?api=1&query=${hospital.coordinates.lat},${hospital.coordinates.lng}`;
 
 const toStaticMapUrl = (hospital: Hospital) => {
   const { lat, lng } = hospital.coordinates;
