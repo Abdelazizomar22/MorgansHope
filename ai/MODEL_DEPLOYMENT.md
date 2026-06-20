@@ -84,6 +84,7 @@ The NIH14 7-class model currently returns these labels:
 
 - Do not upload model binaries to GitHub.
 - Use platform-supported persistent storage, object storage download, or private Hugging Face model repos.
+- For free Hugging Face CPU-basic usage, prefer a single combined Space that exposes all model endpoints instead of five separate Spaces.
 - Set the same model paths inside the deployment container:
   - `GATE_MODEL_PATH=/home/user/app/model.pt`
   - `XRAY_MODEL_PATH=/home/user/app/xray_model.pt`

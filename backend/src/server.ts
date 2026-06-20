@@ -49,39 +49,6 @@ app.set('trust proxy', 1);
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const isDev = !isProduction;
 const isVercel = Boolean(process.env.VERCEL);
-const cleanServiceUrl = (value: string) => {
-  let normalized = value.trim();
-  if (
-    normalized.length >= 2
-    && ((normalized.startsWith('"') && normalized.endsWith('"'))
-      || (normalized.startsWith("'") && normalized.endsWith("'")))
-  ) {
-    normalized = normalized.slice(1, -1);
-  }
-
-  try {
-    const parsed = new URL(normalized);
-    const path = parsed.pathname.replace(/\/+$/, '');
-    const suffixes = ['/predict/xray', '/predict', '/detect', '/health', '/'];
-    const matched = suffixes.find((suffix) => path.endsWith(suffix) && path !== suffix);
-    if (matched) {
-      parsed.pathname = path.slice(0, -matched.length) || '/';
-    } else {
-      parsed.pathname = path || '/';
-    }
-    parsed.search = '';
-    parsed.hash = '';
-    return parsed.toString().replace(/\/+$/, '');
-  } catch {
-    while (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
-    return normalized;
-  }
-};
-
-const CT_URL = cleanServiceUrl(process.env.CT_SERVICE_URL || 'http://localhost:8000');
-const XRAY_URL = cleanServiceUrl(process.env.XRAY_SERVICE_URL || 'http://localhost:8001');
-const GATE_URL = cleanServiceUrl(process.env.GATE_SERVICE_URL || '');
-const NODULE_URL = cleanServiceUrl(process.env.NODULE_SERVICE_URL || '');
 
 const normalizeOrigin = (origin: string) => {
   let normalized = origin.trim();
@@ -272,10 +239,10 @@ const readyHandler = async (_req: express.Request, res: express.Response) => {
 
 const healthHandler = async (_req: express.Request, res: express.Response) => {
   const [ctStatus, xrayStatus, gateStatus, noduleStatus] = await Promise.all([
-    checkRemoteService(CT_URL),
-    checkRemoteService(XRAY_URL),
-    GATE_URL ? checkRemoteService(GATE_URL) : Promise.resolve('not_configured'),
-    NODULE_URL ? checkRemoteService(NODULE_URL) : Promise.resolve('not_configured'),
+    env.ctServiceUrl ? checkRemoteService(env.ctServiceUrl) : Promise.resolve('not_configured'),
+    env.xrayServiceUrl ? checkRemoteService(env.xrayServiceUrl) : Promise.resolve('not_configured'),
+    env.gateServiceUrl ? checkRemoteService(env.gateServiceUrl) : Promise.resolve('not_configured'),
+    env.noduleServiceUrl ? checkRemoteService(env.noduleServiceUrl) : Promise.resolve('not_configured'),
   ]);
 
   let dbStatus = 'offline';
@@ -364,8 +331,8 @@ if (!isVercel) {
         logger.info({
           port: PORT,
           environment: process.env.NODE_ENV || 'development',
-          ctService: CT_URL,
-          xrayService: XRAY_URL,
+          ctService: env.ctServiceUrl,
+          xrayService: env.xrayServiceUrl,
         }, 'Morgan\'s Hope backend started');
       });
     })

@@ -58,10 +58,10 @@ const cleanServiceUrl = (value: string) => {
   }
 };
 
-const CT_URL = cleanServiceUrl(process.env.CT_SERVICE_URL || 'http://localhost:8000');
-const XRAY_URL = cleanServiceUrl(process.env.XRAY_SERVICE_URL || 'http://localhost:8001');
-const GATE_URL = cleanServiceUrl(process.env.GATE_SERVICE_URL || '');
-const NODULE_URL = cleanServiceUrl(process.env.NODULE_SERVICE_URL || '');
+const CT_URL = env.ctServiceUrl;
+const XRAY_URL = env.xrayServiceUrl;
+const GATE_URL = env.gateServiceUrl;
+const NODULE_URL = env.noduleServiceUrl;
 
 type UrgencyLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 type GateClassification = 'Chest_XRay' | 'Chest_CT' | 'Other_Medical' | 'Non_Medical';
