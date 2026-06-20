@@ -40,7 +40,7 @@ const cleanServiceUrl = (value: string) => {
     }
 
     const path = parsed.pathname.replace(/\/+$/, '');
-    const suffixes = ['/predict/xray', '/predict', '/detect', '/health', '/'];
+    const suffixes = ['/predict/gate', '/predict/xray', '/predict', '/detect', '/health', '/'];
     const matched = suffixes.find((suffix) => path.endsWith(suffix) && path !== suffix);
     if (matched) {
       parsed.pathname = path.slice(0, -matched.length) || '/';

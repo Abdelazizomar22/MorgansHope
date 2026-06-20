@@ -42,7 +42,7 @@ const cleanServiceUrl = (value: string) => {
   try {
     const parsed = new URL(normalized);
     const path = parsed.pathname.replace(/\/+$/, '');
-    const suffixes = ['/predict/xray', '/predict', '/detect', '/health', '/'];
+    const suffixes = ['/predict/gate', '/predict/xray', '/predict', '/detect', '/health', '/'];
     const matched = suffixes.find((suffix) => path.endsWith(suffix) && path !== suffix);
     if (matched) {
       parsed.pathname = path.slice(0, -matched.length) || '/';
@@ -180,7 +180,7 @@ async function runGate(input: UploadInput): Promise<GateResult> {
   }
 
   try {
-    const response = await postScanToAi('gate', GATE_URL, '/predict', input, 120_000);
+    const response = await postScanToAi('gate', GATE_URL, '/predict/gate', input, 120_000);
 
     const classification = response.data?.classification;
     if (!isGateClassification(classification)) {
@@ -213,15 +213,15 @@ async function runGate(input: UploadInput): Promise<GateResult> {
       rejectedMessage: 'Uploaded file does not appear to be a medical image. Please upload a valid chest scan.',
     };
   } catch (error) {
-    logger.warn(
+    logger.error(
       {
         error: safeError(error),
         imageType: input.imageType,
       },
-      'gate_unavailable_falling_back_to_selected_image_type',
+      'gate_pipeline_failed',
     );
 
-    return fallbackGateResult(input.imageType);
+    throw error;
   }
 }
 

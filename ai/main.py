@@ -60,7 +60,7 @@ async def root():
         "endpoints": {
             "health": "/health",
             "ct": "/predict",
-            "gate": "/predict",
+            "gate": "/predict/gate",
             "xray": "/predict/xray",
             "nodule": "/detect",
         },
@@ -82,6 +82,11 @@ async def health():
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     return await _ct().predict(file)
+
+
+@app.post("/predict/gate")
+async def predict_gate_route(file: UploadFile = File(...)):
+    return await _gate().predict(file)
 
 
 @app.post("/predict/xray")
