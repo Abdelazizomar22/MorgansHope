@@ -204,6 +204,16 @@ const checkRemoteService = async (url: string): Promise<string> => {
   }
 };
 
+const summarizeServiceUrl = (url: string) => {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    return `${parsed.origin}${parsed.pathname === '/' ? '' : parsed.pathname}`;
+  } catch {
+    return 'invalid_url';
+  }
+};
+
 const checkAiServices = async () => {
   const urls = {
     ctService: env.ctServiceUrl,
@@ -280,6 +290,13 @@ const healthHandler = async (_req: express.Request, res: express.Response) => {
         xrayService: aiStatus.xrayService,
         gateService: aiStatus.gateService,
         noduleService: aiStatus.noduleService,
+      },
+      aiConfig: {
+        unified: summarizeServiceUrl(env.aiServicesUrl),
+        ctService: summarizeServiceUrl(env.ctServiceUrl),
+        xrayService: summarizeServiceUrl(env.xrayServiceUrl),
+        gateService: summarizeServiceUrl(env.gateServiceUrl),
+        noduleService: summarizeServiceUrl(env.noduleServiceUrl),
       },
       timestamp: new Date().toISOString(),
     },
