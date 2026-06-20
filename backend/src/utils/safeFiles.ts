@@ -30,7 +30,7 @@ export function resolveAnalysisTempFile(filePath: string) {
 }
 
 export function resolveAnalysisInputFile(filePath: string) {
-  return resolveUploadedFile(filePath) || resolveAnalysisTempFile(filePath);
+  return resolveAnalysisTempFile(filePath) || resolveUploadedFile(filePath);
 }
 
 function unlinkResolved(filePath: string | null) {
