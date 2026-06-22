@@ -1,98 +1,117 @@
-# Morgan's Hope
+# 🤝 Contributing to Morgan's Hope
 
-Morgan's Hope is an AI-assisted medical screening platform for chest imaging. It helps users upload chest CT scans or chest X-ray images, receive structured AI-supported screening results, review their history, understand recommended next steps, and find oncology/chest-care hospitals in Egypt.
+Welcome to the Morgan's Hope project. This guide explains how each team member should set up their environment and safely push work. Please read it fully before touching anything.
 
-The platform is built as a graduation project and is designed for clinical decision support and education. It is not a replacement for a qualified physician, radiologist, oncologist, or an official medical diagnosis.
+---
 
-## Current Screening Scope
+Each team works **only inside their folder**, on **their own branch**. Do not touch other folders.
 
-Morgan's Hope currently supports two chest imaging paths:
+> ⚠️ **Never push directly to `main`.** Only the project owner merges into `main` via Pull Requests.
 
-### Chest CT Scan
+---
 
-The existing CT model remains unchanged. It uses an EfficientNet-B3-based classifier for lung cancer screening with six CT classes:
+## 🚀 Getting Started
 
-- Normal
-- Benign
-- Adenocarcinoma
-- Large Cell Carcinoma
-- Squamous Cell Carcinoma
-- Malignant General
+### 1. Clone the repository
 
-For suspicious CT results, the platform is prepared to call a CT nodule detection service that can return bounding-box information, estimated nodule size, and detection confidence when the detector is deployed.
-
-### Chest X-Ray
-
-The old binary CXR model has been removed from the project direction. The current CXR pipeline now uses the deployed NIH ChestX-ray14 7-class multi-label model, alongside the dedicated TB pipeline.
-
-The current CXR outputs are:
-
-- Pulmonary Infection
-- COPD-related Findings
-- Fibrotic Lung Disease
-- Cardiac Conditions
-- Potential Malignancy Findings
-- Pleural Diseases
-- No Finding
-
-The CXR service also runs the dedicated TB signal and TB lesion localization pipeline. In practice, the X-ray response can now include multi-label group probabilities, threshold-based positive groups, and the TB screening result together.
-
-## AI Pipeline
-
-The backend coordinates the scan workflow through separate AI services:
-
-- Pre-classification gate: checks whether the uploaded image is a chest X-ray, chest CT, other medical image, or non-medical image.
-- CT classifier: keeps the original CT cancer model behavior.
-- CXR classifier: uses the deployed NIH 7-class multi-label pipeline plus the TB signal.
-- CT nodule detector: optional follow-up service for suspicious CT results.
-
-This service-based design keeps the frontend stable while allowing each model to be deployed, replaced, or scaled independently.
-
-## Repository Structure
-
-```text
-MorgansHope/
-├── ai/
-├── backend/
-├── frontend/
-└── README.md
+```bash
+git clone <repo-url>
+cd MorgansHope
 ```
 
-- `frontend/` contains the user-facing web application.
-- `backend/` contains the API, authentication, chat orchestration, analysis workflow, and data layer.
-- `ai/` contains the FastAPI model services for CT, CXR, gate classification, and nodule detection.
+### 2. Switch to your branch
 
-## Core Features
+```bash
+# Frontend team
+git checkout abdelaziz/feat-frontend
 
-- Email/password and Google authentication
-- Chest CT and chest X-ray upload flow
-- AI-assisted scan analysis with structured result storage
-- Result history and report-oriented result pages
-- Hospital directory and follow-up guidance for Egypt
-- Smart medical assistant for explanations, summaries, next steps, and safety guidance
-- Batch-friendly upload experience
+# Backend team
+git checkout abdelaziz/feat-backend
 
-## Medical Disclaimer
+# AI team
+git checkout abdelaziz/feat-ai
+```
 
-Morgan's Hope provides AI-assisted screening support only. Results are informational and research-oriented, not a final diagnosis. Users must consult a qualified physician, radiologist, pulmonologist, or oncologist before making medical decisions.
+### 3. Confirm you're on the right branch
 
-## Contributing to Morgan's Hope
+```bash
+git branch
+# The active branch will have a * next to it
+```
 
-1. Fork or clone the repository.
-2. Create a dedicated branch for your task.
-3. Keep each change focused and clearly documented.
-4. Open a Pull Request with a concise description of the work.
-5. Wait for review before merging into `main`.
+---
 
-## Contribution Guidelines
+## 📅 Daily Workflow
 
-- Do not push directly to `main`.
-- Do not use force push on shared branches.
-- Keep changes limited to the area you are working on.
-- Use clear commit messages.
-- Avoid exposing secrets, private environment values, or internal deployment details.
-- Make sure the code you submit is reviewed and production-appropriate.
+Follow these steps every time you want to push your work.
 
-## Questions
+### Step 1 — Pull the latest changes first
 
-For questions about the project, please reach out to **Abdelaziz**.
+```bash
+git pull origin <your-branch>
+```
+
+Always do this before starting to avoid conflicts.
+
+### Step 2 — Do your work inside your folder only
+
+Make sure all your files are inside your designated folder, such as `frontend/`, `backend/`, or `ai/`. Do not create files at the root level or inside another team's folder.
+
+### Step 3 — Push your changes
+
+```bash
+git add .
+git commit -m "feat: short description of what you did"
+git push origin <your-branch>
+```
+
+---
+
+## 🔁 Requesting a Merge into Main
+
+When your work is ready and tested:
+
+1. Go to the repo on GitHub.
+2. Open **Pull Requests** → **New Pull Request**.
+3. Set **base:** `main` and **compare:** your branch.
+4. Write a short description of what's included.
+5. Submit the Pull Request for review.
+
+---
+
+## ⚠️ Golden Rules
+
+- Always work on your branch only.
+- Always pull before starting.
+- Only push files inside your folder.
+- Never push to `main`.
+- Never edit another team's folder.
+- Never force push unless the project owner explicitly asks for it.
+
+---
+
+## 🆘 Common Issues
+
+**"I have a merge conflict"**
+
+```bash
+git pull origin <your-branch>
+# Resolve the conflicting files manually, then:
+git add .
+git commit -m "fix: resolve merge conflict"
+git push origin <your-branch>
+```
+
+**"I made changes but forgot to pull first"**
+
+```bash
+git stash
+git pull origin <your-branch>
+git stash pop
+```
+
+---
+
+## 📬 Questions?
+
+Reach out to **Abdelaziz**.
