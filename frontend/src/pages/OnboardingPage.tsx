@@ -1,82 +1,158 @@
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HiEnvelope, HiExclamationCircle } from 'react-icons/hi2';
+import {
+  HiArrowPath,
+  HiCalendarDays,
+  HiCheck,
+  HiEnvelope,
+  HiExclamationCircle,
+  HiPhone,
+  HiShieldCheck,
+  HiUser,
+} from 'react-icons/hi2';
 import { useAuth, VERIFICATION_NOTICE_KEY } from '../context/AuthContext';
-import { authApi } from '../utils/api';
 import DisclaimerModal from '../components/DisclaimerModal';
+import { authApi } from '../utils/api';
 
-const IconAlert = () => <HiExclamationCircle size={15} />;
-const IconMail = () => <HiEnvelope size={15} />;
+const OTP_LENGTH = 6;
+
+const IconAlert = () => <HiExclamationCircle size={16} />;
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
   const { user, updateUser, refreshUser, logout } = useAuth();
   const [lang] = useState<'en' | 'ar'>('en');
+  const ar = lang === 'ar';
+  const t = (en: string, arText: string) => (ar ? arText : en);
+
   const [loading, setLoading] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [otp, setOtp] = useState(Array.from({ length: OTP_LENGTH }, () => ''));
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [resendAvailableIn, setResendAvailableIn] = useState(0);
+  const [verifiedJustNow, setVerifiedJustNow] = useState(false);
+  const otpRefs = useRef<Array<HTMLInputElement | null>>([]);
+
   const [form, setForm] = useState({
     phone: user?.phone || '',
     age: user?.age ? String(user.age) : '',
     gender: user?.gender || '',
     smokingHistory: user?.smokingHistory || '',
   });
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verificationLoading, setVerificationLoading] = useState(false);
-  const [verificationNotice, setVerificationNotice] = useState('');
-  const [isCodeSent, setIsCodeSent] = useState(false);
-  const [resendAvailableIn, setResendAvailableIn] = useState(0);
 
-  const ar = lang === 'ar';
-  const t = (en: string, arText: string) => (ar ? arText : en);
-  const needsEmailVerification = Boolean(user?.authProvider === 'local' && user?.emailVerified !== true);
-  const needsDisclaimer = Boolean(user && user.emailVerified === true && user.acceptedDisclaimer !== true);
   const emailTarget = user?.email || '';
+  const emailVerified = Boolean(user?.authProvider !== 'local' || user?.emailVerified === true || verifiedJustNow);
+  const needsEmailVerification = Boolean(user?.authProvider === 'local' && !emailVerified);
+  const needsDisclaimer = Boolean(user && emailVerified && user.acceptedDisclaimer !== true);
+  const verificationCode = otp.join('');
 
   useEffect(() => {
     const storedNotice = sessionStorage.getItem(VERIFICATION_NOTICE_KEY);
-    if (storedNotice) {
-      setVerificationNotice(storedNotice);
-      setIsCodeSent(true);
-      setResendAvailableIn(60);
-      sessionStorage.removeItem(VERIFICATION_NOTICE_KEY);
-    }
+    if (!storedNotice) return;
+
+    setNotice(storedNotice);
+    setIsCodeSent(true);
+    setResendAvailableIn(45);
+    sessionStorage.removeItem(VERIFICATION_NOTICE_KEY);
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    setForm({
+      phone: user.phone || '',
+      age: user.age ? String(user.age) : '',
+      gender: user.gender || '',
+      smokingHistory: user.smokingHistory || '',
+    });
+  }, [user?.id]);
 
   useEffect(() => {
     if (resendAvailableIn <= 0) return undefined;
     const timer = window.setInterval(() => {
       setResendAvailableIn((seconds) => Math.max(0, seconds - 1));
     }, 1000);
+
     return () => window.clearInterval(timer);
   }, [resendAvailableIn]);
 
-  const bind = (key: string) => ({
-    value: (form as Record<string, string>)[key],
+  useEffect(() => {
+    if (!user) return;
+    if (emailVerified && user.acceptedDisclaimer === true && user.onboardingCompleted === true) {
+      navigate('/', { replace: true });
+    }
+  }, [emailVerified, navigate, user]);
+
+  const bind = (key: keyof typeof form) => ({
+    value: form[key],
     onChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setForm({ ...form, [key]: e.target.value }),
+      setForm((current) => ({ ...current, [key]: e.target.value })),
   });
 
+  const inputBaseClass =
+    'h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#006B5B] focus:ring-4 focus:ring-emerald-100';
+
+  const selectClass = `${inputBaseClass} cursor-pointer appearance-none`;
+
+  const stepState = useMemo(
+    () => [
+      { label: t('Account Info', 'معلومات الحساب'), done: true, active: false },
+      { label: t('Consent', 'الموافقة'), done: true, active: false },
+      { label: t('Complete', 'الإكمال'), done: emailVerified, active: true },
+    ],
+    [emailVerified, t],
+  );
+
+  const handleOtpChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    setOtp((current) => {
+      const next = [...current];
+      next[index] = digit;
+      return next;
+    });
+
+    if (digit && index < OTP_LENGTH - 1) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, OTP_LENGTH).split('');
+    if (!digits.length) return;
+
+    setOtp(Array.from({ length: OTP_LENGTH }, (_, index) => digits[index] || ''));
+    otpRefs.current[Math.min(digits.length, OTP_LENGTH) - 1]?.focus();
+  };
+
   const handleVerifyEmail = async () => {
-    if (!verificationCode.trim()) {
-      setError(t('Please enter the verification code first.', 'Please enter the verification code first.'));
+    if (verificationCode.length !== OTP_LENGTH) {
+      setError(t('Please enter the 6-digit verification code first.', 'يرجى إدخال كود التحقق المكون من 6 أرقام أولا.'));
       return;
     }
 
     setVerificationLoading(true);
     setError('');
-    setVerificationNotice('');
+    setNotice('');
 
     try {
-      const verified = await authApi.verifyContact(verificationCode.trim());
+      const verified = await authApi.verifyContact(verificationCode);
       if (verified.data.data) updateUser(verified.data.data);
+      setVerifiedJustNow(true);
+      setOtp(Array.from({ length: OTP_LENGTH }, () => ''));
+      setNotice(t('Email verified. Add a few optional details or skip for now.', 'تم تفعيل البريد. يمكنك إضافة بيانات اختيارية أو تخطيها الآن.'));
       await refreshUser();
-      setVerificationCode('');
-      setVerificationNotice(t('Email verified successfully.', 'Email verified successfully.'));
     } catch (err: any) {
       setError(
-        err?.response?.data?.message
-        || err?.message
-        || t('Verification failed. Please check the code and try again.', 'Verification failed. Please check the code and try again.'),
+        err?.response?.data?.message ||
+          err?.message ||
+          t('Verification failed. Please check the code and try again.', 'فشل التحقق. راجع الكود وحاول مرة أخرى.'),
       );
     } finally {
       setVerificationLoading(false);
@@ -86,23 +162,23 @@ export default function OnboardingPage() {
   const handleSendEmailCode = async () => {
     setVerificationLoading(true);
     setError('');
-    setVerificationNotice('');
+    setNotice('');
 
     try {
       const response = await authApi.resendVerification('email');
       setIsCodeSent(true);
-      setResendAvailableIn(60);
-      setVerificationNotice(
+      setResendAvailableIn(45);
+      setNotice(
         response.data.data?.devCode
           ? `Verification code sent to ${emailTarget}. Dev code: ${response.data.data.devCode}`
-          : `A verification code was sent to ${emailTarget}.`,
+          : `A 6-digit code was sent to ${emailTarget}.`,
       );
       await refreshUser();
     } catch (err: any) {
       setError(
-        err?.response?.data?.message
-        || err?.message
-        || t('Could not send verification code right now.', 'Could not send verification code right now.'),
+        err?.response?.data?.message ||
+          err?.message ||
+          t('Could not send verification code right now.', 'تعذر إرسال كود التحقق الآن.'),
       );
     } finally {
       setVerificationLoading(false);
@@ -110,13 +186,13 @@ export default function OnboardingPage() {
   };
 
   const handleSubmit = async () => {
-    if (needsEmailVerification) {
-      setError(t('Please verify your email address before completing setup.', 'Please verify your email address before completing setup.'));
+    if (!emailVerified) {
+      setError(t('Please verify your email address before completing setup.', 'يرجى تفعيل البريد الإلكتروني قبل إتمام الإعداد.'));
       return;
     }
 
     if (user?.acceptedDisclaimer !== true) {
-      setError(t('Please accept the medical disclaimer before completing setup.', 'Please accept the medical disclaimer before completing setup.'));
+      setError(t('Please accept the medical disclaimer before entering Morgan\'s Hope.', 'يرجى قبول التنبيه الطبي قبل دخول Morgan\'s Hope.'));
       return;
     }
 
@@ -127,18 +203,45 @@ export default function OnboardingPage() {
       const updated = await authApi.updateProfile({
         phone: form.phone.trim() || undefined,
         age: form.age ? Number(form.age) : undefined,
-        gender: form.gender ? form.gender as 'male' | 'female' | 'other' : undefined,
-        smokingHistory: form.smokingHistory ? form.smokingHistory as 'never' | 'former' | 'current' : undefined,
+        gender: form.gender ? (form.gender as 'male' | 'female' | 'other') : undefined,
+        smokingHistory: form.smokingHistory ? (form.smokingHistory as 'never' | 'former' | 'current') : undefined,
         onboardingCompleted: true,
       });
       if (updated.data.data) updateUser(updated.data.data);
       await refreshUser();
       navigate('/', { replace: true });
-    } catch {
-      setError(t('Something went wrong. You can update your profile later.', 'حدث خطأ ما. يمكنك تحديث ملفك لاحقًا.'));
+    } catch (err: any) {
+      setError(err?.response?.data?.message || t('Something went wrong. You can update your profile later.', 'حدث خطأ ما. يمكنك تحديث ملفك لاحقا.'));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSkip = async () => {
+    if (!emailVerified) {
+      setError(t('Please verify your email address before continuing.', 'يرجى تفعيل البريد الإلكتروني قبل المتابعة.'));
+      return;
+    }
+
+    if (user?.acceptedDisclaimer !== true) {
+      setError(t('Please accept the medical disclaimer before continuing.', 'يرجى قبول التنبيه الطبي قبل المتابعة.'));
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const updated = await authApi.updateProfile({ onboardingCompleted: true });
+      if (updated.data.data) updateUser(updated.data.data);
+      await refreshUser();
+    } catch {
+      // Optional profile data should never block entry after email verification.
+    } finally {
+      setLoading(false);
+    }
+
+    navigate('/', { replace: true });
   };
 
   const handleUseAnotherAccount = async () => {
@@ -149,6 +252,7 @@ export default function OnboardingPage() {
   const handleAcceptDisclaimer = async () => {
     setLoading(true);
     setError('');
+
     try {
       const updated = await authApi.updateProfile({ acceptedDisclaimer: true });
       if (updated.data.data) updateUser(updated.data.data);
@@ -165,54 +269,8 @@ export default function OnboardingPage() {
     navigate('/', { replace: true });
   };
 
-  const handleSkip = async () => {
-    if (needsEmailVerification) {
-      setError(t('Please verify your email address before continuing.', 'Please verify your email address before continuing.'));
-      return;
-    }
-
-    if (user?.acceptedDisclaimer !== true) {
-      setError(t('Please accept the medical disclaimer before continuing.', 'Please accept the medical disclaimer before continuing.'));
-      return;
-    }
-
-    try {
-      const updated = await authApi.updateProfile({ onboardingCompleted: true });
-      if (updated.data.data) updateUser(updated.data.data);
-    } catch {
-      // Non-blocking.
-    }
-
-    navigate('/', { replace: true });
-  };
-
-  const selectStyle = {
-    width: '100%',
-    padding: '13px 14px',
-    borderRadius: 14,
-    border: '1.5px solid var(--card-border)',
-    fontSize: 14.5,
-    outline: 'none',
-    background: 'var(--card-bg)',
-    color: 'var(--text-main)',
-    fontFamily: 'inherit',
-    cursor: 'pointer',
-  } as React.CSSProperties;
-
-  const inputStyle = { ...selectStyle };
-
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'radial-gradient(circle at 80% 20%, rgba(var(--primary-rgb),0.08), transparent 30%), var(--bg-main)',
-        padding: '40px 16px',
-        fontFamily: "'Sora', sans-serif",
-      }}
-    >
+    <div className="relative min-h-screen overflow-hidden bg-[#f7faf9] px-4 py-8 font-['Sora',sans-serif] text-slate-950">
       {needsDisclaimer && (
         <DisclaimerModal
           lang={lang}
@@ -221,238 +279,243 @@ export default function OnboardingPage() {
           subtitle="Your account is verified. Please review and accept before entering Morgan's Hope."
         />
       )}
-      <div style={{ width: '100%', maxWidth: 520 }}>
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <h1 style={{ margin: '0 0 10px', color: 'var(--text-main)', fontSize: 'clamp(1.7rem, 4vw, 2.1rem)', fontWeight: 900, letterSpacing: '-0.04em' }}>
+
+      <div className="pointer-events-none absolute inset-0 opacity-70">
+        <div className="absolute -left-28 top-24 h-80 w-80 rounded-full bg-emerald-100 blur-3xl" />
+        <div className="absolute -right-24 bottom-8 h-96 w-96 rounded-full bg-teal-100 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_35%,rgba(255,255,255,0.8),transparent_16%),radial-gradient(circle_at_75%_18%,rgba(255,255,255,0.75),transparent_14%)]" />
+      </div>
+
+      <main className="relative z-10 mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-[760px] flex-col items-center justify-center">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <img src="/logo-v2.png" alt="Morgan's Hope" className="theme-logo h-20 w-20 object-contain" />
+          <h1 className="mt-4 text-4xl font-black tracking-[-0.05em] text-[#063f35] sm:text-5xl">
             {t('Complete your profile', 'أكمل ملفك الشخصي')}
           </h1>
-          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.97rem', lineHeight: 1.7, maxWidth: 380, marginLeft: 'auto', marginRight: 'auto' }}>
+          <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-slate-500 sm:text-base">
             {t(
-              'Help us personalize your experience with a few quick details. You can always update these later.',
-              'ساعدنا في تخصيص تجربتك ببيانات سريعة. يمكنك تحديثها لاحقًا.',
+              'Help us personalize your experience with a few optional details. You can update them anytime.',
+              'ساعدنا في تخصيص تجربتك ببعض البيانات الاختيارية. يمكنك تحديثها في أي وقت.',
             )}
           </p>
-          {needsEmailVerification && (
-            <button
-              type="button"
-              onClick={handleUseAnotherAccount}
-              style={{ marginTop: 14, background: 'transparent', border: 'none', color: 'var(--primary)', fontSize: '0.82rem', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              {t('Use a different account', 'استخدم حسابًا آخر')}
-            </button>
-          )}
         </div>
 
-        <div
-          style={{
-            background: 'var(--card-bg)',
-            border: '1px solid color-mix(in srgb, var(--primary) 10%, var(--card-border))',
-            borderRadius: 28,
-            padding: '32px 28px',
-            boxShadow: '0 24px 64px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.4)',
-          }}
-        >
+        <div className="mb-8 flex w-full max-w-[520px] items-center justify-between">
+          {stepState.map((step, index) => (
+            <div key={step.label} className="flex flex-1 items-center">
+              <div className="flex flex-col items-center gap-2">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-black shadow-sm ${
+                    step.active
+                      ? 'border-[#064f43] bg-[#064f43] text-white'
+                      : step.done
+                        ? 'border-[#0d8a75] bg-white text-[#0d8a75]'
+                        : 'border-slate-200 bg-white text-slate-400'
+                  }`}
+                >
+                  {step.done && !step.active ? <HiCheck className="h-5 w-5" /> : index + 1}
+                </div>
+                <span className={`text-xs font-black ${step.active ? 'text-[#064f43]' : 'text-slate-500'}`}>
+                  {step.label}
+                </span>
+              </div>
+              {index < stepState.length - 1 && <div className="mx-3 mt-[-22px] h-px flex-1 bg-slate-200" />}
+            </div>
+          ))}
+        </div>
+
+        <section className="w-full rounded-[28px] border border-slate-200 bg-white/92 p-6 shadow-2xl shadow-slate-950/10 backdrop-blur sm:p-9">
           {error && (
-            <div style={{ background: 'rgba(239,68,68,0.06)', border: '1.5px solid #fca5a5', borderRadius: 14, padding: '12px 14px', color: '#dc2626', fontSize: 13, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className="mb-5 flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold leading-6 text-red-600">
               <IconAlert />
               <span>{error}</span>
             </div>
           )}
 
-          {needsEmailVerification && (
-            <div
-              style={{
-                background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.08), rgba(255,255,255,0.72))',
-                border: '1.5px solid rgba(var(--primary-rgb),0.18)',
-                borderRadius: 18,
-                padding: '16px 16px 18px',
-                marginBottom: 22,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 12, background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <IconMail />
+          {notice && (
+            <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold leading-6 text-emerald-800">
+              {notice}
+            </div>
+          )}
+
+          {needsEmailVerification ? (
+            <div>
+              <div className="mb-7 flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#0a5a4c] to-[#073f35] text-white shadow-lg shadow-emerald-950/20">
+                  <HiEnvelope className="h-7 w-7" />
                 </div>
                 <div>
-                  <h3 style={{ margin: '0 0 4px', color: 'var(--text-main)', fontSize: '0.98rem', fontWeight: 850 }}>
-                    {t('Verify your email', 'تحقق من بريدك الإلكتروني')}
-                  </h3>
-                  <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.82rem', lineHeight: 1.6 }}>
+                  <h2 className="text-2xl font-black tracking-[-0.03em] text-slate-950">
+                    {t('Verify your email', 'فعّل بريدك الإلكتروني')}
+                  </h2>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
                     {t(
-                      `Enter the 6-digit code sent to ${emailTarget}. It expires in 5 minutes.`,
-                      `أدخل الكود المكون من 6 أرقام المرسل إلى ${emailTarget} لتفعيل حسابك والمتابعة.`,
+                      `We've sent a 6-digit code to ${emailTarget}.`,
+                      `أرسلنا كودا مكونا من 6 أرقام إلى ${emailTarget}.`,
                     )}
                   </p>
                 </div>
               </div>
 
-              {verificationNotice && (
-                <div style={{ color: '#166534', background: 'rgba(22,101,52,0.08)', border: '1px solid rgba(22,101,52,0.16)', borderRadius: 12, padding: '9px 11px', fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>
-                  {verificationNotice}
-                </div>
-              )}
+              <div className="mb-7 grid grid-cols-6 gap-3">
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(element) => {
+                      otpRefs.current[index] = element;
+                    }}
+                    value={digit}
+                    onChange={(event) => handleOtpChange(index, event.target.value)}
+                    onKeyDown={(event) => handleOtpKeyDown(index, event)}
+                    onPaste={(event) => {
+                      event.preventDefault();
+                      handleOtpPaste(event.clipboardData.getData('text'));
+                    }}
+                    inputMode="numeric"
+                    autoComplete={index === 0 ? 'one-time-code' : 'off'}
+                    aria-label={`Verification digit ${index + 1}`}
+                    className="h-16 rounded-xl border border-slate-200 bg-white text-center text-2xl font-black text-slate-600 outline-none transition focus:border-[#006B5B] focus:ring-4 focus:ring-emerald-100"
+                  />
+                ))}
+              </div>
 
               <button
                 type="button"
-                onClick={handleSendEmailCode}
-                disabled={verificationLoading || resendAvailableIn > 0}
-                style={{ width: '100%', minHeight: 44, border: '1.5px solid var(--primary)', borderRadius: 14, background: 'rgba(var(--primary-rgb),0.08)', color: 'var(--primary)', fontWeight: 850, cursor: verificationLoading || resendAvailableIn > 0 ? 'default' : 'pointer', opacity: verificationLoading || resendAvailableIn > 0 ? 0.7 : 1, fontFamily: 'inherit', marginBottom: 10 }}
+                onClick={handleVerifyEmail}
+                disabled={verificationLoading}
+                className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#064f43] to-[#007866] text-base font-black text-white shadow-xl shadow-emerald-950/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
               >
-                {resendAvailableIn > 0
-                  ? `Resend in ${resendAvailableIn}s`
-                  : isCodeSent
-                    ? t('Resend verification code', 'إعادة إرسال كود التحقق')
-                    : t('Send verification code', 'إرسال كود التحقق')}
+                {verificationLoading ? <HiArrowPath className="h-5 w-5 animate-spin" /> : null}
+                {t('Verify', 'تفعيل')}
               </button>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 }}>
-                <input
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  onKeyDown={(e) => e.key === 'Enter' && handleVerifyEmail()}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  placeholder="123456"
-                  style={{ ...inputStyle, letterSpacing: '0.22em', fontWeight: 800, textAlign: 'center' }}
-                />
+              <div className="mt-5 text-center text-sm font-semibold text-slate-500">
+                {t("Didn't receive the code?", 'لم يصلك الكود؟')}{' '}
                 <button
                   type="button"
-                  onClick={handleVerifyEmail}
-                  disabled={verificationLoading}
-                  style={{ border: 'none', borderRadius: 14, background: 'var(--primary)', color: '#fff', padding: '0 16px', fontWeight: 800, cursor: verificationLoading ? 'default' : 'pointer', opacity: verificationLoading ? 0.7 : 1, fontFamily: 'inherit' }}
+                  onClick={handleSendEmailCode}
+                  disabled={verificationLoading || resendAvailableIn > 0}
+                  className="font-black text-[#007866] disabled:cursor-not-allowed disabled:text-slate-400"
                 >
-                  {t('Verify', 'تحقق')}
+                  {resendAvailableIn > 0
+                    ? t(`Resend in ${resendAvailableIn}s`, `إعادة الإرسال خلال ${resendAvailableIn}ث`)
+                    : isCodeSent
+                      ? t('Resend code', 'إعادة إرسال الكود')
+                      : t('Send code', 'إرسال الكود')}
                 </button>
               </div>
+
+              <div className="my-7 flex items-center gap-4 text-xs font-semibold text-slate-400">
+                <span className="h-px flex-1 bg-slate-200" />
+                {t('or', 'أو')}
+                <span className="h-px flex-1 bg-slate-200" />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleUseAnotherAccount}
+                className="mx-auto flex items-center justify-center gap-2 text-sm font-black text-[#007866] transition hover:text-[#064f43]"
+              >
+                <HiArrowPath className="h-4 w-4" />
+                {t('Use a different email', 'استخدم بريدا آخر')}
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="mb-6 flex items-start gap-4 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#079276] to-[#0a5a4c] text-white shadow-lg shadow-emerald-950/15">
+                  <HiCheck className="h-7 w-7" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-950">{t('Email verified', 'تم تفعيل البريد')}</h2>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
+                    {t(
+                      'Your account is ready. Add a few optional details to personalize your experience.',
+                      'حسابك جاهز. أضف بعض البيانات الاختيارية لتخصيص تجربتك.',
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-black text-slate-700">
+                    {t('Phone number', 'رقم الهاتف')}{' '}
+                    <span className="font-semibold text-slate-400">({t('optional', 'اختياري')})</span>
+                  </span>
+                  <div className="relative">
+                    <HiPhone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <input {...bind('phone')} type="tel" placeholder="(555) 123-4567" className={`${inputBaseClass} pl-12`} />
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-black text-slate-700">
+                    {t('Age', 'العمر')}{' '}
+                    <span className="font-semibold text-slate-400">({t('optional', 'اختياري')})</span>
+                  </span>
+                  <div className="relative">
+                    <HiCalendarDays className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <input {...bind('age')} type="number" min="0" max="120" placeholder={t('Enter your age', 'أدخل عمرك')} className={`${inputBaseClass} pl-12`} />
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-black text-slate-700">
+                    {t('Gender', 'النوع')}{' '}
+                    <span className="font-semibold text-slate-400">({t('optional', 'اختياري')})</span>
+                  </span>
+                  <div className="relative">
+                    <HiUser className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <select {...bind('gender')} className={`${selectClass} pl-12`}>
+                      <option value="">{t('Select your gender', 'اختر النوع')}</option>
+                      <option value="male">{t('Male', 'ذكر')}</option>
+                      <option value="female">{t('Female', 'أنثى')}</option>
+                      <option value="other">{t('Other / Prefer not to say', 'أخرى / أفضل عدم الإفصاح')}</option>
+                    </select>
+                  </div>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-black text-slate-700">
+                    {t('Smoking history', 'تاريخ التدخين')}{' '}
+                    <span className="font-semibold text-slate-400">({t('optional', 'اختياري')})</span>
+                  </span>
+                  <div className="relative">
+                    <HiShieldCheck className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <select {...bind('smokingHistory')} className={`${selectClass} pl-12`}>
+                      <option value="">{t('Select an option', 'اختر')}</option>
+                      <option value="never">{t('Never smoked', 'لم أدخن قط')}</option>
+                      <option value="former">{t('Former smoker', 'مدخن سابق')}</option>
+                      <option value="current">{t('Current smoker', 'مدخن حالي')}</option>
+                    </select>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                id="onboarding-submit-btn"
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#064f43] to-[#007866] text-base font-black text-white shadow-xl shadow-emerald-950/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+              >
+                {loading ? <HiArrowPath className="h-5 w-5 animate-spin" /> : null}
+                {t('Complete Setup', 'إتمام الإعداد')}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSkip}
+                disabled={loading}
+                className="mx-auto mt-5 block text-sm font-black text-[#007866] transition hover:text-[#064f43] disabled:cursor-not-allowed disabled:text-slate-400"
+              >
+                {t('Skip for now — I will do this later', 'تخطي الآن — سأفعل ذلك لاحقا')}
+              </button>
             </div>
           )}
-
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ display: 'block', marginBottom: 7, color: 'var(--text-main)', fontSize: '0.82rem', fontWeight: 700 }}>
-              {t('Phone number', 'رقم الهاتف')}{' '}
-              <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.74rem' }}>({t('optional', 'اختياري')})</span>
-            </label>
-            <input
-              {...bind('phone')}
-              type="tel"
-              placeholder={t('e.g. +201234567890', 'مثال: +201234567890')}
-              style={inputStyle}
-            />
-          </div>
-
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ display: 'block', marginBottom: 7, color: 'var(--text-main)', fontSize: '0.82rem', fontWeight: 700 }}>
-              {t('Age', 'العمر')}{' '}
-              <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.74rem' }}>({t('optional', 'اختياري')})</span>
-            </label>
-            <input
-              {...bind('age')}
-              type="number"
-              min="0"
-              max="120"
-              placeholder={t('e.g. 45', 'مثال: 45')}
-              style={inputStyle}
-            />
-          </div>
-
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ display: 'block', marginBottom: 7, color: 'var(--text-main)', fontSize: '0.82rem', fontWeight: 700 }}>
-              {t('Gender', 'النوع')}{' '}
-              <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.74rem' }}>({t('optional', 'اختياري')})</span>
-            </label>
-            <select {...bind('gender')} style={selectStyle}>
-              <option value="">{t('Select gender', 'اختر النوع')}</option>
-              <option value="male">{t('Male', 'ذكر')}</option>
-              <option value="female">{t('Female', 'أنثى')}</option>
-              <option value="other">{t('Other / Prefer not to say', 'أخرى / أفضل عدم الإفصاح')}</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: 28 }}>
-            <label style={{ display: 'block', marginBottom: 7, color: 'var(--text-main)', fontSize: '0.82rem', fontWeight: 700 }}>
-              {t('Smoking history', 'تاريخ التدخين')}{' '}
-              <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '0.74rem' }}>({t('optional', 'اختياري')})</span>
-            </label>
-            <select {...bind('smokingHistory')} style={selectStyle}>
-              <option value="">{t('Select option', 'اختر')}</option>
-              <option value="never">{t('Never smoked', 'لم أدخن قط')}</option>
-              <option value="former">{t('Former smoker', 'مدخن سابق')}</option>
-              <option value="current">{t('Current smoker', 'مدخن حالي')}</option>
-            </select>
-          </div>
-
-          <button
-            id="onboarding-submit-btn"
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading}
-            style={{
-              width: '100%',
-              minHeight: 52,
-              borderRadius: 14,
-              border: 'none',
-              background: 'linear-gradient(135deg, var(--primary-dark), var(--primary))',
-              color: '#fff',
-              fontSize: '0.97rem',
-              fontWeight: 800,
-              cursor: loading ? 'default' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              boxShadow: '0 16px 36px rgba(var(--primary-rgb),0.25)',
-              fontFamily: 'inherit',
-            }}
-          >
-            {loading ? (
-              <>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M21 12a9 9 0 11-6.219-8.56">
-                    <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite" />
-                  </path>
-                </svg>
-                {t('Saving...', 'جارٍ الحفظ...')}
-              </>
-            ) : t('Complete Setup', 'إتمام الإعداد')}
-          </button>
-
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <button
-              type="button"
-              onClick={handleSkip}
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
-            >
-              {t('Skip for now - I will do this later', 'تخطى الآن - سأفعل هذا لاحقًا')}
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 24 }}>
-          {[1, 2, 3].map((n) => (
-            <div
-              key={n}
-              style={{
-                height: 6,
-                borderRadius: 999,
-                background: n <= 3 ? 'var(--primary)' : 'var(--card-border)',
-                width: n === 3 ? 28 : 8,
-                transition: 'all 0.3s ease',
-                opacity: n === 3 ? 1 : 0.35,
-              }}
-            />
-          ))}
-        </div>
-        <p style={{ textAlign: 'center', marginTop: 10, color: 'var(--text-muted)', fontSize: '0.78rem' }}>
-          {t('Step 3 of 3 - Final step', 'الخطوة 3 من 3 - الخطوة الأخيرة')}
-        </p>
-      </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
-        select option { background: var(--card-bg); color: var(--text-main); }
-      `}</style>
+        </section>
+      </main>
     </div>
   );
 }

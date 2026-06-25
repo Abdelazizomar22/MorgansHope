@@ -1,4 +1,4 @@
-import { HiShieldCheck, HiDocumentText } from 'react-icons/hi2';
+import { HiDocumentText, HiExclamationTriangle, HiHeart, HiLockClosed, HiShieldCheck } from 'react-icons/hi2';
 import { useState, useEffect } from 'react';
 
 interface DisclaimerModalProps {
@@ -11,50 +11,65 @@ interface DisclaimerModalProps {
 
 const rules = (t: (en: string, ar: string) => string) => [
   {
-    heading: t('AI-Powered Preliminary Analysis Only', 'تحليل أولي بالذكاء الاصطناعي فقط'),
+    heading: t('AI-assisted screening only', 'فحص بمساعدة الذكاء الاصطناعي فقط'),
     body: t(
-      'This platform provides AI-powered preliminary analysis only and does not constitute medical advice.',
-      'تقدم هذه المنصة تحليلات أولية بمساعدة الذكاء الاصطناعي فقط ولا تشكل نصيحة طبية.'
+      'The platform supports preliminary review of supported chest scans and does not provide a final diagnosis.',
+      'تدعم المنصة مراجعة أولية لصور الصدر المدعومة ولا تقدم تشخيصًا طبيًا نهائيًا.'
     ),
+    icon: <HiShieldCheck size={20} />,
   },
   {
-    heading: t('Not a Replacement for Medical Consultation', 'ليس بديلاً عن الاستشارة الطبية'),
+    heading: t('Physician review is required', 'مراجعة الطبيب مطلوبة'),
     body: t(
-      'Results and insights from this tool must not replace consultation with a licensed physician or specialist.',
-      'يجب ألا تحل نتائج هذه الأداة محل استشارة الطبيب المرخص أو الاختصاصي.'
+      'Do not make medical decisions based only on the AI output. Always consult a qualified physician.',
+      'لا تتخذ قرارات طبية اعتمادًا على مخرجات الذكاء الاصطناعي فقط. راجع طبيبًا مؤهلًا دائمًا.'
     ),
+    icon: <HiHeart size={20} />,
   },
   {
-    heading: t('Data Use and Confidentiality', 'استخدام البيانات وسريتها'),
+    heading: t('Privacy and data use', 'الخصوصية واستخدام البيانات'),
     body: t(
-      'Your medical data will be used exclusively for research purposes within this platform and kept strictly confidential.',
-      'ستُستخدم بياناتك الطبية حصريًا لأغراض البحث داخل هذه المنصة وتُحفظ سرية تامة.'
+      'Uploaded scans are used to provide the requested analysis and report. Model training use requires explicit consent.',
+      'تُستخدم الصور المرفوعة لتقديم التحليل والتقرير المطلوبين. استخدام البيانات لتدريب النماذج يتطلب موافقة صريحة.'
     ),
+    icon: <HiLockClosed size={20} />,
   },
   {
-    heading: t('Medical Emergencies', 'حالات الطوارئ الطبية'),
+    heading: t('Emergency symptoms', 'أعراض الطوارئ'),
     body: t(
-      'In case of a medical emergency, please contact your local emergency services immediately.',
-      'في حالة الطوارئ الطبية، يرجى الاتصال بخدمات الطوارئ المحلية فورًا.'
+      'For severe chest pain, severe shortness of breath, coughing blood, fainting, or confusion, contact emergency services immediately.',
+      'في حالة ألم شديد بالصدر، ضيق نفس شديد، سعال مصحوب بدم، إغماء، أو ارتباك، اتصل بخدمات الطوارئ فورًا.'
     ),
+    icon: <HiExclamationTriangle size={20} />,
   },
   {
-    heading: t('Terms and Privacy Consent', 'الموافقة على الشروط والخصوصية'),
+    heading: t('Terms and privacy', 'الشروط والخصوصية'),
     body: t(
-      'By proceeding, you consent to our Terms of Service and Privacy Policy.',
-      'بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية.'
+      'Continuing means you agree to the Terms of Service and Privacy Policy.',
+      'المتابعة تعني موافقتك على شروط الخدمة وسياسة الخصوصية.'
     ),
+    icon: <HiDocumentText size={20} />,
   },
 ];
 
 const acknowledgments = (t: (en: string, ar: string) => string) => [
   {
-    icon: <HiShieldCheck size={20} />,
-    text: t('I have read and understood the disclaimer.', 'لقد قرأت إخلاء المسؤولية وأفهمه جيدًا.'),
+    text: t(
+      'I understand this tool is not a substitute for professional medical care.',
+      'أفهم أن هذه الأداة ليست بديلاً عن الرعاية الطبية المتخصصة.',
+    ),
   },
   {
-    icon: <HiDocumentText size={20} />,
-    text: t('This tool is not a substitute for professional medical care.', 'هذه الأداة ليست بديلاً عن الرعاية الطبية المتخصصة.'),
+    text: t(
+      'I understand all results must be reviewed by a qualified physician.',
+      'أفهم أن جميع النتائج يجب مراجعتها بواسطة طبيب مؤهل.',
+    ),
+  },
+  {
+    text: t(
+      'I agree to the Terms of Service and Privacy Policy.',
+      'أوافق على شروط الخدمة وسياسة الخصوصية.',
+    ),
   },
 ];
 
@@ -62,6 +77,8 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
   const [isMobile, setIsMobile] = useState(false);
+  const [checked, setChecked] = useState([false, false, false]);
+  const allChecked = checked.every(Boolean);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 720);
@@ -80,18 +97,17 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
           {/* Header — no close button */}
           <div className="auth-modal-header">
             <h2 className="mb-2 text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-black text-[var(--text-main)]">
-              {t('Medical Research Disclaimer', 'إخلاء المسؤولية الطبية')}
+              {t('Medical Use & Consent', 'الاستخدام الطبي والموافقة')}
             </h2>
             <p className="auth-modal-subtitle">
-              {subtitle || t('Please read and accept before continuing', 'يرجى القراءة والموافقة قبل المتابعة')}
+              {subtitle || t('Step 2 of 3 - Please read before continuing', 'الخطوة 2 من 3 - يرجى القراءة قبل المتابعة')}
             </p>
-            <p className="auth-modal-subtitle" style={{ textAlign: 'left', marginTop: '10px'}}>{t(`
-              I Understand and Accept", you acknowledge that Morgan's Hope 
-provides AI-powered preliminary analysis only and does not constitute medical 
-advice or replace professional medical consultation.`,
-            `
-            بالنقر على أفهم وأوافق، فإنك تقر بأن منصة Morgan's Hope تقدم تحليلات أولية بمساعدة الذكاء الاصطناعي فقط، ولا تشكل نصيحة طبية ولا تحل محل الاستشارة الطبية المتخصصة.
-              `)}</p>
+            <p className="auth-modal-subtitle" style={{ textAlign: ar ? 'right' : 'left', marginTop: '10px' }}>
+              {t(
+                'By selecting “I understand and continue,” you confirm that Morgan’s Hope provides AI-assisted screening support only and does not replace professional medical consultation.',
+                'باختيار “أفهم وأتابع”، فإنك تؤكد أن Morgan’s Hope يقدم دعم فحص بمساعدة الذكاء الاصطناعي فقط ولا يستبدل الاستشارة الطبية المتخصصة.',
+              )}
+            </p>
           </div>
 
           <div className="auth-modal-body">
@@ -111,13 +127,18 @@ advice or replace professional medical consultation.`,
                 }}
               >
                 {rules(t).map((rule, i) => (
-                  <div key={i} style={{ marginBottom: 20 }}>
-                    <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: 4 }}>
-                      {rule.heading}
-                    </strong>
-                    <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-                      {rule.body}
-                    </p>
+                  <div key={i} style={{ display: 'flex', gap: 12, marginBottom: i === rules(t).length - 1 ? 0 : 18 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(var(--primary-rgb), 0.08)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {rule.icon}
+                    </div>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: 4 }}>
+                        {rule.heading}
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                        {rule.body}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -130,7 +151,7 @@ advice or replace professional medical consultation.`,
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {acknowledgments(t).map((item, i) => (
-                  <div
+                  <label
                     key={i}
                     style={{
                       display: 'flex',
@@ -138,27 +159,25 @@ advice or replace professional medical consultation.`,
                       gap: 12,
                       padding: '12px 16px',
                       borderRadius: 12,
+                      cursor: 'pointer',
+                      border: '1px solid var(--card-border)',
+                      background: checked[i] ? 'rgba(var(--primary-rgb), 0.06)' : 'transparent',
                     }}
                   >
-                    <div
-                      className='rounded-full'
-                      style={{
-                        width: 40,
-                        height: 40,
-                        background: 'rgba(var(--primary-rgb), 0.08)',
-                        color: 'var(--primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
+                    <input
+                      type="checkbox"
+                      checked={checked[i]}
+                      onChange={(event) => {
+                        const next = [...checked];
+                        next[i] = event.target.checked;
+                        setChecked(next);
                       }}
-                    >
-                      {item.icon}
-                    </div>
+                      style={{ width: 18, height: 18, accentColor: 'var(--primary)', flexShrink: 0 }}
+                    />
                     <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.4 }}>
                       {item.text}
                     </span>
-                  </div>
+                  </label>
                 ))}
               </div>
             </div>
@@ -169,8 +188,13 @@ advice or replace professional medical consultation.`,
             <button className="auth-modal-decline" onClick={onDecline} style={{ flex: 'none', padding: '0 28px' }}>
               {t('Decline', 'رفض')}
             </button>
-            <button className="auth-modal-accept" onClick={onAccept} style={{ flex: 'none', padding: '0 28px' }}>
-              {acceptLabel || t('I Understand and Accept', 'أوافق وأتابع')}
+            <button
+              className="auth-modal-accept"
+              onClick={onAccept}
+              disabled={!allChecked}
+              style={{ flex: 'none', padding: '0 28px', opacity: allChecked ? 1 : 0.55, cursor: allChecked ? 'pointer' : 'not-allowed' }}
+            >
+              {acceptLabel || t('I Understand and Continue', 'أفهم وأتابع')}
             </button>
           </div>
         </div>
