@@ -74,7 +74,7 @@ export function PrivacyPage({ lang }: PrivacyPageProps) {
         {
             title: t('Medical Data Disclaimer', 'إخلاء المسؤولية عن البيانات الطبية'),
             content: t(
-                "Morgan's Hope is an experimental AI diagnostic assistance tool developed for educational and research purposes. Results are not a final medical diagnosis and should never replace consultation with a qualified physician. We are not liable for any medical decisions made based solely on our AI output.",
+                "Morgan's Hope is an experimental AI-assisted screening support tool developed for educational and research purposes. Results are not a final medical diagnosis and should never replace consultation with a qualified physician. We are not liable for any medical decisions made based solely on our AI output.",
                 "مورجان هوب أداة مساعدة تشخيصية تجريبية بالذكاء الاصطناعي طُوِّرت للأغراض التعليمية والبحثية. النتائج ليست تشخيصاً طبياً نهائياً ولا يجب أن تحل محل استشارة طبيب متخصص. نحن غير مسؤولين عن أي قرارات طبية تُتخذ بناءً على مخرجات الذكاء الاصطناعي وحده."
             ),
         },

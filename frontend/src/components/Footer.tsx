@@ -181,7 +181,7 @@ export default function Footer({ lang }: { lang: 'en' | 'ar'}) {
                             {t('Medical Disclaimer: ', 'إخلاء المسؤولية الطبي: ')}
                         </strong>
                         {t(
-                            "Morgan's Hope is an experimental AI diagnostic assistance tool. Results are not a final medical diagnosis. The analysis is intended for informational and research purposes only and should NOT be used as a substitute for professional medical advice. Always consult a qualified physician or oncologist.",
+                            "Morgan's Hope is an experimental AI-assisted screening support tool. Results are not a final medical diagnosis. The analysis is intended for informational and research purposes only and should NOT be used as a substitute for professional medical advice. Always consult a qualified physician or oncologist.",
                             "مورجان هوب أداة مساعدة تشخيصية تجريبية بالذكاء الاصطناعي. النتائج ليست تشخيصاً طبياً نهائياً. التحليل مخصص للأغراض المعلوماتية والبحثية فقط ولا يجب استخدامه بديلاً عن المشورة الطبية المتخصصة. استشر دائماً طبيباً أو أخصائي أورام."
                         )}
                     </p>

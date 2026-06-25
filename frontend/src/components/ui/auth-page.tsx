@@ -35,6 +35,11 @@ export function AuthPage({ title, description, lang = 'en', onLangToggle, childr
             <q className="text-xl text-white/90">
               {ar ? 'فرصة ثانية لكل نَفَس' : 'A Second Chance for Every Breath'}
             </q>
+            <p className="max-w-sm text-sm font-semibold leading-6 text-white/70">
+              {ar
+                ? 'دعم فحص بمساعدة الذكاء الاصطناعي، وليس تشخيصًا طبيًا نهائيًا.'
+                : 'AI-assisted screening support, never a final medical diagnosis.'}
+            </p>
             <footer className="font-mono text-sm font-semibold text-white/70">
               ~ Morgan's Hope
             </footer>
