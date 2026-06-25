@@ -57,9 +57,9 @@ function StepIndicator({ step, lang }: { step: 1 | 2 | 3; lang: 'en' | 'ar' }) {
   const ar = lang === 'ar';
   const t = (en: string, arText: string) => ar ? arText : en;
   const steps = [
-    t('Account Info', 'معلومات الحساب'),
+    t('Account', 'الحساب'),
     t('Consent', 'الموافقة'),
-    t('Complete', 'اكتمل'),
+    t('Profile', 'الملف'),
   ];
   return (
     <div className="auth-step-indicator">
@@ -128,7 +128,7 @@ export default function RegisterPage() {
     }
     setError('');
     setConsentTarget('email');
-    void handleConsentAccept('email');
+    setShowConsentModal(true);
   };
 
   const handleGoogleClick = () => {
@@ -136,7 +136,8 @@ export default function RegisterPage() {
       setError(t('Google sign-in is not configured for this deployment yet.', 'تسجيل الدخول عبر Google غير مُعد بعد.'));
       return;
     }
-    window.location.href = googleAuthUrl;
+    setConsentTarget('google');
+    setShowConsentModal(true);
   };
 
   const handleConsentAccept = async (target = consentTarget) => {
@@ -240,14 +241,14 @@ export default function RegisterPage() {
           lang={lang}
           onAccept={handleConsentAccept}
           onDecline={() => setShowConsentModal(false)}
-          subtitle={t('Step 2 of 3 - Read carefully before proceeding', 'الخطوة 2 من 3 — اقرأ بعناية قبل المتابعة')}
-          acceptLabel={t('I Understand and Accept', 'أوافق — إنشاء الحساب')}
+          subtitle={t('Step 2 of 3 - Please read before continuing', 'الخطوة 2 من 3 - يرجى القراءة قبل المتابعة')}
+          acceptLabel={t('I Understand and Continue', 'أفهم وأتابع')}
         />
       )}
 
       <AuthPage
         title={t('Create your account', 'أنشئ حسابك')}
-        description={t('Join thousands of patients and researchers on a mission to fight lung cancer.', 'انضم إلى آلاف المرضى والباحثين في مهمة محاربة سرطان الرئة.')}
+        description={t('Start with a secure account before using AI-assisted chest imaging support.', 'ابدأ بحساب آمن قبل استخدام دعم فحص صور الصدر بمساعدة الذكاء الاصطناعي.')}
         lang={lang}
         onLangToggle={toggleLang}
       >
@@ -283,8 +284,8 @@ export default function RegisterPage() {
             {/* Name fields */}
             <div className="auth-grid-two" style={{ marginBottom: 14 }}>
               {[
-                { key: 'firstName', label: t('First name', 'الاسم الأول'), placeholder: ar ? 'أحمد' : 'John' },
-                { key: 'lastName', label: t('Last name', 'اسم العائلة'), placeholder: ar ? 'حسن' : 'Doe' },
+                { key: 'firstName', label: t('First name', 'الاسم الأول'), placeholder: ar ? 'أحمد' : 'First name' },
+                { key: 'lastName', label: t('Last name', 'اسم العائلة'), placeholder: ar ? 'حسن' : 'Last name' },
               ].map((field) => (
                 <div key={field.key}>
                   <label className="auth-field-label">{field.label}</label>
@@ -301,7 +302,7 @@ export default function RegisterPage() {
               <label className="auth-field-label">{t('Email address', 'البريد الإلكتروني')}</label>
               <div className="auth-input-shell">
                 <div style={iconPos('email')}><IconMail /></div>
-                <input {...bind('email')} type="email" placeholder="example@email.com" style={inputStyle('email')} />
+                <input {...bind('email')} type="email" placeholder="user@example.com" style={inputStyle('email')} />
               </div>
             </div>
 
@@ -382,6 +383,13 @@ export default function RegisterPage() {
               {t('Continue', 'متابعة')}
               {ar ? <HiChevronLeft size={16} color="white" /> : <HiChevronRight size={16} color="white" />}
             </button>
+
+            <p style={{ margin: '12px 0 0', color: 'var(--text-muted)', fontSize: 12.5, lineHeight: 1.6, fontWeight: 600 }}>
+              {t(
+                'By creating an account, you will review and accept the Medical Use & Consent step before completing setup.',
+                'عند إنشاء الحساب، ستراجع وتقبل خطوة الاستخدام الطبي والموافقة قبل إتمام الإعداد.',
+              )}
+            </p>
 
             <div className="auth-divider">
               <span>{t('or sign up with', 'أو سجل باستخدام')}</span>

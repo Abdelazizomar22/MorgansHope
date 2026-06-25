@@ -163,7 +163,7 @@ export default function LoginPage() {
 
       <AuthPage
         title={t('Welcome back', 'أهلاً بك مجدداً')}
-        description={t('Secure, AI-powered medical platform.', 'منصة طبية آمنة ومدعومة بالذكاء الاصطناعي.')}
+        description={t('Access your secure Morgan’s Hope account.', 'ادخل إلى حسابك الآمن في Morgan’s Hope.')}
         lang={lang}
         onLangToggle={toggleLang}
       >
@@ -185,7 +185,7 @@ export default function LoginPage() {
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="example@email.com"
+              placeholder="user@example.com"
               onFocus={() => setFocused('email')}
               onBlur={() => setFocused('')}
               style={inputStyle('email')}
@@ -203,7 +203,7 @@ export default function LoginPage() {
               value={pass}
               onChange={(e) => setPass(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder={t('Your password', 'كلمة المرور')}
+              placeholder={t('Enter your password', 'أدخل كلمة المرور')}
               onFocus={() => setFocused('pass')}
               onBlur={() => setFocused('')}
               style={{ ...inputStyle('pass', '13px 44px 13px 44px'), letterSpacing: showPass ? 'normal' : '0.18em' }}
@@ -223,7 +223,7 @@ export default function LoginPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
           <label className="auth-checkbox-row" style={{ margin: 0, cursor: 'pointer' }}>
             <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-            <span>{t('Keep me signed in', 'إبقني مسجلًا')}</span>
+            <span>{t('Remember me on this device', 'تذكرني على هذا الجهاز')}</span>
           </label>
           <a href="#" className="auth-inline-link" style={{ fontSize: 13 }}>
             {t('Forgot password?', 'نسيت كلمة المرور؟')}
@@ -252,7 +252,7 @@ export default function LoginPage() {
 
         {/* Divider */}
         <div className="auth-divider" style={{ margin: '20px 0' }}>
-          <span>{t('Or continue with', 'أو تابع عبر')}</span>
+          <span>{t('or continue with', 'أو تابع عبر')}</span>
         </div>
 
         {/* Google Button */}

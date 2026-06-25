@@ -1,5 +1,5 @@
-import { HiCheck } from 'react-icons/hi2';
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { HiDocumentText, HiExclamationTriangle, HiHeart, HiLockClosed, HiShieldCheck } from 'react-icons/hi2';
 
 interface DisclaimerModalProps {
   lang: 'en' | 'ar';
@@ -11,71 +11,73 @@ interface DisclaimerModalProps {
 
 const rules = (t: (en: string, ar: string) => string) => [
   {
-    heading: t('AI-Assisted Preliminary Screening Only', 'فحص أولي بمساعدة الذكاء الاصطناعي فقط'),
+    icon: <HiShieldCheck size={20} />,
+    heading: t('AI-assisted screening only', 'فحص بمساعدة الذكاء الاصطناعي فقط'),
     body: t(
-      "Morgan's Hope provides AI-powered preliminary screening support. It does not provide a final diagnosis, medical advice, treatment plan, or prescription.",
-      "يقدّم Morgan's Hope دعم فحص أولي بالذكاء الاصطناعي. ولا يقدّم تشخيصاً نهائياً، أو نصيحة طبية، أو خطة علاج، أو وصفة طبية."
+      'The platform supports preliminary review of supported chest scans and does not provide a final diagnosis.',
+      'تدعم المنصة مراجعة أولية لصور الصدر المدعومة ولا تقدم تشخيصًا طبيًا نهائيًا.',
     ),
   },
   {
-    heading: t('Not a Replacement for Medical Consultation', 'ليس بديلاً عن الاستشارة الطبية'),
+    icon: <HiHeart size={20} />,
+    heading: t('Physician review is required', 'مراجعة الطبيب مطلوبة'),
     body: t(
-      'Results and insights from the platform must be reviewed by a licensed physician or specialist before any medical decision is made.',
-      'يجب مراجعة نتائج المنصة ورؤاها من قبل طبيب مرخص أو أخصائي قبل اتخاذ أي قرار طبي.'
+      'Do not make medical decisions based only on the AI output. Always consult a qualified physician.',
+      'لا تتخذ قرارات طبية اعتمادًا على مخرجات الذكاء الاصطناعي فقط. راجع طبيبًا مؤهلًا دائمًا.',
     ),
   },
   {
-    heading: t('Data Use and Confidentiality', 'استخدام البيانات وسريتها'),
+    icon: <HiLockClosed size={20} />,
+    heading: t('Privacy and data use', 'الخصوصية واستخدام البيانات'),
     body: t(
-      'Uploaded scans and account information are used to provide platform functionality, generate analysis results, and create reports. Your medical data is handled confidentially and is not sold or shared for advertising.',
-      'تُستخدم الصور المرفوعة ومعلومات الحساب لتقديم وظائف المنصة، وإنشاء نتائج التحليل، وإصدار التقارير. تُعامل بياناتك الطبية بسرية تامة ولا تُباع أو تُشارك لأغراض إعلانية.'
+      'Uploaded scans are used to provide the requested analysis and report. Model training use requires explicit consent.',
+      'تُستخدم الصور المرفوعة لتقديم التحليل والتقرير المطلوبين. استخدام البيانات لتدريب النماذج يتطلب موافقة صريحة.',
     ),
   },
   {
-    heading: t('Medical Emergencies', 'حالات الطوارئ الطبية'),
+    icon: <HiExclamationTriangle size={20} />,
+    heading: t('Emergency symptoms', 'أعراض الطوارئ'),
     body: t(
-      "Morgan's Hope is not an emergency service. If you experience severe symptoms such as chest pain, severe shortness of breath, coughing blood, fainting, or confusion, contact local emergency services immediately.",
-      "Morgan's Hope ليست خدمة طوارئ. إذا شعرت بأعراض شديدة مثل ألم في الصدر، أو ضيق شديد في التنفس، أو سعال مصحوب بدم، أو إغماء، أو ارتباك، فتواصل فوراً مع خدمات الطوارئ المحلية."
+      'For severe chest pain, severe shortness of breath, coughing blood, fainting, or confusion, contact emergency services immediately.',
+      'في حالة ألم شديد بالصدر، ضيق نفس شديد، سعال مصحوب بدم، إغماء، أو ارتباك، اتصل بخدمات الطوارئ فورًا.',
     ),
   },
   {
-    heading: t('Terms and Privacy Consent', 'الموافقة على الشروط والخصوصية'),
+    icon: <HiDocumentText size={20} />,
+    heading: t('Terms and privacy', 'الشروط والخصوصية'),
     body: t(
-      'By proceeding, you agree to the platform Terms of Service and Privacy Policy, including the processing of uploaded scans for AI-assisted analysis and report generation.',
-      'بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بالمنصة، بما في ذلك معالجة الصور المرفوعة لأغراض التحليل بالذكاء الاصطناعي وإنشاء التقارير.'
+      'Continuing means you agree to the Terms of Service and Privacy Policy.',
+      'المتابعة تعني موافقتك على شروط الخدمة وسياسة الخصوصية.',
     ),
   },
 ];
 
 const consentItems = (t: (en: string, ar: string) => string) => [
-  {
-    text: t('I have read and understood the medical disclaimer.', 'لقد قرأت إخلاء المسؤولية الطبية وفهمته.'),
-  },
-  {
-    text: t("I understand that Morgan's Hope is not a substitute for professional medical care.", "أتفهم أن Morgan's Hope ليست بديلاً عن الرعاية الطبية المتخصصة."),
-  },
-  {
-    text: t('I understand that results must be reviewed by a qualified physician or specialist.', 'أتفهم أنه يجب مراجعة النتائج من قبل طبيب أو أخصائي مؤهل.'),
-  },
-  {
-    text: t('I agree to the Terms of Service and Privacy Policy.', 'أوافق على شروط الخدمة وسياسة الخصوصية.'),
-  },
-  {
-    text: t(
-      'I consent to the processing of my uploaded scans and account information for platform analysis and report generation.',
-      'أوافق على معالجة الصور المرفوعة ومعلومات حسابي لأغراض التحليل وإنشاء التقارير داخل المنصة.'
-    ),
-  },
+  t(
+    'I understand this tool is not a substitute for professional medical care.',
+    'أفهم أن هذه الأداة ليست بديلاً عن الرعاية الطبية المتخصصة.',
+  ),
+  t(
+    'I understand all results must be reviewed by a qualified physician.',
+    'أفهم أن جميع النتائج يجب مراجعتها بواسطة طبيب مؤهل.',
+  ),
+  t(
+    'I agree to the Terms of Service and Privacy Policy.',
+    'أوافق على شروط الخدمة وسياسة الخصوصية.',
+  ),
 ];
 
 export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, acceptLabel }: DisclaimerModalProps) {
   const ar = lang === 'ar';
-  const t = (en: string, arText: string) => ar ? arText : en;
+  const t = (en: string, arText: string) => (ar ? arText : en);
   const [isMobile, setIsMobile] = useState(false);
-  const items = consentItems(t);
-  const [checked, setChecked] = useState<boolean[]>(Array(items.length).fill(false));
+  const items = useMemo(() => consentItems(t), [ar]);
+  const [checked, setChecked] = useState<boolean[]>(() => Array(items.length).fill(false));
   const allChecked = checked.every(Boolean);
-  const toggleCheck = (i: number) => setChecked(prev => prev.map((v, idx) => idx === i ? !v : v));
+
+  useEffect(() => {
+    setChecked(Array(items.length).fill(false));
+  }, [items.length]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 720);
@@ -86,30 +88,25 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
 
   return (
     <div className="auth-modal-overlay">
-      <div
-        className="auth-modal-card"
-        style={{ maxWidth: 720 }}
-      >
+      <div className="auth-modal-card" style={{ maxWidth: 720 }}>
         <div className="auth-modal-scroll">
-          {/* Header — no close button */}
           <div className="auth-modal-header">
             <h2 className="mb-2 text-[1.5rem] md:text-[1.75rem] lg:text-[2rem] font-black text-[var(--text-main)]">
-              {t('Medical Use & Consent Disclaimer', 'إخلاء المسؤولية الطبية والموافقة')}
+              {t('Medical Use & Consent', 'الاستخدام الطبي والموافقة')}
             </h2>
             <p className="auth-modal-subtitle">
-              {subtitle || t('Step 2 of 3 - Please read carefully before proceeding', 'الخطوة 2 من 3 - يرجى القراءة بعناية قبل المتابعة')}
+              {subtitle || t('Step 2 of 3 - Please read before continuing', 'الخطوة 2 من 3 - يرجى القراءة قبل المتابعة')}
             </p>
-            <p className="auth-modal-subtitle" style={{ textAlign: ar ? 'right' : 'left', marginTop: '10px' }}>
+            <p className="auth-modal-subtitle" style={{ textAlign: ar ? 'right' : 'left', marginTop: 10 }}>
               {t(
-                'Before using Morgan\'s Hope, please read and accept the following medical and privacy terms. By selecting "I Understand and Accept", you acknowledge that the platform provides AI-assisted preliminary screening support only and does not replace professional medical consultation.',
-                'قبل استخدام Morgan\'s Hope، يرجى قراءة الشروط الطبية وشروط الخصوصية التالية والموافقة عليها. وباختيارك "أفهم وأوافق"، فإنك تقر بأن المنصة تقدّم دعم فحص أولي بمساعدة الذكاء الاصطناعي فقط، ولا تحل محل الاستشارة الطبية المتخصصة.'
+                'By selecting “I understand and continue,” you confirm that Morgan’s Hope provides AI-assisted screening support only and does not replace professional medical consultation.',
+                'باختيار “أفهم وأتابع”، فإنك تؤكد أن Morgan’s Hope يقدم دعم فحص بمساعدة الذكاء الاصطناعي فقط ولا يستبدل الاستشارة الطبية المتخصصة.',
               )}
             </p>
           </div>
 
           <div className="auth-modal-body">
-            {/* Rules Section */}
-            <div style={{ padding: '0 32px', marginTop: 20 }}>
+            <div style={{ padding: isMobile ? '0 18px' : '0 32px', marginTop: 20 }}>
               <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
                 {t('Important Disclaimers', 'إخلاء مسؤولية هام')}
               </div>
@@ -123,28 +120,32 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
                   overflowY: 'auto',
                 }}
               >
-                {rules(t).map((rule, i) => (
-                  <div key={i} style={{ marginBottom: 20 }}>
-                    <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: 4 }}>
-                      {rule.heading}
-                    </strong>
-                    <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-                      {rule.body}
-                    </p>
+                {rules(t).map((rule, index) => (
+                  <div key={rule.heading} style={{ display: 'flex', gap: 12, marginBottom: index === rules(t).length - 1 ? 0 : 18 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(var(--primary-rgb), 0.08)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {rule.icon}
+                    </div>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--text-main)', marginBottom: 4 }}>
+                        {rule.heading}
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+                        {rule.body}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Consent Checklist */}
-            <div style={{ padding: '0 32px', marginTop: 24 }}>
+            <div style={{ padding: isMobile ? '0 18px' : '0 32px', marginTop: 24 }}>
               <div style={{ fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 10 }}>
-                {t('Terms and Conditions', 'الشروط والأحكام')}
+                {t('Required Acknowledgements', 'إقرارات مطلوبة')}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {items.map((item, i) => (
+                {items.map((item, index) => (
                   <label
-                    key={i}
+                    key={item}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -152,36 +153,27 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
                       padding: '12px 16px',
                       borderRadius: 12,
                       cursor: 'pointer',
+                      border: '1px solid var(--card-border)',
+                      background: checked[index] ? 'rgba(var(--primary-rgb), 0.06)' : 'transparent',
                     }}
                   >
-                    <div
-                      onClick={(e) => { e.preventDefault(); toggleCheck(i); }}
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: 4,
-                        border: '1.5px solid var(--card-border)',
-                        background: checked[i] ? 'var(--primary)' : 'transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        transition: 'all 0.15s ease',
-                        cursor: 'pointer',
+                    <input
+                      type="checkbox"
+                      checked={checked[index]}
+                      onChange={(event) => {
+                        const next = [...checked];
+                        next[index] = event.target.checked;
+                        setChecked(next);
                       }}
-                    >
-                      {checked[i] && <HiCheck size={16} color="#fff" />}
-                    </div>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.4, userSelect: 'none' }}>
-                      {item.text}
-                    </span>
+                      style={{ width: 18, height: 18, accentColor: 'var(--primary)', flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: 1.4 }}>{item}</span>
                   </label>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="auth-modal-actions" style={{ justifyContent: 'flex-end' }}>
             <button className="auth-modal-decline" onClick={onDecline} style={{ flex: 'none', padding: '0 28px' }}>
               {t('Decline', 'رفض')}
@@ -190,9 +182,9 @@ export default function DisclaimerModal({ lang, onAccept, onDecline, subtitle, a
               className="auth-modal-accept"
               onClick={onAccept}
               disabled={!allChecked}
-              style={{ flex: 'none', padding: '0 28px', opacity: allChecked ? 1 : 0.5, cursor: allChecked ? 'pointer' : 'not-allowed' }}
+              style={{ flex: 'none', padding: '0 28px', opacity: allChecked ? 1 : 0.55, cursor: allChecked ? 'pointer' : 'not-allowed' }}
             >
-              {acceptLabel || t('I Understand and Accept', 'أوافق وأتابع')}
+              {acceptLabel || t('I Understand and Continue', 'أفهم وأتابع')}
             </button>
           </div>
         </div>
