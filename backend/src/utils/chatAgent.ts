@@ -2,6 +2,7 @@ import axios from 'axios';
 import type User from '../models/User';
 import type AnalysisResult from '../models/AnalysisResult';
 import { retryWithBackoff } from './retryWithBackoff';
+import { buildPlatformKnowledgePrompt, getPlatformHelpFallback } from './platformKnowledge';
 
 export interface ChatTurn {
   role: 'user' | 'assistant';
@@ -351,6 +352,8 @@ function buildSystemPrompt(
   triage: TriageResult,
   intent: CommandIntent,
 ) {
+  const platformKnowledge = buildPlatformKnowledgePrompt();
+
   if (ar) {
     return [
       'أنت وكيل طبي ومساعد ذكي داخل منصة Morgan\'s Hope.',
@@ -358,6 +361,7 @@ function buildSystemPrompt(
       '-- معلومات المنصة --',
       'الهدف: المنصة تهدف لتوفير فحص مبكر وسريع لأمراض الرئة (مثل السل، الالتهاب الرئوي، وسرطان الرئة) باستخدام الذكاء الاصطناعي.',
       'المتاح حالياً: يمكن للمريض رفع صور الأشعة (CT أو X-Ray) والحصول على تحليل فوري ذكي مع نسبة الثقة والتوصيات الطبية، وتلخيص التقارير هنا.',
+      platformKnowledge,
       'Current exact AI scope: CT uses the existing unchanged six-class lung cancer classifier: Normal, Benign, Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and Malignant General.',
       'Current exact AI scope: The old binary CXR model has been removed. Chest X-Ray now uses the deployed NIH ChestX-ray14 7-class multi-label model: Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, Pleural Diseases, and No Finding. A dedicated TB signal and TB lesion-localization pipeline also run alongside the X-ray model.',
       'قريباً (Coming Soon): استشارات طبية عن بعد مع أطباء صدرية مختصين، حجز مواعيد، ومجتمع تفاعلي للمرضى.',
@@ -386,6 +390,7 @@ function buildSystemPrompt(
     '-- Platform Context --',
     'Goal: The platform provides early and fast detection of lung diseases (like TB, Pneumonia, and Lung Cancer) using AI.',
     'Currently Available: Users can upload CT or X-Ray scans for instant AI analysis, confidence scores, and recommendations. You can also summarize their reports.',
+    platformKnowledge,
     'Current exact AI scope: CT uses the existing unchanged six-class lung cancer classifier: Normal, Benign, Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and Malignant General.',
     'Current exact AI scope: The old binary CXR model has been removed. Chest X-Ray now uses the deployed NIH ChestX-ray14 7-class multi-label model: Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, Pleural Diseases, and No Finding. A dedicated TB signal and TB lesion-localization pipeline also run alongside the X-ray model.',
     'Coming Soon: Telemedicine consultations with specialist doctors, appointment booking, and a patient support community.',
@@ -449,10 +454,46 @@ function getHeuristicReply(
     return getUrgentCareReply(ar, triage);
   }
 
-  if (/upload|how.*use|website|platform|رفع|استخدم|المنصة|الموقع/.test(text)) {
+  if (/hospital|hospitals|doctor|clinic|map|مستشفى|مستشفيات|طبيب|عيادة|خريطة/.test(text)) {
     return ar
-      ? 'يمكنك استخدام المنصة برفع صورة CT أو X-ray من صفحة الرفع، ثم ستظهر النتيجة والتصنيف والتوصية التالية. وإذا أردت، أشرح لك أيضًا كيف تقرأ النتيجة أو ماذا تفعل بعدها.'
-      : 'You can use the platform by uploading a CT or X-ray image from the upload page, then reviewing the result, classification, and recommended next step. I can also explain how to read the result or what to do after it.';
+      ? [
+        "صفحة Hospitals تساعدك تختار جهة متابعة مناسبة بعد نتيجة الأشعة.",
+        "- يمكنك الفلترة حسب المدينة: Cairo, Giza / 6th of October, Alexandria, Mansoura, Assiut.",
+        "- يمكنك الفلترة حسب نوع الرعاية: lung cancer care, chest medicine, thoracic surgery, biopsy, imaging, chemotherapy, radiation, PET-CT, supportive care.",
+        "- المعلومات للإرشاد فقط، ولازم تتأكد من المستشفى مباشرة قبل الحجز أو الزيارة.",
+      ].join('\n')
+      : [
+        "The Hospitals page helps users find suitable follow-up options after scan screening.",
+        "- You can filter by city: Cairo, Giza / 6th of October, Alexandria, Mansoura, and Assiut.",
+        "- You can filter by care type: lung cancer care, chest medicine, thoracic surgery, biopsy, imaging, chemotherapy, radiation, PET-CT, and supportive care.",
+        "- Hospital information is guidance only. Users should verify details directly before booking or visiting.",
+      ].join('\n');
+  }
+
+  if (/model|models|ct|x-?ray|xray|tb|tuberculosis|nodule|validation|gate|موديل|موديلات|السل|عقدة|عقيدة|أشعة/.test(text)) {
+    return ar
+      ? [
+        "المنصة تستخدم 5 مسارات AI رئيسية:",
+        "- Validation Gate: يتأكد أن الصورة Chest CT أو Chest X-Ray وليست صورة غير طبية أو نوع غير مدعوم.",
+        "- CT classifier: يصنف CT إلى Normal, Benign, Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, Malignant General.",
+        "- X-Ray clinical groups: يغطي Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, Pleural Diseases, No Finding.",
+        "- TB screening: يلتقط إشارات السل في Chest X-Ray.",
+        "- Localization: يوضح مناطق التركيز عند توفرها مثل nodule أو TB lesion.",
+        "كل ده AI-assisted screening support فقط ويحتاج مراجعة طبيب.",
+      ].join('\n')
+      : [
+        "Morgan's Hope uses 5 main AI pathways:",
+        "- Validation Gate: verifies whether the image is Chest CT, Chest X-Ray, Non-Medical, or Other-Medical before analysis.",
+        "- CT classifier: Normal, Benign, Adenocarcinoma, Large Cell Carcinoma, Squamous Cell Carcinoma, and Malignant General.",
+        "- X-Ray clinical groups: Pulmonary Infection, COPD-related Findings, Fibrotic Lung Disease, Cardiac Conditions, Potential Malignancy Findings, Pleural Diseases, and No Finding.",
+        "- TB screening: detects tuberculosis-related signals in Chest X-Ray.",
+        "- Localization: highlights focus regions when available, such as CT nodules or TB lesions.",
+        "All outputs are AI-assisted screening support only and require physician review.",
+      ].join('\n');
+  }
+
+  if (/upload|how.*use|website|platform|رفع|استخدم|المنصة|الموقع/.test(text)) {
+    return getPlatformHelpFallback(ar);
   }
 
   return ar
