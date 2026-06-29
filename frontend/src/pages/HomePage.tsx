@@ -14,7 +14,7 @@ import { SURVIVAL } from '../data/survival';
 import { EGYPT_CARDS } from '../data/eg-cards';
 import { DONUT_DATA } from '../data/donut';
 // Icons
-import { HiExclamationTriangle, HiDocumentText, HiCloudArrowUp, HiArrowRight, HiCpuChip, HiInformationCircle, HiChartBarSquare, HiClock, HiShieldCheck, HiHeart, HiCog6Tooth, HiCheckCircle, HiPhoto } from 'react-icons/hi2';
+import { HiExclamationTriangle, HiDocumentText, HiCloudArrowUp, HiArrowRight, HiCpuChip, HiInformationCircle, HiChartBarSquare, HiClock, HiShieldCheck, HiHeart, HiCheckCircle, HiPhoto } from 'react-icons/hi2';
 
 // Interface for language
 interface HomePageProps { lang: 'en' | 'ar'; }
@@ -354,64 +354,6 @@ export default function HomePage({ lang }: HomePageProps) {
             </div>
           </section>
         </div>
-
-        {/* ══ WHAT WE OFFER TODAY / OUR VISION ══════════════════════════════ */}
-        <section style={{ padding: isMobile ? '40px 20px' : '60px 40px' }}>
-          <MotionFade direction="up" delay={0.1}>
-            <div style={{ maxWidth: 1040, margin: '0 auto', background: 'var(--card-bg)', borderRadius: 20, border: '1px solid var(--card-border)', padding: isMobile ? '28px 20px' : '36px 40px', boxShadow: '0 4px 20px var(--shadow-main)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 28 : 40, position: 'relative' }}>
-                {!isMobile && <div style={{ position: 'absolute', left: '50%', top: '5%', bottom: '5%', width: 1, background: 'var(--card-border)' }} />}
-
-                {/* Left Column — What We Offer Today */}
-                <div>
-                  <h3 style={{ fontWeight: 800, fontSize: isMobile ? 16 : 18, color: 'var(--text-main)', margin: '0 0 4px' }}>{t('What We Offer Today', 'ما نقدمه اليوم')}</h3>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>{t("Currently available in Morgan's Hope", `متاح حالياً في Morgan's Hope`)}</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div style={{ background: 'var(--bg-main)', borderRadius: 12, padding: 14, border: '1px solid var(--card-border)' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, background: 'var(--card-bg)', color: 'var(--primary)', marginBottom: 10 }}>
-                        <HiCpuChip size={18} />
-                      </div>
-                      <h4 style={{ fontWeight: 800, fontSize: 14, color: 'var(--text-main)', margin: '0 0 4px' }}>{t('Chest CT', 'CT للصدر')}</h4>
-                      <p style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 10px' }}>{t('AI analysis for lung nodules, masses, and lung cancer classification.', 'تحليل بالذكاء الاصطناعي للعقيدات والكتل الرئوية وتصنيف سرطان الرئة.')}</p>
-                      <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 800, background: 'var(--primary-dark)', color: 'white', padding: '3px 10px', borderRadius: 99, letterSpacing: 0.3 }}>{t('Available Now', 'متاح الآن')}</span>
-                    </div>
-                    <div style={{ background: 'var(--bg-main)', borderRadius: 12, padding: 14, border: '1px solid var(--card-border)' }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 10, background: 'var(--card-bg)', color: 'var(--primary)', marginBottom: 10 }}>
-                        <HiPhoto size={18} />
-                      </div>
-                      <h4 style={{ fontWeight: 800, fontSize: 14, color: 'var(--text-main)', margin: '0 0 4px' }}>{t('Chest X-Ray', 'X-Ray للصدر')}</h4>
-                      <p style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 10px' }}>{t('AI screening for major respiratory and chest conditions.', 'فحص بالذكاء الاصطناعي لأهم حالات الجهاز التنفسي والصدر.')}</p>
-                      <span style={{ display: 'inline-block', fontSize: 10, fontWeight: 800, background: 'var(--primary-dark)', color: 'white', padding: '3px 10px', borderRadius: 99, letterSpacing: 0.3 }}>{t('Available Now', 'متاح الآن')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column — Our Vision */}
-                <div>
-                  <h3 style={{ fontWeight: 800, fontSize: isMobile ? 16 : 18, color: 'var(--text-main)', margin: '0 0 4px' }}>{t('Our Vision', 'رؤيتنا')}</h3>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>{t('Expanding the future of AI-powered imaging', 'توسيع مستقبل التصوير المعتمد على الذكاء الاصطناعي')}</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: 10 }}>
-                    {[
-                      { Icon: <HiPhoto size={18} />, en: 'More Imaging Types', arS: 'أنواع تصوير أكثر', desc_en: 'HRCT, Low-dose CT, PET-CT, and more.', desc_ar: 'HRCT، CT منخفض الجرعة، PET-CT، والمزيد.' },
-                      { Icon: <HiDocumentText size={18} />, en: 'More Diseases', arS: 'أمراض أكثر', desc_en: 'Broader coverage of respiratory, pleural, cardiac, and more.', desc_ar: 'تغطية أوسع لأمراض الجهاز التنفسي والغشاء البلوري والقلب والمزيد.' },
-                      { Icon: <HiCpuChip size={18} />, en: 'Smarter AI', arS: 'ذكاء اصطناعي أذكى', desc_en: 'More accurate, explainable, and continuously improving models.', desc_ar: 'نماذج أكثر دقة وقابلية للتفسير ومستمرة في التحسن.' },
-                      { Icon: <HiCog6Tooth size={18} />, en: 'Clinical Integration', arS: 'تكامل سريري', desc_en: 'Appointment booking, telemedicine, and hospital follow-up support.', desc_ar: 'حجز المواعيد والطب عن بُعد ودعم المتابعة مع المستشفيات.' },
-                      { Icon: <HiHeart size={18} />, en: 'Better Impact', arS: 'تأثير أفضل', desc_en: 'Earlier detection, better outcomes, healthier lives.', desc_ar: 'كشف أبكر ونتائج أفضل وحياة أكثر صحة.' },
-                    ].map((item, i) => (
-                      <div key={i} style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-main)', color: 'var(--primary)', marginBottom: 8 }}>
-                          {item.Icon}
-                        </div>
-                        <h4 style={{ fontWeight: 800, fontSize: 13, color: 'var(--text-main)', margin: '0 0 2px' }}>{ar ? item.arS : item.en}</h4>
-                        <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>{ar ? item.desc_ar : item.desc_en}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </MotionFade>
-        </section>
 
         {/* Section 6 — Current AI Coverage */}
         <div style={{ background: 'var(--bg-main)', padding: isMobile ? '60px 24px' : '80px 60px' }}>
